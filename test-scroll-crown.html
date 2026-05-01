@@ -6,81 +6,71 @@
   <title>DEMO — Scroll Scrub · Forged in Excellence · Crown Page</title>
   <link rel="stylesheet" href="https://use.typekit.net/fqu8chv.css">
   <style>
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: "sweet-sans-pro", sans-serif;
-      background: #ffffff;
+      background: #fff;
       color: #1a1a1a;
     }
 
-    /* ─── DEMO NOTICE ─────────────────────────────────────────────────── */
+    /* ─── BANDEAU DEMO ────────────────────────────────────────────────── */
     .demo-notice {
       background: #1a1a1a;
       color: #fff;
       text-align: center;
       padding: 14px 20px;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 500;
-      letter-spacing: 0.2em;
+      letter-spacing: 0.22em;
       text-transform: uppercase;
       position: sticky;
       top: 0;
-      z-index: 100;
+      z-index: 200;
     }
 
-    /* ─── PAGE INTRO (espace de scroll avant la section) ─────────────── */
+    /* ─── INTRO ───────────────────────────────────────────────────────── */
     .page-intro {
       height: 70vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 16px;
+      gap: 20px;
     }
 
     .page-intro-label {
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 400;
-      letter-spacing: 0.3em;
+      letter-spacing: 0.35em;
       text-transform: uppercase;
-      color: #aaa;
+      color: #bbb;
     }
 
     .page-intro-arrow {
       width: 1px;
-      height: 60px;
+      height: 56px;
       background: linear-gradient(to bottom, transparent, #1a1a1a);
-      animation: arrowPulse 1.5s ease-in-out infinite;
+      animation: pulse 1.6s ease-in-out infinite;
     }
 
-    @keyframes arrowPulse {
-      0%, 100% { opacity: 0.3; transform: scaleY(0.8); }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.2; transform: scaleY(0.7); }
       50%       { opacity: 1;   transform: scaleY(1);   }
     }
 
-    /* ─── SECTION FORGED IN EXCELLENCE ───────────────────────────────── */
-    .section-forged {
+    /* ─── EN-TÊTE DE SECTION (hors zones sticky) ─────────────────────── */
+    .section-header {
       max-width: 860px;
       margin: 0 auto;
-      padding: 80px 40px 140px;
+      padding: 80px 40px 52px;
     }
 
-    /* Eyebrow : chevron + titre principal */
     .section-eyebrow {
       display: flex;
       align-items: center;
       gap: 10px;
       margin-bottom: 4px;
-    }
-
-    .section-eyebrow svg {
-      flex-shrink: 0;
-      opacity: 0.6;
     }
 
     .section-title-main {
@@ -90,7 +80,6 @@
       text-transform: uppercase;
     }
 
-    /* Sous-titre avec interlignage + ligne fine en dessous */
     .section-title-sub {
       font-size: 12px;
       font-weight: 400;
@@ -104,14 +93,34 @@
       margin-left: 20px;
     }
 
-    /* Corps de texte */
     .section-body {
       font-size: 13.5px;
       font-weight: 400;
       line-height: 1.75;
       max-width: 460px;
-      margin-bottom: 52px;
       color: #1a1a1a;
+    }
+
+    /* ─── SCROLL SCENE — conteneur principal ─────────────────────────────
+       Hauteur = 100vh (sticky) + 2400px (zone de scroll pour 60 frames).
+       L'utilisateur scroll 2400px pour traverser les 60 frames → ~40px/frame.
+    ─────────────────────────────────────────────────────────────────────── */
+    .scroll-scene {
+      position: relative;
+      height: calc(100vh + 2400px);
+    }
+
+    /* ─── STICKY INNER — reste fixe pendant tout le scroll de la scène ── */
+    .scroll-sticky {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 0 40px;
+      max-width: 860px;
+      margin: 0 auto;
     }
 
     /* ─── GRILLES VIDÉO ───────────────────────────────────────────────── */
@@ -119,18 +128,13 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
-      margin-bottom: 12px;
-    }
-
-    .video-grid-1 {
-      margin-bottom: 12px;
     }
 
     .video-item {
-      position: relative;
+      display: flex;
+      flex-direction: column;
     }
 
-    /* La vidéo prend toute la largeur de son conteneur */
     .video-item video {
       width: 100%;
       display: block;
@@ -147,12 +151,39 @@
       padding: 10px 0 0;
     }
 
-    /* ─── THUMBNAILS (4 en bas) ───────────────────────────────────────── */
+    /* ─── BARRE DE PROGRESSION (indicateur scroll) ────────────────────── */
+    .progress-bar-wrap {
+      width: 100%;
+      height: 1px;
+      background: #e8e8e8;
+      margin-top: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: #1a1a1a;
+      transition: width 0.05s linear;
+    }
+
+    /* ─── SÉPARATEUR ENTRE LES DEUX SCÈNES ───────────────────────────── */
+    .scene-divider {
+      height: 60px;
+    }
+
+    /* ─── THUMBNAILS (4 colonnes, autoplay loop) ──────────────────────── */
+    .thumbs-section {
+      max-width: 860px;
+      margin: 80px auto 0;
+      padding: 0 40px 120px;
+    }
+
     .video-thumbs {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 8px;
-      margin-top: 40px;
     }
 
     .video-thumb-wrap {
@@ -184,7 +215,7 @@
       line-height: 1.5;
     }
 
-    /* ─── CRÉDIT ART DIRECTION ────────────────────────────────────────── */
+    /* ─── CRÉDIT ──────────────────────────────────────────────────────── */
     .art-direction {
       text-align: center;
       font-size: 9px;
@@ -195,227 +226,257 @@
       color: #1a1a1a;
     }
 
-    .art-direction span {
-      font-weight: 400;
-    }
+    .art-direction span { font-weight: 400; }
 
-    /* ─── NOTE TECHNIQUE (bloc pour designers) ───────────────────────── */
+    /* ─── NOTE TECHNIQUE ──────────────────────────────────────────────── */
     .dev-note {
       background: #f5f5f5;
       border-left: 3px solid #1a1a1a;
-      margin: 80px 40px 0;
-      padding: 32px 40px;
+      padding: 36px 44px;
       max-width: 860px;
-      margin-left: auto;
-      margin-right: auto;
+      margin: 80px auto 0;
     }
 
     .dev-note h3 {
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 700;
-      letter-spacing: 0.2em;
+      letter-spacing: 0.22em;
       text-transform: uppercase;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
     }
 
     .dev-note p {
       font-size: 13px;
-      font-weight: 400;
-      line-height: 1.7;
+      line-height: 1.75;
       margin-bottom: 12px;
       color: #444;
     }
 
     .dev-note code {
-      background: #e8e8e8;
+      background: #e0e0e0;
       padding: 2px 6px;
       font-size: 12px;
       border-radius: 2px;
       font-family: monospace;
     }
+
+    .dev-note ul {
+      margin: 0 0 12px 20px;
+      font-size: 13px;
+      line-height: 2;
+      color: #444;
+    }
   </style>
 </head>
 <body>
 
-  <!-- BANDEAU DEMO -->
+  <!-- BANDEAU -->
   <div class="demo-notice">
-    Page de référence — Scroll Scrub · Forged in Excellence · Pour designers Elementor / Webflow
+    Page de référence — Scroll Scrub &nbsp;·&nbsp; Forged in Excellence &nbsp;·&nbsp; Pour designers Elementor / Webflow
   </div>
 
-  <!-- ESPACE DE SCROLL AVANT LA SECTION -->
+  <!-- INTRO -->
   <div class="page-intro">
-    <span class="page-intro-label">Scrollez vers le bas</span>
+    <span class="page-intro-label">Scrollez vers le bas pour voir l'animation</span>
     <div class="page-intro-arrow"></div>
   </div>
 
-  <!-- ════════════════════════════════════════════════════════════════
-       SECTION : FORGED IN EXCELLENCE — NEW CROWN IDENTITY
-       ════════════════════════════════════════════════════════════════ -->
-  <section class="section-forged">
-
-    <!-- En-tête de section -->
+  <!-- EN-TÊTE DE SECTION (fixe, hors sticky) -->
+  <div class="section-header">
     <div class="section-eyebrow">
-      <!-- Chevron bas = indicateur de section, comme dans le design original -->
-      <svg width="9" height="7" viewBox="0 0 9 7" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
         <path d="M1 1L4.5 5.5L8 1" stroke="#1a1a1a" stroke-width="1" stroke-linecap="round"/>
       </svg>
       <span class="section-title-main">Forged in Excellence.</span>
     </div>
-
-    <!-- Sous-titre avec interlignage + ligne fine (le point noté dans le brief) -->
     <div class="section-title-sub">New Crown Identity</div>
-
-    <!-- Corps de texte -->
     <p class="section-body">
       Cast in Everose, forged in Oystersteel, or united through Rolesor.
       Rising directly from the metal, the emblem become part of the material itself.
       An indelible imprint, marking the brand's territory across its most legendary elements.
     </p>
+  </div>
 
-    <!-- VIDÉOS 2 COLONNES : Everose + Oystersteel -->
-    <div class="video-grid-2">
-      <div class="video-item">
-        <video class="scroll-video"
-          src="https://www.dropbox.com/scl/fi/ysd3upwrqi7bzdfan5crf/FORGED-IN-EXCELLENCE-EVEROSE.mp4?rlkey=r3zy5dhs2js7vmt8a9xhi8c0r&raw=1"
-          preload="auto"
-          muted
-          playsinline>
-        </video>
-        <div class="video-label">Everose</div>
-      </div>
-      <div class="video-item">
-        <video class="scroll-video"
-          src="https://www.dropbox.com/scl/fi/i935vwxa2seazfvtx3s5s/FORGED-IN-EXCELLENCE-OYSTERSTEEL.mp4?rlkey=w9pqdxg5466gb4qwxx1vnlrmq&raw=1"
-          preload="auto"
-          muted
-          playsinline>
-        </video>
-        <div class="video-label">Oystersteel</div>
-      </div>
-    </div>
+  <!-- ════════════════════════════════════════════════════════════════════
+       SCÈNE 1 — EVEROSE + OYSTERSTEEL (2 colonnes, scrub synchronisé)
+       Le scroll couvre 2400px → ~40px par frame pour 60 frames.
+  ════════════════════════════════════════════════════════════════════════ -->
+  <div class="scroll-scene" id="scene-dual">
+    <div class="scroll-sticky">
 
-    <!-- VIDÉO PLEINE LARGEUR : Rolesor -->
-    <div class="video-grid-1">
-      <div class="video-item">
-        <video class="scroll-video"
-          src="https://www.dropbox.com/scl/fi/0cakf2q3l185klc09likb/FORGED-IN-EXCELLENCE-ROLESOROK.mp4?rlkey=sy291j47zskihiwpppbmq7w2g&raw=1"
-          preload="auto"
-          muted
-          playsinline>
-        </video>
-        <div class="video-label">Rolesor</div>
-      </div>
-    </div>
-
-    <!-- THUMBNAILS 4 COLONNES -->
-    <div class="video-thumbs">
-      <div class="video-thumb-wrap">
-        <div class="video-thumb">
-          <video class="scroll-video"
+      <div class="video-grid-2">
+        <div class="video-item">
+          <video id="vid-everose"
             src="https://www.dropbox.com/scl/fi/ysd3upwrqi7bzdfan5crf/FORGED-IN-EXCELLENCE-EVEROSE.mp4?rlkey=r3zy5dhs2js7vmt8a9xhi8c0r&raw=1"
             preload="auto" muted playsinline>
           </video>
+          <div class="video-label">Everose</div>
+        </div>
+        <div class="video-item">
+          <video id="vid-oystersteel"
+            src="https://www.dropbox.com/scl/fi/i935vwxa2seazfvtx3s5s/FORGED-IN-EXCELLENCE-OYSTERSTEEL.mp4?rlkey=w9pqdxg5466gb4qwxx1vnlrmq&raw=1"
+            preload="auto" muted playsinline>
+          </video>
+          <div class="video-label">Oystersteel</div>
+        </div>
+      </div>
+
+      <!-- Barre de progression visuelle -->
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="progress-dual"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="scene-divider"></div>
+
+  <!-- ════════════════════════════════════════════════════════════════════
+       SCÈNE 2 — ROLESOR (pleine largeur, scrub indépendant)
+  ════════════════════════════════════════════════════════════════════════ -->
+  <div class="scroll-scene" id="scene-rolesor">
+    <div class="scroll-sticky">
+
+      <div class="video-item">
+        <video id="vid-rolesor"
+          src="https://www.dropbox.com/scl/fi/0cakf2q3l185klc09likb/FORGED-IN-EXCELLENCE-ROLESOROK.mp4?rlkey=sy291j47zskihiwpppbmq7w2g&raw=1"
+          preload="auto" muted playsinline>
+        </video>
+        <div class="video-label">Rolesor</div>
+      </div>
+
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="progress-rolesor"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════
+       THUMBNAILS — autoplay loop (pas de scrub : trop petites)
+  ════════════════════════════════════════════════════════════════════════ -->
+  <div class="thumbs-section">
+    <div class="video-thumbs">
+      <div class="video-thumb-wrap">
+        <div class="video-thumb">
+          <video src="https://www.dropbox.com/scl/fi/ysd3upwrqi7bzdfan5crf/FORGED-IN-EXCELLENCE-EVEROSE.mp4?rlkey=r3zy5dhs2js7vmt8a9xhi8c0r&raw=1"
+            autoplay muted playsinline loop></video>
         </div>
         <div class="video-thumb-label">De Rolex Crown · Everose</div>
       </div>
       <div class="video-thumb-wrap">
         <div class="video-thumb">
-          <video class="scroll-video"
-            src="https://www.dropbox.com/scl/fi/i935vwxa2seazfvtx3s5s/FORGED-IN-EXCELLENCE-OYSTERSTEEL.mp4?rlkey=w9pqdxg5466gb4qwxx1vnlrmq&raw=1"
-            preload="auto" muted playsinline>
-          </video>
+          <video src="https://www.dropbox.com/scl/fi/i935vwxa2seazfvtx3s5s/FORGED-IN-EXCELLENCE-OYSTERSTEEL.mp4?rlkey=w9pqdxg5466gb4qwxx1vnlrmq&raw=1"
+            autoplay muted playsinline loop></video>
         </div>
         <div class="video-thumb-label">De Rolex Crown · Oystersteel</div>
       </div>
       <div class="video-thumb-wrap">
         <div class="video-thumb">
-          <video class="scroll-video"
-            src="https://www.dropbox.com/scl/fi/0cakf2q3l185klc09likb/FORGED-IN-EXCELLENCE-ROLESOROK.mp4?rlkey=sy291j47zskihiwpppbmq7w2g&raw=1"
-            preload="auto" muted playsinline>
-          </video>
+          <video src="https://www.dropbox.com/scl/fi/0cakf2q3l185klc09likb/FORGED-IN-EXCELLENCE-ROLESOROK.mp4?rlkey=sy291j47zskihiwpppbmq7w2g&raw=1"
+            autoplay muted playsinline loop></video>
         </div>
         <div class="video-thumb-label">De Rolex Crown · Rolesor</div>
       </div>
       <div class="video-thumb-wrap">
         <div class="video-thumb">
-          <video class="scroll-video"
-            src="https://www.dropbox.com/scl/fi/ysd3upwrqi7bzdfan5crf/FORGED-IN-EXCELLENCE-EVEROSE.mp4?rlkey=r3zy5dhs2js7vmt8a9xhi8c0r&raw=1"
-            preload="auto" muted playsinline>
-          </video>
+          <video src="https://www.dropbox.com/scl/fi/ysd3upwrqi7bzdfan5crf/FORGED-IN-EXCELLENCE-EVEROSE.mp4?rlkey=r3zy5dhs2js7vmt8a9xhi8c0r&raw=1"
+            autoplay muted playsinline loop></video>
         </div>
         <div class="video-thumb-label">De Rolex Crown · Steel</div>
       </div>
     </div>
 
-    <!-- Crédit -->
     <p class="art-direction">Art Direction <span>and Design</span></p>
+  </div>
 
-  </section>
-
-  <!-- ════════════════════════════════════════════════════════════════
+  <!-- ════════════════════════════════════════════════════════════════════
        NOTE TECHNIQUE POUR LES DESIGNERS
-       ════════════════════════════════════════════════════════════════ -->
-  <div class="dev-note">
+  ════════════════════════════════════════════════════════════════════════ -->
+  <div class="dev-note" style="margin-bottom: 120px;">
     <h3>Note d'implémentation — Pour Elementor &amp; Webflow</h3>
     <p>
-      Chaque vidéo (<code>.scroll-video</code>) est contrôlée par le scroll :
-      <code>video.currentTime = progress × video.duration</code>.
-      La progression va de 0 (vidéo hors écran en bas) à 1 (vidéo visible à 30% du viewport).
+      Chaque vidéo est contrôlée par la formule :
+      <code>video.currentTime = progress × video.duration</code>
     </p>
     <p>
-      <strong>Elementor :</strong> Insérer un widget "HTML personnalisé" et y coller les balises
-      <code>&lt;video&gt;</code> + le bloc <code>&lt;script&gt;</code> ci-dessous.
-      Ajouter <code>class="scroll-video"</code> à chaque vidéo.
+      La <strong>Sticky Scene</strong> fonctionne ainsi :
+    </p>
+    <ul>
+      <li>Un conteneur parent de <code>height: calc(100vh + 2400px)</code> crée la zone de scroll</li>
+      <li>L'enfant <code>position: sticky; top: 0; height: 100vh</code> reste fixe à l'écran</li>
+      <li>Le JS calcule la progression : <code>scrolled / (sceneHeight - viewportHeight)</code></li>
+      <li>60 frames sur 2400px = ~40px de scroll par frame → animation fluide</li>
+    </ul>
+    <p>
+      <strong>Thumbnails :</strong> trop petites pour le scrub — elles sont en <code>autoplay loop</code> simple.
     </p>
     <p>
-      <strong>Webflow :</strong> Ajouter un élément Embed avec les mêmes balises.
-      Le script peut aller dans Project Settings → Custom Code → Footer.
+      <strong>Elementor :</strong> widget "HTML personnalisé" pour chaque scène + script en pied de page via
+      <em>Elementor → Personnalisation → Custom Code → Footer</em>.
     </p>
     <p>
-      <strong>Important :</strong> les vidéos doivent avoir <code>preload="auto"</code>, <code>muted</code>
-      et <code>playsinline</code>. Sans <code>preload="auto"</code>, le scrubbing ne fonctionne pas.
+      <strong>Webflow :</strong> Div Block avec overflow visible + Embed pour le script dans
+      <em>Project Settings → Custom Code → Footer Code</em>.
     </p>
   </div>
 
-  <!-- ════════════════════════════════════════════════════════════════
-       SCRIPT SCROLL SCRUBBING
-       — À copier dans Elementor (widget HTML) ou Webflow (Project Settings > Footer)
-       ════════════════════════════════════════════════════════════════ -->
+  <!-- ════════════════════════════════════════════════════════════════════
+       SCRIPT — STICKY SCROLL SCRUB
+       À copier dans le footer du site (Elementor Custom Code ou Webflow Footer)
+  ════════════════════════════════════════════════════════════════════════ -->
   <script>
-    (function () {
+  (function () {
 
-      const videos = document.querySelectorAll('.scroll-video');
+    /*
+     * Calcule la progression (0 → 1) d'une scroll-scene.
+     *
+     * Principe sticky :
+     *   - rect.top = 0  quand la scène commence (sticky se verrouille)
+     *   - rect.top = -(sceneHeight - vh) quand la scène finit (sticky se libère)
+     *
+     * progress = scrolled / scrollable
+     *   scrolled   = -rect.top (distance scrollée depuis le début de la scène)
+     *   scrollable = sceneHeight - vh (distance totale disponible)
+     */
+    function getSceneProgress(scene) {
+      const rect       = scene.getBoundingClientRect();
+      const scrolled   = -rect.top;
+      const scrollable = scene.offsetHeight - window.innerHeight;
+      return Math.max(0, Math.min(1, scrolled / scrollable));
+    }
 
-      /*
-       * Calcule la progression (0 → 1) d'une vidéo dans le viewport.
-       * 0 = le haut de la vidéo vient d'entrer par le bas de l'écran
-       * 1 = le haut de la vidéo est à 30% depuis le haut du viewport
-       */
-      function getProgress(el) {
-        const rect = el.getBoundingClientRect();
-        const vh   = window.innerHeight;
+    function scrub(video, progress) {
+      if (video.readyState < 2 || !video.duration) return;
+      video.currentTime = progress * video.duration;
+    }
 
-        const triggerStart = vh;         // vidéo entre dans l'écran
-        const triggerEnd   = vh * 0.30;  // animation terminée ici
+    // Éléments
+    const sceneDual    = document.getElementById('scene-dual');
+    const sceneRolesor = document.getElementById('scene-rolesor');
+    const vidEverose    = document.getElementById('vid-everose');
+    const vidOystersteel = document.getElementById('vid-oystersteel');
+    const vidRolesor    = document.getElementById('vid-rolesor');
+    const barDual      = document.getElementById('progress-dual');
+    const barRolesor   = document.getElementById('progress-rolesor');
 
-        const raw = (triggerStart - rect.top) / (triggerStart - triggerEnd);
-        return Math.max(0, Math.min(1, raw));
-      }
+    function update() {
+      // Scène 1 : Everose + Oystersteel scrubent en synchronisation
+      const p1 = getSceneProgress(sceneDual);
+      scrub(vidEverose, p1);
+      scrub(vidOystersteel, p1);
+      barDual.style.width = (p1 * 100) + '%';
 
-      function scrubAll() {
-        videos.forEach(function (video) {
-          if (video.readyState < 2 || !video.duration) return;
-          video.currentTime = getProgress(video) * video.duration;
-        });
-      }
+      // Scène 2 : Rolesor indépendant
+      const p2 = getSceneProgress(sceneRolesor);
+      scrub(vidRolesor, p2);
+      barRolesor.style.width = (p2 * 100) + '%';
+    }
 
-      // Écouter le scroll (passive = pas de ralentissement du scroll natif)
-      window.addEventListener('scroll', scrubAll, { passive: true });
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('load',   update);
 
-      // Appliquer une fois au chargement pour la position initiale
-      window.addEventListener('load', scrubAll);
-
-    })();
+  })();
   </script>
 
 </body>
