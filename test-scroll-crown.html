@@ -31,31 +31,31 @@
 
     /* ─── INTRO ───────────────────────────────────────────────────────── */
     .page-intro {
-      height: 70vh;
+      height: 65vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 24px;
+      gap: 28px;
     }
 
     .page-intro-text {
       font-size: 10px;
-      font-weight: 400;
       letter-spacing: 0.35em;
       text-transform: uppercase;
       color: #bbb;
     }
 
     /* ════════════════════════════════════════════════════════════════════
-       LIGNE D'INVITATION AU SCROLL
-       ─────────────────────────────────────────────────────────────────
-       CSS pur, aucun JS nécessaire.
-       Un segment sombre descend en boucle sur une ligne fixe claire.
-       À intégrer n'importe où sur la page.
+       LIGNE D'INVITATION AU SCROLL — CSS pur, aucun JS
+       ════════════════════════════════════════════════════════════════════
+       Un segment sombre descend en boucle sur une fine ligne claire.
+       Utilisable partout : entre sections, en fin de hero, etc.
 
-       ELEMENTOR : Widget "HTML personnalisé" → coller le bloc HTML + style.
-       WEBFLOW   : Élément Embed → coller le même bloc.
+       ELEMENTOR : widget "HTML personnalisé" → coller le HTML ci-dessous.
+                   CSS à mettre dans Apparence › Personnaliser › CSS additionnel.
+       WEBFLOW   : Embed pour le HTML.
+                   CSS dans Project Settings › Custom Code › <head>.
     ════════════════════════════════════════════════════════════════════════ */
     .scroll-invite {
       display: flex;
@@ -80,7 +80,6 @@
       overflow: hidden;
     }
 
-    /* Le segment animé qui descend */
     .scroll-invite-line::after {
       content: '';
       position: absolute;
@@ -143,12 +142,11 @@
       margin-bottom: 40px;
     }
 
-    /* ─── THUMBNAILS FIXES (juste sous le texte) ──────────────────────── */
+    /* ─── THUMBNAILS FIXES — juste sous le texte ──────────────────────── */
     .thumbnails-row {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 8px;
-      margin-bottom: 60px;
     }
 
     .thumb-wrap {
@@ -162,7 +160,7 @@
       background: #0a0a0a;
     }
 
-    /* La vidéo est gelée sur son dernier frame via JS */
+    /* Vidéo gelée sur son dernier frame (via JS) = image statique */
     .thumb-box video {
       width: 100%;
       height: 100%;
@@ -181,17 +179,25 @@
       line-height: 1.5;
     }
 
-    /* ─── SCROLL SCENE — SCÈNE UNIQUE AVEC LES 3 VIDÉOS ─────────────────
-       Une seule scène sticky contient Everose, Oystersteel ET Rolesor.
-       Elles restent proches et scrubent toutes ensemble.
-       Hauteur = 100vh (zone visible) + 2400px (zone de scroll pour 60 frames).
-       60 frames × 40px/frame = 2400px → animation très fluide.
+    /* ─── ZONE DE TRANSITION entre sections ───────────────────────────── */
+    /* Remplace les vides blancs par une ligne de scroll animée */
+    .scene-transition {
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ─── SCROLL SCENE ────────────────────────────────────────────────────
+       Hauteur = 100vh (zone visible sticky) + 2400px (zone de scroll).
+       60 frames × 40px de scroll par frame = 2400px → très fluide.
     ─────────────────────────────────────────────────────────────────────── */
     .scroll-scene {
       position: relative;
       height: calc(100vh + 2400px);
     }
 
+    /* L'intérieur reste fixe à l'écran pendant tout le scroll de la scène */
     .scroll-sticky {
       position: sticky;
       top: 0;
@@ -199,17 +205,17 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
-      padding: 32px 40px;
+      padding: 48px 40px 40px;
       max-width: 860px;
       margin: 0 auto;
-      gap: 10px;
+      gap: 12px;
     }
 
-    /* Grille 2 colonnes : Everose + Oystersteel */
+    /* ─── GRILLE 2 COLONNES ───────────────────────────────────────────── */
     .video-grid-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
+      gap: 12px;
     }
 
     .video-item {
@@ -217,20 +223,16 @@
       flex-direction: column;
     }
 
-    /* Les vidéos 2-colonnes : limitées en hauteur pour laisser de la place à Rolesor */
+    /* Vidéos scène 1 : pleine largeur de leur colonne, hauteur naturelle */
     .video-grid-2 .video-item video {
       width: 100%;
-      max-height: 34vh;
-      object-fit: contain;
       display: block;
       background: #0a0a0a;
     }
 
-    /* Vidéo pleine largeur : Rolesor */
+    /* Vidéo scène 2 : pleine largeur, hauteur naturelle — pas de bandes noires */
     .video-full video {
       width: 100%;
-      max-height: 38vh;
-      object-fit: contain;
       display: block;
       background: #0a0a0a;
     }
@@ -242,21 +244,22 @@
       letter-spacing: 0.25em;
       text-transform: uppercase;
       color: #888;
-      padding: 7px 0 0;
+      padding: 8px 0 0;
     }
 
-    /* ─── BARRE DE PROGRESSION ────────────────────────────────────────── */
+    /* ─── BARRE DE PROGRESSION (fine, discrète) ───────────────────────── */
     .progress-bar-wrap {
       width: 100%;
       height: 1px;
-      background: #e8e8e8;
-      margin-top: 6px;
+      background: #ebebeb;
+      margin-top: 4px;
     }
 
     .progress-bar-fill {
       height: 100%;
       width: 0%;
       background: #1a1a1a;
+      transition: width 0.04s linear;
     }
 
     /* ─── CRÉDIT ──────────────────────────────────────────────────────── */
@@ -266,7 +269,7 @@
       font-weight: 700;
       letter-spacing: 0.3em;
       text-transform: uppercase;
-      padding: 60px 40px 120px;
+      padding: 80px 40px 120px;
       color: #1a1a1a;
     }
 
@@ -296,7 +299,7 @@
       font-weight: 700;
       letter-spacing: 0.15em;
       text-transform: uppercase;
-      margin: 24px 0 10px;
+      margin: 28px 0 10px;
     }
 
     .dev-note p {
@@ -324,15 +327,16 @@
       border-radius: 2px;
       overflow-x: auto;
       margin: 12px 0 20px;
+      white-space: pre;
     }
 
-    /* Mini démo de la ligne de scroll dans la note */
+    /* Mini démo live de la ligne dans la note */
     .scroll-invite-demo {
       display: flex;
       align-items: center;
-      gap: 24px;
+      gap: 32px;
       margin: 16px 0 24px;
-      padding: 24px;
+      padding: 28px 32px;
       background: #fff;
       border: 0.5px solid #e0e0e0;
     }
@@ -341,6 +345,7 @@
       margin: 0;
       font-size: 12px;
       color: #888;
+      line-height: 1.7;
     }
   </style>
 </head>
@@ -348,10 +353,10 @@
 
   <!-- BANDEAU -->
   <div class="demo-notice">
-    Page de référence &nbsp;·&nbsp; Scroll Scrub &nbsp;·&nbsp; Forged in Excellence &nbsp;·&nbsp; Elementor / Webflow
+    Page de référence &nbsp;·&nbsp; Scroll Scrub · Forged in Excellence &nbsp;·&nbsp; Elementor / Webflow
   </div>
 
-  <!-- INTRO avec ligne de scroll animée -->
+  <!-- INTRO -->
   <div class="page-intro">
     <p class="page-intro-text">Scrollez pour voir l'animation</p>
     <div class="scroll-invite">
@@ -361,36 +366,31 @@
   </div>
 
   <!-- ════════════════════════════════════════════════════════════════════
-       EN-TÊTE DE SECTION
+       EN-TÊTE + THUMBNAILS FIXES (juste sous le texte)
   ════════════════════════════════════════════════════════════════════════ -->
   <div class="section-header">
 
-    <!-- Titre principal -->
     <div class="section-eyebrow">
       <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
         <path d="M1 1L4.5 5.5L8 1" stroke="#1a1a1a" stroke-width="1" stroke-linecap="round"/>
       </svg>
       <span class="section-title-main">Forged in Excellence.</span>
     </div>
-
-    <!-- Sous-titre : interlignage + ligne fine -->
     <div class="section-title-sub">New Crown Identity</div>
 
-    <!-- Corps de texte -->
     <p class="section-body">
       Cast in Everose, forged in Oystersteel, or united through Rolesor.
       Rising directly from the metal, the emblem become part of the material itself.
       An indelible imprint, marking the brand's territory across its most legendary elements.
     </p>
 
-    <!-- ─── THUMBNAILS FIXES (juste sous le texte, avant les vidéos) ─── -->
+    <!-- 4 thumbnails statiques, dernier frame, juste sous la typo -->
     <div class="thumbnails-row">
       <div class="thumb-wrap">
         <div class="thumb-box">
           <video class="thumb-video"
             src="https://www.dropbox.com/scl/fi/ysd3upwrqi7bzdfan5crf/FORGED-IN-EXCELLENCE-EVEROSE.mp4?rlkey=r3zy5dhs2js7vmt8a9xhi8c0r&raw=1"
-            preload="auto" muted playsinline>
-          </video>
+            preload="auto" muted playsinline></video>
         </div>
         <div class="thumb-label">De Rolex Crown · Everose</div>
       </div>
@@ -398,8 +398,7 @@
         <div class="thumb-box">
           <video class="thumb-video"
             src="https://www.dropbox.com/scl/fi/i935vwxa2seazfvtx3s5s/FORGED-IN-EXCELLENCE-OYSTERSTEEL.mp4?rlkey=w9pqdxg5466gb4qwxx1vnlrmq&raw=1"
-            preload="auto" muted playsinline>
-          </video>
+            preload="auto" muted playsinline></video>
         </div>
         <div class="thumb-label">De Rolex Crown · Oystersteel</div>
       </div>
@@ -407,8 +406,7 @@
         <div class="thumb-box">
           <video class="thumb-video"
             src="https://www.dropbox.com/scl/fi/0cakf2q3l185klc09likb/FORGED-IN-EXCELLENCE-ROLESOROK.mp4?rlkey=sy291j47zskihiwpppbmq7w2g&raw=1"
-            preload="auto" muted playsinline>
-          </video>
+            preload="auto" muted playsinline></video>
         </div>
         <div class="thumb-label">De Rolex Crown · Rolesor</div>
       </div>
@@ -416,58 +414,80 @@
         <div class="thumb-box">
           <video class="thumb-video"
             src="https://www.dropbox.com/scl/fi/ysd3upwrqi7bzdfan5crf/FORGED-IN-EXCELLENCE-EVEROSE.mp4?rlkey=r3zy5dhs2js7vmt8a9xhi8c0r&raw=1"
-            preload="auto" muted playsinline>
-          </video>
+            preload="auto" muted playsinline></video>
         </div>
         <div class="thumb-label">De Rolex Crown · Steel</div>
       </div>
     </div>
 
-  </div><!-- /section-header -->
+  </div>
+
+  <!-- TRANSITION : ligne de scroll entre le texte et la scène 1 -->
+  <div class="scene-transition">
+    <div class="scroll-invite">
+      <div class="scroll-invite-line"></div>
+    </div>
+  </div>
 
   <!-- ════════════════════════════════════════════════════════════════════
-       SCÈNE STICKY UNIQUE — EVEROSE + OYSTERSTEEL + ROLESOR ensemble
-       Toutes les vidéos sont proches et scrubent de manière synchronisée.
+       SCÈNE 1 — EVEROSE + OYSTERSTEEL (2 colonnes)
+       Chaque vidéo occupe la moitié de l'écran, pleine hauteur naturelle.
+       Pas de contrainte de taille → pas de bandes noires.
   ════════════════════════════════════════════════════════════════════════ -->
-  <div class="scroll-scene" id="scene-main">
+  <div class="scroll-scene" id="scene-dual">
     <div class="scroll-sticky">
 
-      <!-- 2 colonnes -->
       <div class="video-grid-2">
         <div class="video-item">
           <video id="vid-everose"
             src="https://www.dropbox.com/scl/fi/ysd3upwrqi7bzdfan5crf/FORGED-IN-EXCELLENCE-EVEROSE.mp4?rlkey=r3zy5dhs2js7vmt8a9xhi8c0r&raw=1"
-            preload="auto" muted playsinline>
-          </video>
+            preload="auto" muted playsinline></video>
           <div class="video-label">Everose</div>
         </div>
         <div class="video-item">
           <video id="vid-oystersteel"
             src="https://www.dropbox.com/scl/fi/i935vwxa2seazfvtx3s5s/FORGED-IN-EXCELLENCE-OYSTERSTEEL.mp4?rlkey=w9pqdxg5466gb4qwxx1vnlrmq&raw=1"
-            preload="auto" muted playsinline>
-          </video>
+            preload="auto" muted playsinline></video>
           <div class="video-label">Oystersteel</div>
         </div>
       </div>
 
-      <!-- Pleine largeur -->
-      <div class="video-item video-full">
-        <video id="vid-rolesor"
-          src="https://www.dropbox.com/scl/fi/0cakf2q3l185klc09likb/FORGED-IN-EXCELLENCE-ROLESOROK.mp4?rlkey=sy291j47zskihiwpppbmq7w2g&raw=1"
-          preload="auto" muted playsinline>
-        </video>
-        <div class="video-label">Rolesor</div>
-      </div>
-
-      <!-- Progression -->
       <div class="progress-bar-wrap">
-        <div class="progress-bar-fill" id="progress-bar"></div>
+        <div class="progress-bar-fill" id="progress-dual"></div>
       </div>
 
     </div>
   </div>
 
-  <!-- CRÉDIT -->
+  <!-- TRANSITION : ligne de scroll entre scène 1 et scène 2 -->
+  <div class="scene-transition">
+    <div class="scroll-invite">
+      <div class="scroll-invite-line"></div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════
+       SCÈNE 2 — ROLESOR (pleine largeur)
+       Pleine largeur sans contrainte → pas de bandes noires.
+  ════════════════════════════════════════════════════════════════════════ -->
+  <div class="scroll-scene" id="scene-rolesor">
+    <div class="scroll-sticky">
+
+      <div class="video-item video-full">
+        <video id="vid-rolesor"
+          src="https://www.dropbox.com/scl/fi/0cakf2q3l185klc09likb/FORGED-IN-EXCELLENCE-ROLESOROK.mp4?rlkey=sy291j47zskihiwpppbmq7w2g&raw=1"
+          preload="auto" muted playsinline></video>
+        <div class="video-label">Rolesor</div>
+      </div>
+
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="progress-rolesor"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Crédit -->
   <p class="art-direction">Art Direction <span>and Design</span></p>
 
   <!-- ════════════════════════════════════════════════════════════════════
@@ -476,62 +496,59 @@
   <div class="dev-note">
     <h3>Notes d'implémentation — Pour le webmaster</h3>
 
-    <!-- 1. Scroll scrubbing -->
     <h4>1 — Scroll scrubbing (vidéos contrôlées par le scroll)</h4>
     <p>
-      Chaque vidéo avance image par image selon la position du scroll.
-      Formule : <code>video.currentTime = progression × video.duration</code>
+      Chaque vidéo avance image par image selon le scroll :
+      <code>video.currentTime = progression × video.duration</code>
     </p>
     <p>
       La scène a une hauteur de <code>calc(100vh + 2400px)</code>.
-      L'intérieur est en <code>position: sticky; height: 100vh</code> — il reste fixe.
-      Le scroll parcourt 2400px pour 60 frames = 40px par frame → animation fluide et contrôlable.
+      L'intérieur est en <code>position: sticky; height: 100vh</code>.
+      2 400 px de scroll pour 60 frames = 40 px par frame → fluide et contrôlable.
     </p>
     <p>
-      <strong>Attributs obligatoires sur chaque <code>&lt;video&gt;</code> :</strong>
+      <strong>Attributs obligatoires :</strong>
       <code>preload="auto"</code> &nbsp;·&nbsp; <code>muted</code> &nbsp;·&nbsp; <code>playsinline</code>
+      — sans <code>preload="auto"</code> le scrubbing ne fonctionne pas.
     </p>
     <p>
-      <strong>Dans Elementor :</strong> widget "HTML personnalisé" pour le HTML des vidéos.
-      Le script va dans <em>Elementor → Personnalisation → Custom Code → After &lt;/body&gt;</em>.
+      <strong>Elementor :</strong> widget "HTML personnalisé" pour le HTML des vidéos.
+      Script dans <em>Elementor › Personnalisation › Custom Code › After &lt;/body&gt;</em>.
     </p>
     <p>
-      <strong>Dans Webflow :</strong> Div Block + Embed pour le HTML.
-      Le script va dans <em>Project Settings → Custom Code → Footer Code</em>.
+      <strong>Webflow :</strong> Div Block + Embed pour le HTML.
+      Script dans <em>Project Settings › Custom Code › Footer Code</em>.
     </p>
 
-    <!-- 2. Thumbnails fixes -->
-    <h4>2 — Thumbnails fixées sur le dernier frame</h4>
+    <h4>2 — Thumbnails gelées sur le dernier frame</h4>
     <p>
-      Les miniatures sont des balises <code>&lt;video&gt;</code> sans autoplay.
-      Le JS attend que les métadonnées soient chargées, puis place la tête de lecture sur
-      le dernier frame : <code>video.currentTime = video.duration - 0.1</code>.
-      Le navigateur affiche ce frame comme une image statique.
+      Les miniatures sont des <code>&lt;video&gt;</code> sans lecture.
+      Le JS place la tête de lecture sur le dernier frame après chargement :
+      <code>video.currentTime = video.duration - 0.1</code>.
+      Le navigateur affiche ce frame comme une image fixe.
     </p>
 
-    <!-- 3. Ligne de scroll -->
-    <h4>3 — Ligne d'invitation au scroll (CSS pur, aucun JS)</h4>
+    <h4>3 — Ligne d'invitation au scroll (CSS pur — aucun JS)</h4>
     <p>
       Un segment sombre descend en boucle sur une fine ligne claire.
-      Voici la démo en direct et le code complet à copier :
+      S'utilise entre chaque section pour guider l'œil sans créer de vide.
     </p>
 
-    <!-- DÉMO LIVE de la ligne de scroll -->
     <div class="scroll-invite-demo">
       <div class="scroll-invite">
         <span class="scroll-invite-label">Scroll</span>
         <div class="scroll-invite-line"></div>
       </div>
-      <p>← Démonstration live.<br>CSS pur, aucune dépendance.</p>
+      <p>← Démonstration live.<br>CSS pur, aucune bibliothèque,<br>aucune dépendance.</p>
     </div>
 
-    <pre>/* ── HTML ── */
+    <pre>/* ── HTML à coller ── */
 &lt;div class="scroll-invite"&gt;
   &lt;span class="scroll-invite-label"&gt;Scroll&lt;/span&gt;
   &lt;div class="scroll-invite-line"&gt;&lt;/div&gt;
 &lt;/div&gt;
 
-/* ── CSS ── */
+/* ── CSS à ajouter dans la feuille de style ── */
 .scroll-invite {
   display: flex;
   flex-direction: column;
@@ -567,15 +584,6 @@
   100% { transform: translateY(300%); opacity: 0; }
 }</pre>
 
-    <p>
-      Dans <strong>Elementor</strong> : widget "HTML personnalisé" → coller le HTML + un widget "CSS personnalisé"
-      (ou ajouter le CSS dans <em>Apparence → Personnaliser → CSS additionnel</em>).
-    </p>
-    <p>
-      Dans <strong>Webflow</strong> : Embed pour le HTML, et le CSS dans
-      <em>Project Settings → Custom Code → &lt;head&gt;</em> entre balises <code>&lt;style&gt;</code>.
-    </p>
-
   </div>
 
   <!-- ════════════════════════════════════════════════════════════════════
@@ -584,50 +592,50 @@
   <script>
   (function () {
 
-    /* ── 1. SCROLL SCRUBBING ───────────────────────────────────────────── */
-    var scene   = document.getElementById('scene-main');
-    var vidE    = document.getElementById('vid-everose');
-    var vidO    = document.getElementById('vid-oystersteel');
-    var vidR    = document.getElementById('vid-rolesor');
-    var bar     = document.getElementById('progress-bar');
+    /* ── SCROLL SCRUBBING ──────────────────────────────────────────────── */
+    var sceneDual    = document.getElementById('scene-dual');
+    var sceneRolesor = document.getElementById('scene-rolesor');
+    var vidE  = document.getElementById('vid-everose');
+    var vidO  = document.getElementById('vid-oystersteel');
+    var vidR  = document.getElementById('vid-rolesor');
+    var barD  = document.getElementById('progress-dual');
+    var barR  = document.getElementById('progress-rolesor');
 
-    function getProgress() {
+    function getProgress(scene) {
       var rect       = scene.getBoundingClientRect();
       var scrolled   = -rect.top;
       var scrollable = scene.offsetHeight - window.innerHeight;
       return Math.max(0, Math.min(1, scrolled / scrollable));
     }
 
-    function scrub(video, progress) {
+    function scrub(video, p) {
       if (video.readyState < 2 || !video.duration) return;
-      video.currentTime = progress * video.duration;
+      video.currentTime = p * video.duration;
     }
 
     function update() {
-      var p = getProgress();
-      scrub(vidE, p);
-      scrub(vidO, p);
-      scrub(vidR, p);
-      bar.style.width = (p * 100) + '%';
+      var p1 = getProgress(sceneDual);
+      scrub(vidE, p1);
+      scrub(vidO, p1);
+      barD.style.width = (p1 * 100) + '%';
+
+      var p2 = getProgress(sceneRolesor);
+      scrub(vidR, p2);
+      barR.style.width = (p2 * 100) + '%';
     }
 
     window.addEventListener('scroll', update, { passive: true });
     window.addEventListener('load',   update);
 
 
-    /* ── 2. THUMBNAILS — gel sur le dernier frame ──────────────────────── */
-    var thumbs = document.querySelectorAll('.thumb-video');
-
-    thumbs.forEach(function (video) {
-      function seekToEnd() {
-        if (video.duration) {
-          video.currentTime = video.duration - 0.1;
-        }
+    /* ── THUMBNAILS — gel sur le dernier frame ─────────────────────────── */
+    document.querySelectorAll('.thumb-video').forEach(function (video) {
+      function seekEnd() {
+        if (video.duration) video.currentTime = video.duration - 0.1;
       }
-      video.addEventListener('loadedmetadata', seekToEnd);
-      video.addEventListener('loadeddata',     seekToEnd);
-      /* Filet de sécurité si les événements ont déjà été déclenchés */
-      if (video.readyState >= 1 && video.duration) seekToEnd();
+      video.addEventListener('loadedmetadata', seekEnd);
+      video.addEventListener('loadeddata',     seekEnd);
+      if (video.readyState >= 1 && video.duration) seekEnd();
     });
 
   })();
