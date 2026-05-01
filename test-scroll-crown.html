@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DEMO — Scroll Scrub · Forged in Excellence · Crown Page</title>
+  <link rel="stylesheet" href="https://use.typekit.net/fqu8chv.css">
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "sweet-sans-pro", sans-serif;
+      background: #ffffff;
+      color: #1a1a1a;
+    }
+
+    /* ─── DEMO NOTICE ─────────────────────────────────────────────────── */
+    .demo-notice {
+      background: #1a1a1a;
+      color: #fff;
+      text-align: center;
+      padding: 14px 20px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    /* ─── PAGE INTRO (espace de scroll avant la section) ─────────────── */
+    .page-intro {
+      height: 70vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .page-intro-label {
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: #aaa;
+    }
+
+    .page-intro-arrow {
+      width: 1px;
+      height: 60px;
+      background: linear-gradient(to bottom, transparent, #1a1a1a);
+      animation: arrowPulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes arrowPulse {
+      0%, 100% { opacity: 0.3; transform: scaleY(0.8); }
+      50%       { opacity: 1;   transform: scaleY(1);   }
+    }
+
+    /* ─── SECTION FORGED IN EXCELLENCE ───────────────────────────────── */
+    .section-forged {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 80px 40px 140px;
+    }
+
+    /* Eyebrow : chevron + titre principal */
+    .section-eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+
+    .section-eyebrow svg {
+      flex-shrink: 0;
+      opacity: 0.6;
+    }
+
+    .section-title-main {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    /* Sous-titre avec interlignage + ligne fine en dessous */
+    .section-title-sub {
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      line-height: 2;
+      border-bottom: 0.5px solid #1a1a1a;
+      display: inline-block;
+      padding-bottom: 1px;
+      margin-bottom: 28px;
+      margin-left: 20px;
+    }
+
+    /* Corps de texte */
+    .section-body {
+      font-size: 13.5px;
+      font-weight: 400;
+      line-height: 1.75;
+      max-width: 460px;
+      margin-bottom: 52px;
+      color: #1a1a1a;
+    }
+
+    /* ─── GRILLES VIDÉO ───────────────────────────────────────────────── */
+    .video-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .video-grid-1 {
+      margin-bottom: 12px;
+    }
+
+    .video-item {
+      position: relative;
+    }
+
+    /* La vidéo prend toute la largeur de son conteneur */
+    .video-item video {
+      width: 100%;
+      display: block;
+      background: #0a0a0a;
+    }
+
+    .video-label {
+      text-align: center;
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: #888;
+      padding: 10px 0 0;
+    }
+
+    /* ─── THUMBNAILS (4 en bas) ───────────────────────────────────────── */
+    .video-thumbs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: 40px;
+    }
+
+    .video-thumb-wrap {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .video-thumb {
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
+      background: #0a0a0a;
+    }
+
+    .video-thumb video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .video-thumb-label {
+      font-size: 8.5px;
+      font-weight: 400;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #888;
+      text-align: center;
+      padding: 7px 0 0;
+      line-height: 1.5;
+    }
+
+    /* ─── CRÉDIT ART DIRECTION ────────────────────────────────────────── */
+    .art-direction {
+      text-align: center;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      margin-top: 64px;
+      color: #1a1a1a;
+    }
+
+    .art-direction span {
+      font-weight: 400;
+    }
+
+    /* ─── NOTE TECHNIQUE (bloc pour designers) ───────────────────────── */
+    .dev-note {
+      background: #f5f5f5;
+      border-left: 3px solid #1a1a1a;
+      margin: 80px 40px 0;
+      padding: 32px 40px;
+      max-width: 860px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .dev-note h3 {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .dev-note p {
+      font-size: 13px;
+      font-weight: 400;
+      line-height: 1.7;
+      margin-bottom: 12px;
+      color: #444;
+    }
+
+    .dev-note code {
+      background: #e8e8e8;
+      padding: 2px 6px;
+      font-size: 12px;
+      border-radius: 2px;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- BANDEAU DEMO -->
+  <div class="demo-notice">
+    Page de référence — Scroll Scrub · Forged in Excellence · Pour designers Elementor / Webflow
+  </div>
+
+  <!-- ESPACE DE SCROLL AVANT LA SECTION -->
+  <div class="page-intro">
+    <span class="page-intro-label">Scrollez vers le bas</span>
+    <div class="page-intro-arrow"></div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       SECTION : FORGED IN EXCELLENCE — NEW CROWN IDENTITY
+       ════════════════════════════════════════════════════════════════ -->
+  <section class="section-forged">
+
+    <!-- En-tête de section -->
+    <div class="section-eyebrow">
+      <!-- Chevron bas = indicateur de section, comme dans le design original -->
+      <svg width="9" height="7" viewBox="0 0 9 7" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M1 1L4.5 5.5L8 1" stroke="#1a1a1a" stroke-width="1" stroke-linecap="round"/>
+      </svg>
+      <span class="section-title-main">Forged in Excellence.</span>
+    </div>
+
+    <!-- Sous-titre avec interlignage + ligne fine (le point noté dans le brief) -->
+    <div class="section-title-sub">New Crown Identity</div>
+
+    <!-- Corps de texte -->
+    <p class="section-body">
+      Cast in Everose, forged in Oystersteel, or united through Rolesor.
+      Rising directly from the metal, the emblem become part of the material itself.
+      An indelible imprint, marking the brand's territory across its most legendary elements.
+    </p>
+
+    <!-- VIDÉOS 2 COLONNES : Everose + Oystersteel -->
+    <div class="video-grid-2">
+      <div class="video-item">
+        <video class="scroll-video"
+          src="https://www.dropbox.com/scl/fi/ysd3upwrqi7bzdfan5crf/FORGED-IN-EXCELLENCE-EVEROSE.mp4?rlkey=r3zy5dhs2js7vmt8a9xhi8c0r&raw=1"
+          preload="auto"
+          muted
+          playsinline>
+        </video>
+        <div class="video-label">Everose</div>
+      </div>
+      <div class="video-item">
+        <video class="scroll-video"
+          src="https://www.dropbox.com/scl/fi/i935vwxa2seazfvtx3s5s/FORGED-IN-EXCELLENCE-OYSTERSTEEL.mp4?rlkey=w9pqdxg5466gb4qwxx1vnlrmq&raw=1"
+          preload="auto"
+          muted
+          playsinline>
+        </video>
+        <div class="video-label">Oystersteel</div>
+      </div>
+    </div>
+
+    <!-- VIDÉO PLEINE LARGEUR : Rolesor -->
+    <div class="video-grid-1">
+      <div class="video-item">
+        <video class="scroll-video"
+          src="https://www.dropbox.com/scl/fi/0cakf2q3l185klc09likb/FORGED-IN-EXCELLENCE-ROLESOROK.mp4?rlkey=sy291j47zskihiwpppbmq7w2g&raw=1"
+          preload="auto"
+          muted
+          playsinline>
+        </video>
+        <div class="video-label">Rolesor</div>
+      </div>
+    </div>
+
+    <!-- THUMBNAILS 4 COLONNES -->
+    <div class="video-thumbs">
+      <div class="video-thumb-wrap">
+        <div class="video-thumb">
+          <video class="scroll-video"
+            src="https://www.dropbox.com/scl/fi/ysd3upwrqi7bzdfan5crf/FORGED-IN-EXCELLENCE-EVEROSE.mp4?rlkey=r3zy5dhs2js7vmt8a9xhi8c0r&raw=1"
+            preload="auto" muted playsinline>
+          </video>
+        </div>
+        <div class="video-thumb-label">De Rolex Crown · Everose</div>
+      </div>
+      <div class="video-thumb-wrap">
+        <div class="video-thumb">
+          <video class="scroll-video"
+            src="https://www.dropbox.com/scl/fi/i935vwxa2seazfvtx3s5s/FORGED-IN-EXCELLENCE-OYSTERSTEEL.mp4?rlkey=w9pqdxg5466gb4qwxx1vnlrmq&raw=1"
+            preload="auto" muted playsinline>
+          </video>
+        </div>
+        <div class="video-thumb-label">De Rolex Crown · Oystersteel</div>
+      </div>
+      <div class="video-thumb-wrap">
+        <div class="video-thumb">
+          <video class="scroll-video"
+            src="https://www.dropbox.com/scl/fi/0cakf2q3l185klc09likb/FORGED-IN-EXCELLENCE-ROLESOROK.mp4?rlkey=sy291j47zskihiwpppbmq7w2g&raw=1"
+            preload="auto" muted playsinline>
+          </video>
+        </div>
+        <div class="video-thumb-label">De Rolex Crown · Rolesor</div>
+      </div>
+      <div class="video-thumb-wrap">
+        <div class="video-thumb">
+          <video class="scroll-video"
+            src="https://www.dropbox.com/scl/fi/ysd3upwrqi7bzdfan5crf/FORGED-IN-EXCELLENCE-EVEROSE.mp4?rlkey=r3zy5dhs2js7vmt8a9xhi8c0r&raw=1"
+            preload="auto" muted playsinline>
+          </video>
+        </div>
+        <div class="video-thumb-label">De Rolex Crown · Steel</div>
+      </div>
+    </div>
+
+    <!-- Crédit -->
+    <p class="art-direction">Art Direction <span>and Design</span></p>
+
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       NOTE TECHNIQUE POUR LES DESIGNERS
+       ════════════════════════════════════════════════════════════════ -->
+  <div class="dev-note">
+    <h3>Note d'implémentation — Pour Elementor &amp; Webflow</h3>
+    <p>
+      Chaque vidéo (<code>.scroll-video</code>) est contrôlée par le scroll :
+      <code>video.currentTime = progress × video.duration</code>.
+      La progression va de 0 (vidéo hors écran en bas) à 1 (vidéo visible à 30% du viewport).
+    </p>
+    <p>
+      <strong>Elementor :</strong> Insérer un widget "HTML personnalisé" et y coller les balises
+      <code>&lt;video&gt;</code> + le bloc <code>&lt;script&gt;</code> ci-dessous.
+      Ajouter <code>class="scroll-video"</code> à chaque vidéo.
+    </p>
+    <p>
+      <strong>Webflow :</strong> Ajouter un élément Embed avec les mêmes balises.
+      Le script peut aller dans Project Settings → Custom Code → Footer.
+    </p>
+    <p>
+      <strong>Important :</strong> les vidéos doivent avoir <code>preload="auto"</code>, <code>muted</code>
+      et <code>playsinline</code>. Sans <code>preload="auto"</code>, le scrubbing ne fonctionne pas.
+    </p>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       SCRIPT SCROLL SCRUBBING
+       — À copier dans Elementor (widget HTML) ou Webflow (Project Settings > Footer)
+       ════════════════════════════════════════════════════════════════ -->
+  <script>
+    (function () {
+
+      const videos = document.querySelectorAll('.scroll-video');
+
+      /*
+       * Calcule la progression (0 → 1) d'une vidéo dans le viewport.
+       * 0 = le haut de la vidéo vient d'entrer par le bas de l'écran
+       * 1 = le haut de la vidéo est à 30% depuis le haut du viewport
+       */
+      function getProgress(el) {
+        const rect = el.getBoundingClientRect();
+        const vh   = window.innerHeight;
+
+        const triggerStart = vh;         // vidéo entre dans l'écran
+        const triggerEnd   = vh * 0.30;  // animation terminée ici
+
+        const raw = (triggerStart - rect.top) / (triggerStart - triggerEnd);
+        return Math.max(0, Math.min(1, raw));
+      }
+
+      function scrubAll() {
+        videos.forEach(function (video) {
+          if (video.readyState < 2 || !video.duration) return;
+          video.currentTime = getProgress(video) * video.duration;
+        });
+      }
+
+      // Écouter le scroll (passive = pas de ralentissement du scroll natif)
+      window.addEventListener('scroll', scrubAll, { passive: true });
+
+      // Appliquer une fois au chargement pour la position initiale
+      window.addEventListener('load', scrubAll);
+
+    })();
+  </script>
+
+</body>
+</html>
