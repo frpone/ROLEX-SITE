@@ -834,8 +834,66 @@
     }
     .p-room-nav:hover { background: rgba(255,255,255,0.25); }
 
-    /* Fondu scene-affiche à l'entrée */
-    #scene-affiche { opacity: 0; transition: none; }
+    /* ===== CAROUSEL 3-BY-3 ===== */
+    .p-nav-arrow {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      z-index: 10; width: 44px; height: 44px;
+      background: rgba(0,0,0,0.45);
+      border: 1px solid rgba(255,255,255,0.4);
+      color: #fff; font-size: 20px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.25s;
+    }
+    .p-nav-arrow:hover { background: rgba(255,255,255,0.15); }
+    .p-nav-arrow:disabled { opacity: 0.2; cursor: default; }
+    #pCarLeft  { left: 16px; }
+    #pCarRight { right: 16px; }
+    .p-carousel-viewport {
+      position: absolute; inset: 0 72px;
+      overflow: hidden;
+    }
+    .p-carousel-track {
+      display: flex; width: 100%; height: 100%;
+      transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .p-car-group {
+      flex: 0 0 100%;
+      display: flex; align-items: center;
+      justify-content: space-around;
+      padding: 5% 4%; gap: 16px;
+    }
+    .p-car-group .p-btn {
+      flex: 0 0 28%; aspect-ratio: 2/3;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.22);
+      cursor: pointer; position: relative;
+      transition: border-color 0.3s; overflow: hidden;
+    }
+    .p-car-group .p-btn:hover { border-color: rgba(255,255,255,0.7); }
+    .p-car-group .p-btn img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .p-btn-placeholder {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase;
+      color: rgba(255,255,255,0.3);
+    }
+
+    /* ===== AFFICHE SCROLL HINT ===== */
+    .affiche-scroll-hint {
+      position: absolute; bottom: 32px; left: 50%;
+      transform: translateX(-50%);
+      font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase;
+      color: rgba(255,255,255,0.5); white-space: nowrap;
+      animation: afcHintBob 2.5s ease-in-out 2s infinite;
+      pointer-events: none;
+    }
+    @keyframes afcHintBob {
+      0%, 30% { opacity: 0; transform: translateX(-50%) translateY(0); }
+      60%      { opacity: 1; transform: translateX(-50%) translateY(6px); }
+      90%, 100%{ opacity: 0; transform: translateX(-50%) translateY(8px); }
+    }
+
+    /* scene-affiche handled by JS crossfade (position:fixed) */
 
     .loupe-cursor {
       position: fixed;
@@ -882,8 +940,16 @@
       .lb-zoom-hint { display: none; }
     }
 
-    /* ===== VIDEOS SCROLL SCRUB (pin via GSAP, compatible Lenis) ===== */
-    #scene-affiche,
+    /* ===== VIDEOS ===== */
+    #scene-affiche {
+      position: fixed;
+      inset: 0;
+      z-index: 8;
+      overflow: hidden;
+      background: #000;
+      opacity: 0;
+      pointer-events: none;
+    }
     #scene-intro2 {
       width: 100%;
       height: 100vh;
@@ -1026,25 +1092,28 @@
       <div class="transition-stage"></div>
     </section>
 
-    <!-- AFFICHE EXPO — pinné par GSAP ScrollTrigger (compatible Lenis) -->
+    <!-- AFFICHE EXPO — overlay fixe, crossfade automatique depuis la couronne -->
     <div id="scene-affiche">
       <video id="vid-affiche"
         src="https://www.dropbox.com/scl/fi/4ft9e58s92tb84efv1bw6/AFFICHE_EXPO.mp4?rlkey=ueatj4jahanocdwznw5k977um&raw=1"
         muted playsinline preload="auto"></video>
       <div class="vid-loading" id="vid-affiche-loading">Chargement…</div>
+      <div class="affiche-scroll-hint" id="aficheHint">↓ Scroll to continue</div>
     </div>
 
-    <!-- INTRO 2 — animation salle de musée, affiches cliquables en overlay -->
+    <!-- INTRO 2 — animation salle de musée -->
     <div id="scene-intro2">
       <video id="vid-intro2"
         src="https://www.dropbox.com/scl/fi/437e2aufjsxxmspxfyqxi/intro2.mp4?rlkey=6seejoe84p0e7v0aipxktzx6p&raw=1"
         muted playsinline preload="none"></video>
       <div class="vid-loading" id="vid-intro2-loading">Chargement…</div>
-      <!-- Zones cliquables qui apparaissent sur la dernière frame (les 3 affiches sur le mur) -->
+      <!-- Carousel 3-par-3 : flèches + zones cliquables sur la dernière frame -->
       <div class="poster-overlays" id="posterOverlays">
-        <button class="p-btn" id="pbtn-0"><span class="p-btn-label">Cliquer</span></button>
-        <button class="p-btn" id="pbtn-1"><span class="p-btn-label">Cliquer</span></button>
-        <button class="p-btn" id="pbtn-2"><span class="p-btn-label">Cliquer</span></button>
+        <button class="p-nav-arrow" id="pCarLeft">&#8592;</button>
+        <div class="p-carousel-viewport">
+          <div class="p-carousel-track" id="pCarTrack"></div>
+        </div>
+        <button class="p-nav-arrow" id="pCarRight">&#8594;</button>
         <button class="p-room-nav" id="btnGallery">Voir les 20 affiches &nbsp;→</button>
       </div>
     </div>
@@ -1319,6 +1388,50 @@
         .fromTo(crownGroup.rotation, { y: 0.42 + Math.PI * 1.4 }, { y: 0.42 + Math.PI * 2.2 }, 0)
         .to(canvasContainer, { opacity: 0, onComplete: function() { _renderActive = false; }, onReverseComplete: function() { _renderActive = true; } }, 0.45);
 
+      // =============== AFFICHE EXPO: crossfade automatique ===============
+      // Quand la couronne remplit l'écran (85% du zoom), la vidéo fond in sans scroll
+      var sceneAffiche = document.getElementById('scene-affiche');
+      var vidAffiche   = document.getElementById('vid-affiche');
+      var _aficheOn    = false;
+
+      // Pré-buffer pour un seek propre au départ
+      vidAffiche.addEventListener('canplay', function() {
+        document.getElementById('vid-affiche-loading').classList.add('hidden');
+        if (!vidAffiche._pBuf) {
+          vidAffiche._pBuf = true;
+          var pr = vidAffiche.play();
+          if (pr && pr.then) pr.then(function() {
+            setTimeout(function() { vidAffiche.pause(); vidAffiche.currentTime = 0; }, 100);
+          }).catch(function(){});
+        }
+      });
+      // Tenir la dernière frame à la fin
+      vidAffiche.addEventListener('ended', function() {
+        vidAffiche.currentTime = Math.max(0, vidAffiche.duration - 0.05);
+        vidAffiche.pause();
+      });
+
+      // Déclencher le crossfade à 85% du zoom
+      ScrollTrigger.create({
+        trigger: '#transitionZoom',
+        start: 'top top',
+        end: '+=150%',
+        onUpdate: function(self) {
+          if (self.progress >= 0.85 && !_aficheOn) {
+            _aficheOn = true;
+            sceneAffiche.style.pointerEvents = 'auto';
+            gsap.to(sceneAffiche, { opacity: 1, duration: 0.7, ease: 'power1.out' });
+            vidAffiche.currentTime = 0;
+            vidAffiche.play().catch(function(){});
+          } else if (self.progress < 0.80 && _aficheOn) {
+            _aficheOn = false;
+            sceneAffiche.style.pointerEvents = 'none';
+            gsap.to(sceneAffiche, { opacity: 0, duration: 0.4 });
+            vidAffiche.pause();
+          }
+        }
+      });
+
       // =============== SCROLL SCRUB VIDÉO — pin via GSAP (compatible Lenis) ===============
       // CSS position:sticky ne fonctionne pas avec Lenis → on utilise ScrollTrigger pin:true
       var POSTER_SRCS = [
@@ -1380,9 +1493,6 @@
         });
       }
 
-      // Scène 1 : AFFICHE_EXPO — 2500px, vidéo commence à 15% (skip intro), termine à 80%
-      setupVideoScene('scene-affiche', 'vid-affiche', 'vid-affiche-loading', 2500, 0.80, null, 0.15);
-
       // Scène 2 : intro2 — chargement lazy (seulement quand on approche)
       var _intro2Loaded = false;
       var vidIntro2El = document.getElementById('vid-intro2');
@@ -1402,29 +1512,16 @@
         }
       }, 0);
 
-      // Clic sur les zones d'affiches → lightbox
-      [0, 1, 2].forEach(function(i) {
-        var btn = document.getElementById('pbtn-' + i);
-        if (!btn) return;
-        btn.addEventListener('click', function() {
-          var d = POSTER_DATA[i];
-          lbNo.textContent        = d.no;
-          lbCounterNo.textContent = d.no;
-          lbTitle.textContent     = d.title;
-          lbYear.textContent      = d.year;
-          lbTechYear.textContent  = d.year;
-          lbNote.textContent      = d.note;
-          lbCanvas.innerHTML = '';
-          lbCanvas.classList.remove('zoom-3');
-          lbCanvas.classList.add('lb-photo');
-          var img = new Image();
-          img.src = POSTER_SRCS[i];
-          lbCanvas.appendChild(img);
-          lightbox.classList.add('active');
-          lightbox.scrollTop = 0;
-          lenis.stop();
-          document.body.style.overflow = 'hidden';
-        });
+      // Effacer scene-affiche quand scene-intro2 entre en pin
+      ScrollTrigger.create({
+        trigger: '#scene-intro2',
+        start: 'top top',
+        onEnter: function() {
+          _aficheOn = false;
+          sceneAffiche.style.pointerEvents = 'none';
+          gsap.to(sceneAffiche, { opacity: 0, duration: 0.5 });
+          vidAffiche.pause();
+        }
       });
 
       // =============== LIGHTBOX ===============
@@ -1462,6 +1559,26 @@
         loupe.classList.remove('active');
         lenis.start();
         document.body.style.overflow = '';
+      }
+      function openLightboxPhoto(idx) {
+        var p = ALL_POSTERS[idx];
+        if (!p || !p.src) return;
+        lbNo.textContent        = p.no;
+        lbCounterNo.textContent = p.no;
+        lbTitle.textContent     = p.title;
+        lbYear.textContent      = p.year;
+        lbTechYear.textContent  = p.year;
+        lbNote.textContent      = '';
+        lbCanvas.innerHTML      = '';
+        lbCanvas.classList.remove('zoom-3');
+        lbCanvas.classList.add('lb-photo');
+        var img = new Image();
+        img.src = p.src;
+        lbCanvas.appendChild(img);
+        lightbox.classList.add('active');
+        lightbox.scrollTop = 0;
+        lenis.stop();
+        document.body.style.overflow = 'hidden';
       }
       lbClose.addEventListener('click', closeLightbox);
       document.addEventListener('keydown', function(e) {
@@ -1589,6 +1706,59 @@
       // Bouton "Voir les 20 affiches" sur l'overlay vidéo
       var btnGallery = document.getElementById('btnGallery');
       if (btnGallery) btnGallery.addEventListener('click', function() { gaOpen(0); });
+
+      // =============== CAROUSEL 3-BY-3 ===============
+      (function() {
+        var track = document.getElementById('pCarTrack');
+        if (!track) return;
+        var groups = [];
+        for (var gi = 0; gi < ALL_POSTERS.length; gi += 3) {
+          groups.push(ALL_POSTERS.slice(gi, gi + 3));
+        }
+        groups.forEach(function(group, gIdx) {
+          var groupEl = document.createElement('div');
+          groupEl.className = 'p-car-group';
+          var baseIdx = gIdx * 3;
+          group.forEach(function(poster, li) {
+            var globalIdx = baseIdx + li;
+            var btn = document.createElement('button');
+            btn.className = 'p-btn';
+            if (poster.src) {
+              var img = document.createElement('img');
+              img.src = poster.src; img.alt = poster.title;
+              btn.appendChild(img);
+            } else {
+              var ph = document.createElement('div');
+              ph.className = 'p-btn-placeholder';
+              ph.textContent = poster.no;
+              btn.appendChild(ph);
+            }
+            var lbl = document.createElement('div');
+            lbl.className = 'p-btn-label';
+            lbl.textContent = poster.no;
+            btn.appendChild(lbl);
+            (function(idx) {
+              btn.addEventListener('click', function() { openLightboxPhoto(idx); });
+            })(globalIdx);
+            groupEl.appendChild(btn);
+          });
+          track.appendChild(groupEl);
+        });
+
+        var _carIdx = 0;
+        var totalGroups = groups.length;
+        var leftBtn  = document.getElementById('pCarLeft');
+        var rightBtn = document.getElementById('pCarRight');
+        function carSlide(idx) {
+          _carIdx = Math.max(0, Math.min(totalGroups - 1, idx));
+          track.style.transform = 'translateX(-' + (_carIdx * 100) + '%)';
+          if (leftBtn)  leftBtn.disabled  = (_carIdx === 0);
+          if (rightBtn) rightBtn.disabled = (_carIdx === totalGroups - 1);
+        }
+        carSlide(0);
+        if (leftBtn)  leftBtn.addEventListener('click',  function() { carSlide(_carIdx - 1); });
+        if (rightBtn) rightBtn.addEventListener('click', function() { carSlide(_carIdx + 1); });
+      })();
 
       // Préchargement des 3 affiches réelles dès l'entrée dans scene-intro2
       ScrollTrigger.create({
