@@ -782,8 +782,8 @@
     }
 
     /* ===== VIDEOS SCROLL SCRUB ===== */
-    #scene-affiche,
-    #scene-intro2 { height: calc(100vh + 5000px); background: #fff; }
+    #scene-affiche { height: calc(100vh + 2800px); background: #fff; }
+    #scene-intro2  { height: calc(100vh + 2800px); background: #000; }
     .scene-video-sticky {
       position: sticky;
       top: 0;
@@ -795,6 +795,20 @@
       height: 100%;
       object-fit: cover;
     }
+    .vid-loading {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,0.5);
+      font-size: 11px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      pointer-events: none;
+      transition: opacity 0.5s;
+    }
+    .vid-loading.hidden { opacity: 0; }
 
     /* ===== POSTER GALLERY ===== */
     #poster-gallery {
@@ -938,19 +952,21 @@
 
     <!-- AFFICHE EXPO — scroll scrub sur fond blanc -->
     <div id="scene-affiche">
-      <div class="scene-video-sticky">
+      <div class="scene-video-sticky" style="position:relative;">
         <video id="vid-affiche"
           src="https://www.dropbox.com/scl/fi/4ft9e58s92tb84efv1bw6/AFFICHE_EXPO.mp4?rlkey=ueatj4jahanocdwznw5k977um&raw=1"
           muted playsinline preload="auto"></video>
+        <div class="vid-loading" id="vid-affiche-loading">Chargement…</div>
       </div>
     </div>
 
     <!-- INTRO 2 — animation salle de musée -->
     <div id="scene-intro2">
-      <div class="scene-video-sticky">
+      <div class="scene-video-sticky" style="position:relative;">
         <video id="vid-intro2"
           src="https://www.dropbox.com/scl/fi/437e2aufjsxxmspxfyqxi/intro2.mp4?rlkey=6seejoe84p0e7v0aipxktzx6p&raw=1"
           muted playsinline preload="auto"></video>
+        <div class="vid-loading" id="vid-intro2-loading">Chargement…</div>
       </div>
     </div>
 
@@ -1221,39 +1237,59 @@
         .fromTo(crownGroup.rotation, { y: 0.42 + Math.PI * 1.4 }, { y: 0.42 + Math.PI * 2.2 }, 0)
         .to(canvasContainer, { opacity: 0 }, 0.40);
 
-      // =============== AFFICHE EXPO — scroll scrub ===============
-      var vidAffiche = document.getElementById('vid-affiche');
-      if (vidAffiche) {
-        vidAffiche.load();
+      // =============== SCROLL SCRUB VIDÉO — helper robuste ===============
+      // Stratégie : forcer le buffering par play/pause au chargement,
+      // puis scrubber en clampant à 75% max (les 25% restants = dwell/lecture).
+      function setupVideoScrub(videoId, triggerId, loadingId, dwellRatio) {
+        var vid = document.getElementById(videoId);
+        var loadingEl = document.getElementById(loadingId);
+        if (!vid) return;
+
+        // Forcer le buffering : play silencieux → pause immédiate
+        vid.muted = true;
+        vid.load();
+        var bufferStarted = false;
+        vid.addEventListener('canplay', function() {
+          if (!bufferStarted) {
+            bufferStarted = true;
+            var p = vid.play();
+            if (p && p.then) {
+              p.then(function() {
+                setTimeout(function() { vid.pause(); vid.currentTime = 0; }, 80);
+              }).catch(function() {});
+            }
+          }
+          if (loadingEl) loadingEl.classList.add('hidden');
+        });
+
+        // Ratio du scroll où la vidéo se termine (le reste = dwell sur dernière frame)
+        var dr = dwellRatio || 0.72;
+        var lastTarget = 0;
+
         ScrollTrigger.create({
-          trigger: '#scene-affiche',
+          trigger: '#' + triggerId,
           start: 'top top',
           end: 'bottom bottom',
-          scrub: 0,
+          scrub: 1.5,
           onUpdate: function(self) {
-            if (vidAffiche.readyState >= 2 && vidAffiche.duration) {
-              vidAffiche.currentTime = self.progress * vidAffiche.duration;
+            if (!vid.duration) return;
+            // Compresser : la vidéo finit à dr% du scroll, reste = freeze
+            var p = Math.min(1, self.progress / dr);
+            var target = p * vid.duration;
+            // N'envoyer la commande que si le delta est significatif
+            if (Math.abs(target - lastTarget) > 0.04) {
+              lastTarget = target;
+              // Ne seek que dans la plage bufferisée pour éviter le freeze
+              if (vid.readyState >= 2) {
+                vid.currentTime = target;
+              }
             }
           }
         });
       }
 
-      // =============== INTRO 2 — animation salle ===============
-      var vidIntro2 = document.getElementById('vid-intro2');
-      if (vidIntro2) {
-        vidIntro2.load();
-        ScrollTrigger.create({
-          trigger: '#scene-intro2',
-          start: 'top top',
-          end: 'bottom bottom',
-          scrub: 0,
-          onUpdate: function(self) {
-            if (vidIntro2.readyState >= 2 && vidIntro2.duration) {
-              vidIntro2.currentTime = self.progress * vidIntro2.duration;
-            }
-          }
-        });
-      }
+      setupVideoScrub('vid-affiche', 'scene-affiche', 'vid-affiche-loading', 0.72);
+      setupVideoScrub('vid-intro2',  'scene-intro2',  'vid-intro2-loading',  0.78);
 
       // =============== POSTER GALLERY — lightbox ===============
       var posterCards = Array.from(document.querySelectorAll('.poster-card'));
