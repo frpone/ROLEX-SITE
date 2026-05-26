@@ -136,7 +136,7 @@
     .site-nav a:hover { opacity: 0.55; }
 
     main { position: relative; z-index: 2; pointer-events: none; }
-    main a, main button, main .walk-poster { pointer-events: auto; }
+    main a, main button, main .poster-card { pointer-events: auto; }
 
     /* =====================================
        HERO
@@ -781,148 +781,90 @@
       .lb-zoom-hint { display: none; }
     }
 
-    /* ===== DOLLY-IN + GALLERY 2 ===== */
-    .scene-transition {
-      background: #000;
-      color: #c8a96e;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      text-align: center;
-      letter-spacing: 0.4em;
-      font-size: 13px;
-      font-weight: 500;
-      text-transform: uppercase;
-    }
-    .scene-transition .st-label {
-      opacity: 0.5;
-      margin-bottom: 12px;
-    }
-    .scene-transition .st-next {
-      color: #fff;
-      font-size: 18px;
-      letter-spacing: 0.2em;
-      font-weight: 600;
-    }
-
-    #scene-dolly { height: calc(100vh + 2400px); background: #000; }
-    .dolly-sticky {
+    /* ===== VIDEOS SCROLL SCRUB ===== */
+    #scene-affiche,
+    #scene-intro2 { height: calc(100vh + 5000px); background: #fff; }
+    .scene-video-sticky {
       position: sticky;
       top: 0;
       height: 100vh;
       overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
-    .dolly-sticky video {
+    .scene-video-sticky video {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
 
-    .scroll-invite-dark {
-      height: 120px;
+    /* ===== POSTER GALLERY ===== */
+    #poster-gallery {
+      background: #f8f7f5;
+      padding: 100px 60px 140px;
+    }
+    .poster-invite {
       display: flex;
       align-items: center;
+      gap: 24px;
       justify-content: center;
-      background: #000;
+      margin-bottom: 70px;
+      color: #1a1a1a;
     }
-    .scroll-invite-dark .si-line {
-      width: 1px;
-      height: 60px;
-      background: rgba(200,169,110,0.18);
-      position: relative;
-      overflow: hidden;
+    .pi-line {
+      flex: 1;
+      max-width: 120px;
+      height: 1px;
+      background: #1a1a1a;
+      opacity: 0.25;
     }
-    .scroll-invite-dark .si-line::after {
-      content: '';
-      position: absolute;
-      top: 0; left: 0;
-      width: 1px;
-      height: 40%;
-      background: #c8a96e;
-      animation: scrollDown 1.6s cubic-bezier(0.4,0,0.2,1) infinite;
-    }
-
-    .section-gallery-2 {
-      background: #000;
-      padding: 120px 80px 160px;
-      color: #fff;
-    }
-    .gallery-2-header {
-      text-align: center;
-      margin-bottom: 80px;
-    }
-    .gallery-2-header .section-tag {
+    .pi-text {
       font-size: 11px;
-      letter-spacing: 0.5em;
-      color: #c8a96e;
+      letter-spacing: 0.35em;
       text-transform: uppercase;
-      margin-bottom: 16px;
+      font-weight: 500;
+      color: #1a1a1a;
+      white-space: nowrap;
     }
-    .gallery-2-header h2 {
-      font-family: 'Sweet Sans Pro', sans-serif;
-      font-size: clamp(28px, 4vw, 56px);
-      font-weight: 300;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: #fff;
-      margin: 0;
-    }
-    .gallery-2-grid {
+    .poster-row {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 24px;
+      gap: 32px;
       max-width: 1200px;
       margin: 0 auto;
     }
-    .gallery-2-card {
+    .poster-card {
       cursor: pointer;
       position: relative;
       overflow: hidden;
-      background: #0a0a0a;
-      aspect-ratio: 2/3;
+      aspect-ratio: 3/4;
+      background: #e8e6e2;
+      transition: transform 0.5s ease, box-shadow 0.5s ease;
     }
-    .gallery-2-card .card-thumb {
+    .poster-card:hover { transform: translateY(-6px); box-shadow: 0 24px 60px rgba(0,0,0,0.15); }
+    .poster-card img {
       width: 100%;
       height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.6s ease;
+      object-fit: cover;
+      display: block;
     }
-    .gallery-2-card:hover .card-thumb { transform: scale(1.04); }
-    .gallery-2-card .card-overlay {
+    .poster-card-hint {
       position: absolute;
       bottom: 0; left: 0; right: 0;
-      background: linear-gradient(transparent, rgba(0,0,0,0.82));
-      padding: 40px 20px 22px;
-    }
-    .gallery-2-card .card-no {
+      background: rgba(255,255,255,0.92);
+      text-align: center;
+      padding: 12px;
       font-size: 10px;
-      letter-spacing: 0.4em;
-      color: #c8a96e;
+      letter-spacing: 0.3em;
       text-transform: uppercase;
-      margin-bottom: 6px;
+      color: #1a1a1a;
+      font-weight: 600;
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
     }
-    .gallery-2-card .card-title {
-      font-size: 13px;
-      letter-spacing: 0.15em;
-      color: #fff;
-      font-weight: 500;
-      text-transform: uppercase;
-    }
-    .gallery-2-card .card-year {
-      font-size: 11px;
-      color: rgba(255,255,255,0.45);
-      margin-top: 4px;
-    }
+    .poster-card:hover .poster-card-hint { transform: translateY(0); }
 
     @media (max-width: 768px) {
-      .gallery-2-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
-      .section-gallery-2 { padding: 80px 20px 120px; }
+      .poster-row { grid-template-columns: 1fr; gap: 20px; }
+      #poster-gallery { padding: 60px 20px 100px; }
     }
   </style>
 </head>
@@ -994,212 +936,45 @@
       <div class="transition-stage"></div>
     </section>
 
-    <!-- DOLLY-IN : entrée dans la galerie (scroll-scrub) -->
-    <div id="scene-dolly">
-      <div class="dolly-sticky">
-        <video id="vid-dolly"
-          src="https://www.dropbox.com/scl/fi/6qszo1oaua6tbio08ko4t/intro.mp4?rlkey=ew1fv3we9mjnqit47fcfmom1v&raw=1"
+    <!-- AFFICHE EXPO — scroll scrub sur fond blanc -->
+    <div id="scene-affiche">
+      <div class="scene-video-sticky">
+        <video id="vid-affiche"
+          src="https://www.dropbox.com/scl/fi/4ft9e58s92tb84efv1bw6/AFFICHE_EXPO.mp4?rlkey=ueatj4jahanocdwznw5k977um&raw=1"
           muted playsinline preload="auto"></video>
       </div>
     </div>
 
-    <!-- STUDIO INTRO -->
-    <section class="studio-intro" id="studioIntro">
-      <div>
-        <div class="studio-room-meta">
-          <span>SALLE I</span>
-          <div class="divider"></div>
-          <span class="of">DE QUATRE</span>
-        </div>
-        <h2 class="studio-title">Le Studio</h2>
-        <h3 class="studio-subtitle">Where the icon is taken apart.</h3>
-        <p class="studio-text">
-          Pinned to the wall like working notes — the early language of the series.
-          <strong>Typography, signs, scribbles, drafts.</strong> The crown as material,
-          before it becomes image. Seven studies, three groups, one obsession.
-        </p>
-        <div class="scroll-hint">
-          Walk through the room
-          <div class="scroll-hint-arrow"></div>
-        </div>
+    <!-- INTRO 2 — animation salle de musée -->
+    <div id="scene-intro2">
+      <div class="scene-video-sticky">
+        <video id="vid-intro2"
+          src="https://www.dropbox.com/scl/fi/437e2aufjsxxmspxfyqxi/intro2.mp4?rlkey=6seejoe84p0e7v0aipxktzx6p&raw=1"
+          muted playsinline preload="auto"></video>
       </div>
-      <div class="crown-sketch-wrap">
-        <div class="crown-sketch-paper"></div>
-        <svg class="crown-sketch" id="crownSketch" viewBox="0 0 400 420">
-          <line class="construction" x1="80" y1="80" x2="320" y2="80"/>
-          <line class="construction" x1="80" y1="340" x2="320" y2="340"/>
-          <line class="construction" x1="200" y1="60" x2="200" y2="360"/>
-          <path d="M 90 320 C 90 290 130 270 200 270 C 270 270 310 290 310 320 C 310 340 270 358 200 358 C 130 358 90 340 90 320 Z"/>
-          <path d="M 100 270 L 90 100 L 130 270"/>
-          <path d="M 140 270 L 145 80 L 175 270"/>
-          <path d="M 185 270 L 200 60 L 215 270"/>
-          <path d="M 225 270 L 255 80 L 260 270"/>
-          <path d="M 270 270 L 310 100 L 300 270"/>
-          <path d="M 88 96 C 84 96 84 104 88 104 C 92 104 92 96 88 96 Z"/>
-          <path d="M 145 76 C 141 76 141 84 145 84 C 149 84 149 76 145 76 Z"/>
-          <path d="M 200 56 C 196 56 196 64 200 64 C 204 64 204 56 200 56 Z"/>
-          <path d="M 255 76 C 251 76 251 84 255 84 C 259 76 259 76 255 76 Z"/>
-          <path d="M 310 96 C 306 96 306 104 310 104 C 314 96 314 96 310 96 Z"/>
-        </svg>
-        <div class="crown-sketch-label">
-          <span class="num">SKETCH 001 · 2021</span>
-          Étude de la couronne — feutre sur papier noir
-        </div>
-      </div>
-    </section>
-
-    <!-- STUDIO WALK — 3 scènes pinned avec couronne 3D au centre -->
-    <div class="studio-walk" id="studioWalk">
-
-      <!-- SCÈNE 1 : Diptyque L4 — Rolex Type Black + Light -->
-      <section class="walk-scene" id="scene-1" data-scene="1">
-        <div class="walk-stage diptych">
-          <div class="walk-poster" data-poster='{"no":"001","title":"Rolex Type · Black","year":"2021","note":"The name itself, dispersed across the dark. Letters that lost their alignment but kept their authority."}'>
-            <svg viewBox="0 0 700 1000" preserveAspectRatio="xMidYMid slice">
-              <rect width="700" height="1000" fill="#0a0a0a"/>
-              <text x="60" y="80" font-family="sweet-sans-pro" font-size="14" letter-spacing="4" fill="#d9c87a">PERPETUAL SPIRIT</text>
-              <g fill="#f2efe9" font-family="Cormorant Garamond" font-weight="300">
-                <text x="120" y="290" font-size="180">R</text>
-                <text x="430" y="290" font-size="200">O</text>
-                <text x="60" y="500" font-size="220" font-style="italic" fill="#0e3b9a">L</text>
-                <text x="280" y="540" font-size="180">E</text>
-                <text x="500" y="700" font-size="200">X</text>
-              </g>
-              <g transform="translate(330, 420) scale(0.3)" fill="#d9c87a"><path d="M 0 0 L 20 -60 L 40 0 L 60 -50 L 80 0 L 100 -55 L 120 0 L 60 20 Z"/><circle cx="20" cy="-60" r="8"/><circle cx="60" cy="-50" r="9"/><circle cx="100" cy="-55" r="8"/></g>
-              <text x="60" y="960" font-family="sweet-sans-pro" font-size="9" letter-spacing="3" fill="#45433f">ROLEX · MMXXI · PEYRANNE</text>
-            </svg>
-          </div>
-          <div class="walk-center"></div>
-          <div class="walk-poster" data-poster='{"no":"002","title":"Rolex Type · Light","year":"2021","note":"Same letters, opposite ground. Black inverted to ivory makes the dispersion feel quieter."}'>
-            <svg viewBox="0 0 700 1000" preserveAspectRatio="xMidYMid slice">
-              <rect width="700" height="1000" fill="#f2efe9"/>
-              <text x="60" y="80" font-family="sweet-sans-pro" font-size="14" letter-spacing="4" fill="#0e3b9a">PERPETUAL SPIRIT</text>
-              <g fill="#0a0a0a" font-family="Cormorant Garamond" font-weight="300">
-                <text x="80" y="280" font-size="170">P</text>
-                <text x="350" y="290" font-size="180">C</text>
-                <text x="540" y="280" font-size="150" fill="#0e3b9a">R</text>
-                <text x="120" y="490" font-size="160" font-style="italic">R</text>
-                <text x="290" y="540" font-size="180">O</text>
-                <text x="120" y="700" font-size="200">W</text>
-                <text x="440" y="700" font-size="180">N</text>
-              </g>
-              <g transform="translate(340, 380) scale(0.28)" fill="#0e3b9a"><path d="M 0 0 L 20 -60 L 40 0 L 60 -50 L 80 0 L 100 -55 L 120 0 L 60 20 Z"/><circle cx="20" cy="-60" r="8"/><circle cx="60" cy="-50" r="9"/><circle cx="100" cy="-55" r="8"/></g>
-              <text x="60" y="960" font-family="sweet-sans-pro" font-size="9" letter-spacing="3" fill="#75716b">ROLEX · MMXXI · PEYRANNE</text>
-            </svg>
-          </div>
-        </div>
-        <div class="walk-caption">
-          <div class="no">N° 1 · DIPTYQUE</div>
-          <div class="title">Rolex, deconstructed</div>
-        </div>
-      </section>
-
-      <!-- SCÈNE 2 : Triptyque L8 — Miró + Black Sign + Spray -->
-      <section class="walk-scene" id="scene-2" data-scene="2">
-        <div class="walk-stage triptych">
-          <div class="walk-poster" data-poster='{"no":"003","title":"Miró Composition","year":"2021","note":"Primary shapes, primary colors. The crown reduced to its alphabet."}'>
-            <svg viewBox="0 0 700 1000" preserveAspectRatio="xMidYMid slice">
-              <rect width="700" height="1000" fill="#f4f0e6"/>
-              <circle cx="240" cy="440" r="70" fill="#0a0a0a"/>
-              <path d="M 240 440 L 230 700 L 260 700 Z" fill="#0a0a0a"/>
-              <circle cx="220" cy="700" r="32" fill="#0a0a0a"/><circle cx="260" cy="700" r="32" fill="#0a0a0a"/>
-              <path d="M 420 200 Q 470 240 440 290" stroke="#c93636" stroke-width="14" fill="none" stroke-linecap="round"/>
-              <circle cx="500" cy="340" r="30" fill="#e8c33a"/>
-              <path d="M 100 320 L 60 280" stroke="#1853c8" stroke-width="10" stroke-linecap="round"/>
-              <circle cx="540" cy="500" r="14" fill="#1853c8"/>
-              <path d="M 480 620 L 520 620 L 500 580 Z" fill="#1853c8"/>
-              <circle cx="120" cy="620" r="22" fill="#c93636"/>
-              <path d="M 380 760 Q 420 800 460 760" stroke="#e8c33a" stroke-width="12" fill="none" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <div class="walk-poster" data-poster='{"no":"004","title":"The Black Sign","year":"2021","note":"Pared back to one circle on concrete. The crown rendered as a punctuation mark — sufficient, terminal, sovereign."}'>
-            <svg viewBox="0 0 700 1000" preserveAspectRatio="xMidYMid slice">
-              <rect width="700" height="1000" fill="#c8c4bc"/>
-              <circle cx="350" cy="500" r="180" fill="none" stroke="#0a0a0a" stroke-width="70"/>
-              <text x="350" y="920" text-anchor="middle" font-family="sweet-sans-pro" font-size="11" letter-spacing="6" fill="#0a0a0a">ROLEX</text>
-            </svg>
-          </div>
-          <div class="walk-poster" data-poster='{"no":"005","title":"The Crown · Spray","year":"2021","note":"Mark on a wall. Color sprayed on paper. The icon at its most physical."}'>
-            <svg viewBox="0 0 700 1000" preserveAspectRatio="xMidYMid slice">
-              <defs>
-                <filter id="sprayFx3"><feTurbulence baseFrequency="0.6" numOctaves="3" seed="3"/><feDisplacementMap in="SourceGraphic" scale="8"/></filter>
-                <radialGradient id="sprB3" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#1853c8" stop-opacity="0.9"/><stop offset="100%" stop-color="#1853c8" stop-opacity="0"/></radialGradient>
-                <radialGradient id="sprY3" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#e8c33a" stop-opacity="0.7"/><stop offset="100%" stop-color="#e8c33a" stop-opacity="0"/></radialGradient>
-                <radialGradient id="sprR3" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#e8857a" stop-opacity="0.7"/><stop offset="100%" stop-color="#e8857a" stop-opacity="0"/></radialGradient>
-              </defs>
-              <rect width="700" height="1000" fill="#f4f0e6"/>
-              <ellipse cx="350" cy="480" rx="320" ry="220" fill="url(#sprB3)" filter="url(#sprayFx3)"/>
-              <ellipse cx="200" cy="700" rx="200" ry="100" fill="url(#sprR3)" filter="url(#sprayFx3)"/>
-              <ellipse cx="500" cy="380" rx="180" ry="100" fill="url(#sprY3)" filter="url(#sprayFx3)"/>
-              <text x="180" y="540" font-family="Cormorant Garamond" font-style="italic" font-size="90" fill="#0a0a0a" transform="rotate(-6 350 500)">The Crown</text>
-            </svg>
-          </div>
-        </div>
-        <div class="walk-caption">
-          <div class="no">N° 2 · TRIPTYQUE</div>
-          <div class="title">Free hand — the crown in three drafts</div>
-        </div>
-      </section>
-
-      <!-- SCÈNE 3 : Diptyque L2 — Perpetual Composition + Music -->
-      <section class="walk-scene" id="scene-3" data-scene="3">
-        <div class="walk-stage diptych">
-          <div class="walk-poster" data-poster='{"no":"006","title":"Perpetual Composition","year":"2021","note":"Mosaic of black shapes that almost form letters, almost form a crown. The viewer assembles the rest."}'>
-            <svg viewBox="0 0 700 1000" preserveAspectRatio="xMidYMid slice">
-              <rect width="700" height="1000" fill="#ebe7df"/>
-              <g fill="#0a0a0a">
-                <path d="M 100 240 A 60 60 0 1 0 100 360 L 130 360 A 30 30 0 1 1 130 240 Z"/>
-                <circle cx="240" cy="260" r="44"/><circle cx="240" cy="260" r="18" fill="#ebe7df"/>
-                <path d="M 320 220 A 50 50 0 0 1 320 320 Z"/><path d="M 420 220 A 50 50 0 0 1 420 320 Z"/>
-                <path d="M 480 220 L 540 320 L 480 320 Z"/>
-                <rect x="160" y="440" width="40" height="100"/><rect x="270" y="440" width="40" height="100"/>
-                <circle cx="180" cy="440" r="22"/><circle cx="290" cy="440" r="22"/>
-                <path d="M 380 440 L 410 580 L 440 480 L 470 580 L 500 440 L 470 440 L 455 520 L 440 480 L 425 520 L 410 440 Z"/>
-              </g>
-              <text x="200" y="900" font-family="sweet-sans-pro" font-size="10" letter-spacing="3" fill="#0a0a0a">THE ROLEX CROWN</text>
-              <text x="200" y="918" font-family="sweet-sans-pro" font-size="10" letter-spacing="3" fill="#0a0a0a">EXHIBITION 2021</text>
-            </svg>
-          </div>
-          <div class="walk-center"></div>
-          <div class="walk-poster" data-poster='{"no":"007","title":"Perpetual Music","year":"2021","note":"The crown turned into a single note. A pendulum, an exclamation, a heartbeat."}'>
-            <svg viewBox="0 0 700 1000" preserveAspectRatio="xMidYMid slice">
-              <rect width="700" height="1000" fill="#ebe7df"/>
-              <rect x="346" y="100" width="8" height="500" fill="#0a0a0a"/>
-              <circle cx="350" cy="640" r="160" fill="#0a0a0a"/>
-              <text x="350" y="650" text-anchor="middle" font-family="sweet-sans-pro" font-size="38" letter-spacing="3" fill="#f2efe9">ROLEX</text>
-              <text x="350" y="900" text-anchor="middle" font-family="sweet-sans-pro" font-size="13" letter-spacing="5" fill="#0a0a0a">PERPETUAL</text>
-              <text x="350" y="924" text-anchor="middle" font-family="Cormorant Garamond" font-style="italic" font-size="22" fill="#0a0a0a">Music</text>
-            </svg>
-          </div>
-        </div>
-        <div class="walk-caption">
-          <div class="no">N° 3 · DIPTYQUE</div>
-          <div class="title">Perpetual — flat, in two voices</div>
-        </div>
-      </section>
-
     </div>
 
-    <!-- Progress indicator latéral, sticky pendant tout le walk -->
-    <div class="walk-progress" id="walkProgress">
-      <div class="step" data-step="1"><div class="mark"></div><span>I · Diptyque</span></div>
-      <div class="step" data-step="2"><div class="mark"></div><span>II · Triptyque</span></div>
-      <div class="step" data-step="3"><div class="mark"></div><span>III · Diptyque</span></div>
-    </div>
-
-    <section class="room-end">
-      <div class="label">END OF ROOM I</div>
-      <div class="divider"></div>
-      <div class="next">Next : Le White Cube</div>
-    </section>
-
-    <!-- GALLERY — LE WHITE CUBE -->
-    <section class="section-gallery-2" id="gallery2">
-      <div class="gallery-2-header">
-        <div class="section-tag">Room II · Le White Cube</div>
-        <h2>Selected Works</h2>
+    <!-- AFFICHES CLIQUABLES — fond blanc -->
+    <section id="poster-gallery">
+      <div class="poster-invite">
+        <div class="pi-line"></div>
+        <span class="pi-text">Cliquer sur une affiche pour l'agrandir</span>
+        <div class="pi-line"></div>
       </div>
-      <div class="gallery-2-grid" id="gallery2Grid"></div>
+      <div class="poster-row">
+        <div class="poster-card" data-poster='{"no":"N° 001","title":"The Rolex Crown","year":"2023","note":"Couronne Rolex en silhouette sur fond gris clair. Les valeurs de la marque énoncées comme un manifeste."}'>
+          <img src="POSTER_1_PLACEHOLDER" alt="The Rolex Crown" onerror="this.style.background='#f0eeeb';this.style.height='100%'" />
+          <div class="poster-card-hint">↑ Cliquer pour agrandir</div>
+        </div>
+        <div class="poster-card" data-poster='{"no":"N° 002","title":"Perpetual","year":"2023","note":"Op-art labyrinthe. La couronne cachée au centre du motif — visible seulement si on cherche."}'>
+          <img src="POSTER_2_PLACEHOLDER" alt="Perpetual" onerror="this.style.background='#0a0a0a';this.style.height='100%'" />
+          <div class="poster-card-hint">↑ Cliquer pour agrandir</div>
+        </div>
+        <div class="poster-card" data-poster='{"no":"N° 003","title":"Crown Stripes","year":"2023","note":"Rayures bold noir/blanc. La couronne apparaît en négatif. Force graphique maximale."}'>
+          <img src="POSTER_3_PLACEHOLDER" alt="Crown Stripes" onerror="this.style.background='#0a0a0a';this.style.height='100%'" />
+          <div class="poster-card-hint">↑ Cliquer pour agrandir</div>
+        </div>
+      </div>
     </section>
 
   </main>
@@ -1379,76 +1154,47 @@
       var bgDark = document.getElementById('bgDark');
       var bgLight = document.getElementById('bgLight');
 
-      // --- CHAPTER 1 : PIN + couronne center → droite
+      // --- CHAPTER I : PIN + couronne center → droite
       ScrollTrigger.create({
         trigger: '.chapter-1', start: 'top top', end: '+=100%',
         pin: true, pinSpacing: true
       });
       gsap.fromTo(crownGroup.position,
         { x: 0, y: 0, z: 0 },
-        { x: 2.2, y: 0.3, z: 0,
-          scrollTrigger: { trigger: '.chapter-1', start: 'top 90%', end: 'top top', scrub: 1.5 }
-        });
-      gsap.fromTo(crownGroup.scale,
-        { x: crownBaseScale, y: crownBaseScale, z: crownBaseScale },
-        { x: crownBaseScale * 0.65, y: crownBaseScale * 0.65, z: crownBaseScale * 0.65,
+        { x: -2.2, y: 0.1, z: 0,
           scrollTrigger: { trigger: '.chapter-1', start: 'top 90%', end: 'top top', scrub: 1.5 }
         });
       gsap.fromTo(crownGroup.rotation,
         { y: 0.42 },
-        { y: 0.42 + Math.PI * 0.4,
+        { y: 0.42 + Math.PI * 0.9,
           scrollTrigger: { trigger: '.chapter-1', start: 'top 90%', end: 'top top', scrub: 1.5 }
         });
 
-      // --- CHAPTER 2 : PIN + couronne droite → gauche (continue depuis chapter 1)
+      // --- CHAPTER II : PIN + couronne gauche → centre arrière (continue depuis chapter I)
       ScrollTrigger.create({
         trigger: '.chapter-2', start: 'top top', end: '+=100%',
         pin: true, pinSpacing: true
       });
       gsap.fromTo(crownGroup.position,
-        { x: 2.2, y: 0.3, z: 0 },
-        { x: -2.2, y: 0.1, z: 0,
-          scrollTrigger: { trigger: '.chapter-2', start: 'top 90%', end: 'top top', scrub: 1.5 }
-        });
-      gsap.fromTo(crownGroup.rotation,
-        { y: 0.42 + Math.PI * 0.4 },
-        { y: 0.42 + Math.PI * 0.9,
-          scrollTrigger: { trigger: '.chapter-2', start: 'top 90%', end: 'top top', scrub: 1.5 }
-        });
-
-      // --- CHAPTER 3 : PIN + couronne gauche → centre arrière (continue depuis chapter 2)
-      ScrollTrigger.create({
-        trigger: '.chapter-3', start: 'top top', end: '+=100%',
-        pin: true, pinSpacing: true
-      });
-      gsap.fromTo(crownGroup.position,
-        { x: -2.2, y: 0.1, z: 0 },
+        { x: 0, y: 0, z: 0 },
         { x: 0, y: 0, z: -1,
-          scrollTrigger: { trigger: '.chapter-3', start: 'top 90%', end: 'top top', scrub: 1.5 }
+          scrollTrigger: { trigger: '.chapter-2', start: 'top 90%', end: 'top top', scrub: 1.5 }
         });
       gsap.fromTo(crownGroup.scale,
-        { x: crownBaseScale * 0.65, y: crownBaseScale * 0.65, z: crownBaseScale * 0.65 },
+        { x: crownBaseScale, y: crownBaseScale, z: crownBaseScale },
         { x: crownBaseScale * 0.85, y: crownBaseScale * 0.85, z: crownBaseScale * 0.85,
-          scrollTrigger: { trigger: '.chapter-3', start: 'top 90%', end: 'top top', scrub: 1.5 }
+          scrollTrigger: { trigger: '.chapter-2', start: 'top 90%', end: 'top top', scrub: 1.5 }
         });
       gsap.fromTo(crownGroup.rotation,
         { y: 0.42 + Math.PI * 0.9 },
         { y: 0.42 + Math.PI * 1.4,
-          scrollTrigger: { trigger: '.chapter-3', start: 'top 90%', end: 'top top', scrub: 1.5 }
+          scrollTrigger: { trigger: '.chapter-2', start: 'top 90%', end: 'top top', scrub: 1.5 }
         });
 
-      // =============== TRANSITION ZOOM + FRONTISPICE ===============
+      // =============== TRANSITION ZOOM ===============
       // Pin de 350vh, timeline interne :
-      // - 0-25% : couronne zoom in (vers caméra, grossit)
-      // - 20-50% : fade noir progressif (bg-dark opacity 0→1)
-      // - 35-55% : canvas fade out (la couronne disparaît dans le noir)
-      // - 45-70% : frontispice apparait (fade in + scale)
-      // - 50-70% : puits de lumière sur le frontispice
-      // - 70-90% : FREEZE sur frontispice (rien ne bouge, on observe)
-      // - 90-100% : frontispice s'éloigne (translate up + fade)
-      var frontispiece = document.getElementById('frontispiece');
-      var frontispieceCaption = document.getElementById('frontispieceCaption');
-      var frontispieceSpotlight = document.getElementById('frontispieceSpotlight');
+      // - 0-40% : couronne zoom in (vers caméra, grossit)
+      // - 40-100% : canvas fade out (fondu blanc)
 
       // Pin la zone transition pendant +=350% (3.5 viewports de scroll)
       ScrollTrigger.create({
@@ -1469,182 +1215,71 @@
         }
       });
 
-      // Phase A : Couronne zoom in (0 → 0.30) — depuis chapter 3 end
       transTL
-        .fromTo(crownGroup.position,
-          { x: 0, y: 0, z: -1 },
-          { x: 0, y: 0, z: 7 }, 0)
-        .fromTo(crownGroup.scale,
-          { x: crownBaseScale * 0.85, y: crownBaseScale * 0.85, z: crownBaseScale * 0.85 },
-          { x: crownBaseScale * 4.5, y: crownBaseScale * 4.5, z: crownBaseScale * 4.5 }, 0)
-        .fromTo(crownGroup.rotation,
-          { y: 0.42 + Math.PI * 1.4 },
-          { y: 0.42 + Math.PI * 2.2 }, 0)
-        // Phase B : Fade noir progressif (0.20 → 0.50)
-        .to(bgLight, { opacity: 0 }, 0.20)
-        .to(bgDark, { opacity: 1 }, 0.20)
-        // Phase C : Canvas fade out (0.35 → 0.55)
-        .to(canvasContainer, { opacity: 0 }, 0.35)
-        // Phase D : Frontispice apparaît dans le noir (0.45 → 0.70)
-        .to(frontispiece, { opacity: 1, scale: 1, y: 0 }, 0.45)
-        .to(frontispieceSpotlight, { opacity: 1 }, 0.50)
-        .to(frontispieceCaption, { opacity: 1 }, 0.55)
-        // Phase E : FREEZE sur frontispice (0.70 → 0.88) — nothing animates, just hold
-        .to({}, { duration: 0.18 }, 0.70)
-        // Phase F : Frontispice s'éloigne vers le haut (0.88 → 1)
-        .to(frontispiece, { opacity: 0, y: -120, scale: 0.85 }, 0.88)
-        .to(frontispieceCaption, { opacity: 0 }, 0.88)
-        .to(frontispieceSpotlight, { opacity: 0 }, 0.88);
+        .fromTo(crownGroup.position, { x: 0, y: 0, z: -1 }, { x: 0, y: 0, z: 7 }, 0)
+        .fromTo(crownGroup.scale, { x: crownBaseScale * 0.85, y: crownBaseScale * 0.85, z: crownBaseScale * 0.85 }, { x: crownBaseScale * 4.5, y: crownBaseScale * 4.5, z: crownBaseScale * 4.5 }, 0)
+        .fromTo(crownGroup.rotation, { y: 0.42 + Math.PI * 1.4 }, { y: 0.42 + Math.PI * 2.2 }, 0)
+        .to(canvasContainer, { opacity: 0 }, 0.40);
 
-      // Crown sketch reveal au moment du Studio
-      ScrollTrigger.create({
-        trigger: '#studioIntro',
-        start: 'top 60%',
-        onEnter: function() { document.getElementById('crownSketch').classList.add('animate'); }
-      });
-
-      // =============== STUDIO WALK — 3 SCÈNES PINNED ===============
-      // Plus de couloir 3D infini. Chaque scène est pinnée séparément.
-      // La couronne 3D vient se placer au centre de chaque scène avec
-      // une rotation/position spécifique.
-      var walkProgress = document.getElementById('walkProgress');
-      var walkScenes = Array.from(document.querySelectorAll('.walk-scene'));
-      var walkSteps = Array.from(document.querySelectorAll('.walk-progress .step'));
-
-      // Show walk progress when entering studio walk
-      ScrollTrigger.create({
-        trigger: '#studioWalk',
-        start: 'top 80%',
-        end: 'bottom 20%',
-        onEnter: function() { walkProgress.classList.add('active'); },
-        onLeave: function() { walkProgress.classList.remove('active'); },
-        onEnterBack: function() { walkProgress.classList.add('active'); },
-        onLeaveBack: function() { walkProgress.classList.remove('active'); }
-      });
-
-      // Helper : crée pin + animation crown + reveal affiches pour une scène
-      function setupWalkScene(sceneEl, sceneIdx, crownTarget) {
-        // PIN la scène pendant +=120% (1.2 viewport de freeze)
+      // =============== AFFICHE EXPO — scroll scrub ===============
+      var vidAffiche = document.getElementById('vid-affiche');
+      if (vidAffiche) {
+        vidAffiche.load();
         ScrollTrigger.create({
-          trigger: sceneEl,
+          trigger: '#scene-affiche',
           start: 'top top',
-          end: '+=120%',
-          pin: true,
-          pinSpacing: true,
-          onEnter: function() {
-            sceneEl.classList.add('in-view');
-            walkSteps.forEach(function(s, i) {
-              s.classList.toggle('active', i === sceneIdx);
-            });
-          },
-          onEnterBack: function() {
-            sceneEl.classList.add('in-view');
-            walkSteps.forEach(function(s, i) {
-              s.classList.toggle('active', i === sceneIdx);
-            });
-          },
-          onLeave: function() {
-            walkSteps.forEach(function(s, i) { if (i === sceneIdx) s.classList.remove('active'); });
-          },
-          onLeaveBack: function() {
-            sceneEl.classList.remove('in-view');
-          }
-        });
-
-        // Animation couronne : transit vers position scène (avant le pin) — fromTo pour explicite
-        gsap.fromTo(crownGroup.position,
-          { x: crownTarget.fromX, y: crownTarget.fromY, z: crownTarget.fromZ },
-          {
-            x: crownTarget.x, y: crownTarget.y, z: crownTarget.z,
-            ease: 'none',
-            scrollTrigger: {
-              trigger: sceneEl,
-              start: 'top 80%',
-              end: 'top top',
-              scrub: 1.5
+          end: 'bottom bottom',
+          scrub: 0,
+          onUpdate: function(self) {
+            if (vidAffiche.readyState >= 2 && vidAffiche.duration) {
+              vidAffiche.currentTime = self.progress * vidAffiche.duration;
             }
-          }
-        );
-        gsap.fromTo(crownGroup.scale,
-          { x: crownBaseScale * crownTarget.fromScale, y: crownBaseScale * crownTarget.fromScale, z: crownBaseScale * crownTarget.fromScale },
-          {
-            x: crownBaseScale * crownTarget.scale,
-            y: crownBaseScale * crownTarget.scale,
-            z: crownBaseScale * crownTarget.scale,
-            ease: 'none',
-            scrollTrigger: {
-              trigger: sceneEl,
-              start: 'top 80%',
-              end: 'top top',
-              scrub: 1.5
-            }
-          }
-        );
-
-        // Rotation continue PENDANT le pin (carrousel) — couronne tourne lentement
-        gsap.to(crownGroup.rotation, {
-          y: crownTarget.rotEnd,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: sceneEl,
-            start: 'top top',
-            end: '+=120%',
-            scrub: 1.5
           }
         });
       }
 
-      // Re-show canvas at entry of studio walk + couronne arrives centered
-      gsap.to(canvasContainer, {
-        opacity: 1, ease: 'power2.in',
-        scrollTrigger: {
-          trigger: '#studioWalk',
-          start: 'top 80%',
-          end: 'top 30%',
-          scrub: 1.2
-        }
-      });
-      // Couronne reset après transition zoom : revient de (0,0,7) énorme vers (0,0,0) taille studio
-      gsap.fromTo(crownGroup.position,
-        { x: 0, y: 0, z: 7 },
-        { x: 0, y: 0, z: 0,
-          scrollTrigger: { trigger: '#studioWalk', start: 'top 80%', end: 'top 20%', scrub: 1.2 }
+      // =============== INTRO 2 — animation salle ===============
+      var vidIntro2 = document.getElementById('vid-intro2');
+      if (vidIntro2) {
+        vidIntro2.load();
+        ScrollTrigger.create({
+          trigger: '#scene-intro2',
+          start: 'top top',
+          end: 'bottom bottom',
+          scrub: 0,
+          onUpdate: function(self) {
+            if (vidIntro2.readyState >= 2 && vidIntro2.duration) {
+              vidIntro2.currentTime = self.progress * vidIntro2.duration;
+            }
+          }
         });
-      gsap.fromTo(crownGroup.scale,
-        { x: crownBaseScale * 4.5, y: crownBaseScale * 4.5, z: crownBaseScale * 4.5 },
-        { x: crownBaseScale * 0.75, y: crownBaseScale * 0.75, z: crownBaseScale * 0.75,
-          scrollTrigger: { trigger: '#studioWalk', start: 'top 80%', end: 'top 20%', scrub: 1.2 }
+      }
+
+      // =============== POSTER GALLERY — lightbox ===============
+      var posterCards = Array.from(document.querySelectorAll('.poster-card'));
+      posterCards.forEach(function(card) {
+        card.addEventListener('click', function() {
+          var data = JSON.parse(card.dataset.poster);
+          var img = card.querySelector('img');
+          lbNo.textContent        = data.no;
+          lbCounterNo.textContent = data.no;
+          lbTitle.textContent     = data.title;
+          lbYear.textContent      = data.year;
+          lbTechYear.textContent  = data.year;
+          lbNote.textContent      = data.note;
+          lbCanvas.innerHTML      = '';
+          var lbImg = document.createElement('img');
+          lbImg.src = img.src;
+          lbImg.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;';
+          lbCanvas.appendChild(lbImg);
+          lbCanvas.classList.remove('zoom-3');
+          lightbox.classList.add('active');
+          lightbox.scrollTop = 0;
+          lenis.stop();
+          document.body.style.overflow = 'hidden';
         });
-
-      // Scene 1 : Diptyque — couronne centrée, taille moyenne, rotation
-      setupWalkScene(walkScenes[0], 0, {
-        fromX: 0, fromY: 0, fromZ: -6,
-        fromScale: 0.3,
-        x: 0, y: 0, z: 0,
-        scale: 0.75,
-        rotEnd: 0.42 + Math.PI * 3
       });
 
-      // Scene 2 : Triptyque — couronne en arrière-plan central, plus petite
-      setupWalkScene(walkScenes[1], 1, {
-        fromX: 0, fromY: 0, fromZ: 0,
-        fromScale: 0.75,
-        x: 0, y: 0.4, z: -2,
-        scale: 0.5,
-        rotEnd: 0.42 + Math.PI * 3.7
-      });
-
-      // Scene 3 : Diptyque — couronne centrée à nouveau
-      setupWalkScene(walkScenes[2], 2, {
-        fromX: 0, fromY: 0.4, fromZ: -2,
-        fromScale: 0.5,
-        x: 0, y: 0, z: 0,
-        scale: 0.75,
-        rotEnd: 0.42 + Math.PI * 4.5
-      });
-
-      // =============== LIGHTBOX ===============
-      var walkPosters = Array.from(document.querySelectorAll('.walk-poster'));
       // =============== LIGHTBOX ===============
       var lightbox = document.getElementById('lightbox');
       var lbCanvas = document.getElementById('lb-canvas');
@@ -1681,13 +1316,6 @@
         lenis.start();
         document.body.style.overflow = '';
       }
-      walkPosters.forEach(function(p) {
-        p.addEventListener('click', function() { openLightbox(p); });
-        p.setAttribute('tabindex', '0');
-        p.addEventListener('keydown', function(e) {
-          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLightbox(p); }
-        });
-      });
       lbClose.addEventListener('click', closeLightbox);
       document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape' && lightbox.classList.contains('active')) closeLightbox();
@@ -1726,63 +1354,6 @@
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
       });
-
-      // =============== DOLLY-IN VIDEO SCRUB (Lenis-compatible) ===============
-      var vidDolly = document.getElementById('vid-dolly');
-      if (vidDolly) {
-        vidDolly.load();
-        ScrollTrigger.create({
-          trigger: '#scene-dolly',
-          start: 'top top',
-          end: 'bottom bottom',
-          scrub: 0,
-          onUpdate: function(self) {
-            if (vidDolly.readyState >= 2 && vidDolly.duration) {
-              vidDolly.currentTime = self.progress * vidDolly.duration;
-            }
-          }
-        });
-      }
-
-      // =============== GALLERY 2 — LE WHITE CUBE ===============
-      var gallery2Data = [
-        { no: 'N° 008', title: 'The Arch — Act I',   year: '2022', note: 'First panel of the White Cube series. Perpetual geometry in pure white space.' },
-        { no: 'N° 009', title: 'The Arch — Act II',  year: '2022', note: 'Second panel. Light redefined through architectural abstraction.' },
-        { no: 'N° 010', title: 'Void & Form',         year: '2023', note: 'Negative space as a compositional force. The crown emerges from absence.' },
-        { no: 'N° 011', title: 'White Horizon',       year: '2023', note: 'The perpetual rotor stretched to the horizon line.' },
-        { no: 'N° 012', title: 'Monochrome I',        year: '2024', note: 'A study in tonal restraint — seven shades of white.' },
-        { no: 'N° 013', title: 'Monochrome II',       year: '2024', note: 'Companion piece. Darkness reclaimed at the periphery.' }
-      ];
-
-      var gallery2Grid = document.getElementById('gallery2Grid');
-      if (gallery2Grid) {
-        gallery2Data.forEach(function(item) {
-          var card = document.createElement('div');
-          card.className = 'gallery-2-card';
-          card.innerHTML =
-            '<div class="card-thumb"><div style="width:55%;opacity:0.12;">' + CROWN_SVG + '</div></div>' +
-            '<div class="card-overlay">' +
-              '<div class="card-no">' + item.no + '</div>' +
-              '<div class="card-title">' + item.title + '</div>' +
-              '<div class="card-year">' + item.year + '</div>' +
-            '</div>';
-          card.addEventListener('click', function() {
-            lbNo.textContent        = item.no;
-            lbTitle.textContent     = item.title;
-            lbYear.textContent      = item.year;
-            lbTechYear.textContent  = item.year;
-            lbNote.textContent      = item.note;
-            lbCounterNo.textContent = item.no;
-            lbCanvas.innerHTML      =
-              '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#0a0a0a;">' +
-              '<div style="width:38%;opacity:0.18;">' + CROWN_SVG + '</div></div>';
-            lightbox.classList.add('open');
-            document.body.classList.add('lb-open');
-            if (lenis) lenis.stop();
-          });
-          gallery2Grid.appendChild(card);
-        });
-      }
 
       // Refresh ScrollTrigger une fois tout setup, après un petit délai
       setTimeout(function() {
