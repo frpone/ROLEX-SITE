@@ -252,6 +252,15 @@
       0%, 100% { opacity: 0.4; transform: scale(1); }
       50% { opacity: 1; transform: scale(1.3); }
     }
+    .chapter-freeze-mark .scroll-arrow {
+      color: var(--ink-mute);
+      margin-left: 4px;
+      animation: scrollArrowBob 2.2s ease-in-out infinite;
+    }
+    @keyframes scrollArrowBob {
+      0%, 100% { transform: translateY(0); opacity: 0.4; }
+      50%       { transform: translateY(5px); opacity: 1; }
+    }
 
     /* =====================================
        TRANSITION ZOOM + FRONTISPICE
@@ -1069,6 +1078,9 @@
         <div class="chapter-freeze-mark">
           <span class="dot"></span>
           <span>I &nbsp;·&nbsp; Take time to read</span>
+          <svg class="scroll-arrow" width="10" height="14" viewBox="0 0 10 14" fill="none" stroke="currentColor" stroke-width="1.2">
+            <path d="M5 1v12M1 9l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </div>
       </section>
 
@@ -1081,6 +1093,9 @@
         <div class="chapter-freeze-mark">
           <span class="dot"></span>
           <span>II &nbsp;·&nbsp; Take time to read</span>
+          <svg class="scroll-arrow" width="10" height="14" viewBox="0 0 10 14" fill="none" stroke="currentColor" stroke-width="1.2">
+            <path d="M5 1v12M1 9l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </div>
       </section>
 
@@ -1302,7 +1317,7 @@
 
       // =============== LENIS + GSAP ===============
       var lenis = new Lenis({
-        duration: 1.4,
+        duration: 0.9,
         easing: function(t) { return Math.min(1, 1.001 - Math.pow(2, -10 * t)); },
         smoothWheel: true
       });
@@ -1320,41 +1335,43 @@
       var bgDark = document.getElementById('bgDark');
       var bgLight = document.getElementById('bgLight');
 
-      // --- CHAPTER I : PIN + couronne center → droite
+      // --- CHAPTER I : PIN + couronne center → gauche
       ScrollTrigger.create({
         trigger: '.chapter-1', start: 'top top', end: '+=100%',
-        pin: true, pinSpacing: true
+        pin: true, pinSpacing: true, anticipatePin: 1
       });
+      // Chapter-1 sets the canonical initial state (immediateRender: true by default)
       gsap.fromTo(crownGroup.position,
         { x: 0, y: 0, z: 0 },
         { x: -2.2, y: 0.1, z: 0,
-          scrollTrigger: { trigger: '.chapter-1', start: 'top 90%', end: 'top top', scrub: 1.5 }
+          scrollTrigger: { trigger: '.chapter-1', start: 'top 90%', end: 'top top', scrub: 0.5 }
         });
       gsap.fromTo(crownGroup.rotation,
         { y: 0.42 },
         { y: 0.42 + Math.PI * 0.9,
-          scrollTrigger: { trigger: '.chapter-1', start: 'top 90%', end: 'top top', scrub: 1.5 }
+          scrollTrigger: { trigger: '.chapter-1', start: 'top 90%', end: 'top top', scrub: 0.5 }
         });
 
       // --- CHAPTER II : PIN + couronne gauche → centre arrière (continue depuis chapter I)
       ScrollTrigger.create({
         trigger: '.chapter-2', start: 'top top', end: '+=100%',
-        pin: true, pinSpacing: true
+        pin: true, pinSpacing: true, anticipatePin: 1
       });
+      // immediateRender: false → n'écrase PAS l'état initial au chargement de la page
       gsap.fromTo(crownGroup.position,
-        { x: 0, y: 0, z: 0 },
+        { x: -2.2, y: 0.1, z: 0, immediateRender: false },
         { x: 0, y: 0, z: -1,
-          scrollTrigger: { trigger: '.chapter-2', start: 'top 90%', end: 'top top', scrub: 1.5 }
+          scrollTrigger: { trigger: '.chapter-2', start: 'top 90%', end: 'top top', scrub: 0.5 }
         });
       gsap.fromTo(crownGroup.scale,
-        { x: crownBaseScale, y: crownBaseScale, z: crownBaseScale },
+        { x: crownBaseScale, y: crownBaseScale, z: crownBaseScale, immediateRender: false },
         { x: crownBaseScale * 0.85, y: crownBaseScale * 0.85, z: crownBaseScale * 0.85,
-          scrollTrigger: { trigger: '.chapter-2', start: 'top 90%', end: 'top top', scrub: 1.5 }
+          scrollTrigger: { trigger: '.chapter-2', start: 'top 90%', end: 'top top', scrub: 0.5 }
         });
       gsap.fromTo(crownGroup.rotation,
-        { y: 0.42 + Math.PI * 0.9 },
+        { y: 0.42 + Math.PI * 0.9, immediateRender: false },
         { y: 0.42 + Math.PI * 1.4,
-          scrollTrigger: { trigger: '.chapter-2', start: 'top 90%', end: 'top top', scrub: 1.5 }
+          scrollTrigger: { trigger: '.chapter-2', start: 'top 90%', end: 'top top', scrub: 0.5 }
         });
 
       // =============== TRANSITION ZOOM ===============
@@ -1362,13 +1379,14 @@
       // - 0-40% : couronne zoom in (vers caméra, grossit)
       // - 40-100% : canvas fade out (fondu blanc)
 
-      // Transition couronne : 150vh (raccourci pour arriver vite à la vidéo)
+      // Transition couronne : 150vh
       ScrollTrigger.create({
         trigger: '#transitionZoom',
         start: 'top top',
         end: '+=150%',
         pin: true,
-        pinSpacing: true
+        pinSpacing: true,
+        anticipatePin: 1
       });
 
       var transTL = gsap.timeline({
@@ -1376,16 +1394,17 @@
           trigger: '#transitionZoom',
           start: 'top top',
           end: '+=150%',
-          scrub: 1.2
+          scrub: 0.6
         }
       });
 
       // Three.js render loop actif seulement quand le canvas est visible
       var _renderActive = true;
+      // immediateRender: false sur les from-vars → évite l'écrasement de l'état initial
       transTL
-        .fromTo(crownGroup.position, { x: 0, y: 0, z: -1 }, { x: 0, y: 0, z: 7 }, 0)
-        .fromTo(crownGroup.scale, { x: crownBaseScale * 0.85, y: crownBaseScale * 0.85, z: crownBaseScale * 0.85 }, { x: crownBaseScale * 4.5, y: crownBaseScale * 4.5, z: crownBaseScale * 4.5 }, 0)
-        .fromTo(crownGroup.rotation, { y: 0.42 + Math.PI * 1.4 }, { y: 0.42 + Math.PI * 2.2 }, 0)
+        .fromTo(crownGroup.position, { x: 0, y: 0, z: -1, immediateRender: false }, { x: 0, y: 0, z: 7 }, 0)
+        .fromTo(crownGroup.scale, { x: crownBaseScale * 0.85, y: crownBaseScale * 0.85, z: crownBaseScale * 0.85, immediateRender: false }, { x: crownBaseScale * 4.5, y: crownBaseScale * 4.5, z: crownBaseScale * 4.5 }, 0)
+        .fromTo(crownGroup.rotation, { y: 0.42 + Math.PI * 1.4, immediateRender: false }, { y: 0.42 + Math.PI * 2.2 }, 0)
         .to(canvasContainer, { opacity: 0, onComplete: function() { _renderActive = false; }, onReverseComplete: function() { _renderActive = true; } }, 0.45);
 
       // =============== AFFICHE EXPO: crossfade automatique ===============
