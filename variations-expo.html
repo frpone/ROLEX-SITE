@@ -689,6 +689,30 @@
       transform: scale(3.2);
       transform-origin: var(--mx, 50%) var(--my, 50%);
     }
+    /* Mode photo : affiche plein pot, sans crop */
+    .lb-canvas.lb-photo {
+      width: auto;
+      max-width: 640px;
+      aspect-ratio: auto;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .lb-canvas.lb-photo img {
+      display: block;
+      width: auto;
+      height: auto;
+      max-width: 100%;
+      max-height: 80vh;
+      object-fit: contain;
+      transition: transform 0.3s ease-out;
+      pointer-events: none;
+    }
+    .lb-canvas.lb-photo.zoom-3 img {
+      transform: scale(3.2);
+      transform-origin: var(--mx, 50%) var(--my, 50%);
+    }
     .lb-frame-note {
       margin-top: 20px;
       font-size: 10px; letter-spacing: var(--tr-wide);
@@ -937,7 +961,7 @@
     <div id="scene-intro2">
       <video id="vid-intro2"
         src="https://www.dropbox.com/scl/fi/437e2aufjsxxmspxfyqxi/intro2.mp4?rlkey=6seejoe84p0e7v0aipxktzx6p&raw=1"
-        muted playsinline preload="auto"></video>
+        muted playsinline preload="none"></video>
       <div class="vid-loading" id="vid-intro2-loading">Chargement…</div>
       <!-- Zones cliquables qui apparaissent sur la dernière frame (les 3 affiches sur le mur) -->
       <div class="poster-overlays" id="posterOverlays">
@@ -1172,30 +1196,31 @@
       // - 0-40% : couronne zoom in (vers caméra, grossit)
       // - 40-100% : canvas fade out (fondu blanc)
 
-      // Pin la zone transition pendant +=350% (3.5 viewports de scroll)
+      // Transition couronne : 150vh (raccourci pour arriver vite à la vidéo)
       ScrollTrigger.create({
         trigger: '#transitionZoom',
         start: 'top top',
-        end: '+=350%',
+        end: '+=150%',
         pin: true,
         pinSpacing: true
       });
 
-      // Timeline interne synchronisée avec ce scroll
       var transTL = gsap.timeline({
         scrollTrigger: {
           trigger: '#transitionZoom',
           start: 'top top',
-          end: '+=350%',
+          end: '+=150%',
           scrub: 1.2
         }
       });
 
+      // Three.js render loop actif seulement quand le canvas est visible
+      var _renderActive = true;
       transTL
         .fromTo(crownGroup.position, { x: 0, y: 0, z: -1 }, { x: 0, y: 0, z: 7 }, 0)
         .fromTo(crownGroup.scale, { x: crownBaseScale * 0.85, y: crownBaseScale * 0.85, z: crownBaseScale * 0.85 }, { x: crownBaseScale * 4.5, y: crownBaseScale * 4.5, z: crownBaseScale * 4.5 }, 0)
         .fromTo(crownGroup.rotation, { y: 0.42 + Math.PI * 1.4 }, { y: 0.42 + Math.PI * 2.2 }, 0)
-        .to(canvasContainer, { opacity: 0 }, 0.40);
+        .to(canvasContainer, { opacity: 0, onComplete: function() { _renderActive = false; }, onReverseComplete: function() { _renderActive = true; } }, 0.45);
 
       // =============== SCROLL SCRUB VIDÉO — pin via GSAP (compatible Lenis) ===============
       // CSS position:sticky ne fonctionne pas avec Lenis → on utilise ScrollTrigger pin:true
@@ -1210,32 +1235,36 @@
         { no: 'N° 003', title: 'Crown Stripes',     year: '2023', note: 'Rayures bold noir/blanc. La couronne apparaît en négatif. Force graphique maximale.' }
       ];
 
-      function setupVideoScene(sceneId, videoId, loadingId, scrollPx, dwellRatio, onProgress) {
-        var scene = document.getElementById(sceneId);
-        var vid   = document.getElementById(videoId);
-        var ldg   = document.getElementById(loadingId);
-        if (!scene || !vid) return;
+      // startPct = fraction de la vidéo à sauter au début (ex: 0.15 = skip 15%)
+      function setupVideoScene(sceneId, videoId, loadingId, scrollPx, dwellRatio, onProgress, startPct) {
+        var sceneEl = document.getElementById(sceneId);
+        var vid     = document.getElementById(videoId);
+        var ldg     = document.getElementById(loadingId);
+        if (!sceneEl || !vid) return;
 
-        // Forcer le buffering dès le chargement
+        var sp = startPct || 0;
         vid.muted = true;
-        vid.load();
+        // Ne pas appeler load() ici si preload="none" — géré en externe pour intro2
+        if (vid.preload !== 'none') vid.load();
+
         var _buffered = false;
         vid.addEventListener('canplay', function() {
           if (ldg) ldg.classList.add('hidden');
           if (_buffered) return;
           _buffered = true;
+          // Avancer à la frame de départ, puis mettre en pause
+          vid.currentTime = sp * (vid.duration || 0);
           var pr = vid.play();
           if (pr && pr.then) pr.then(function() {
-            setTimeout(function() { vid.pause(); vid.currentTime = 0; }, 100);
+            setTimeout(function() { vid.pause(); }, 80);
           }).catch(function(){});
         });
 
         var dr = dwellRatio || 0.75;
         var _last = -1;
 
-        // GSAP pin = scroll contrôlé, compatible Lenis
         ScrollTrigger.create({
-          trigger: scene,
+          trigger: sceneEl,
           start: 'top top',
           end: '+=' + scrollPx,
           pin: true,
@@ -1243,25 +1272,36 @@
           scrub: 1.2,
           onUpdate: function(self) {
             if (!vid.duration) return;
+            // Mapping : [0→dr] du progress = [startPct→1.0] de la vidéo
             var p = Math.min(1, self.progress / dr);
-            var t = p * vid.duration;
+            var t = sp * vid.duration + p * vid.duration * (1 - sp);
             if (Math.abs(t - _last) > 0.033) { _last = t; vid.currentTime = t; }
             if (onProgress) onProgress(self.progress);
           }
         });
       }
 
-      // Scène 1 : AFFICHE_EXPO — 3000px de scroll, vidéo termine à 75%
-      setupVideoScene('scene-affiche', 'vid-affiche', 'vid-affiche-loading', 3000, 0.75, null);
+      // Scène 1 : AFFICHE_EXPO — 2500px, vidéo commence à 15% (skip intro), termine à 80%
+      setupVideoScene('scene-affiche', 'vid-affiche', 'vid-affiche-loading', 2500, 0.80, null, 0.15);
 
-      // Scène 2 : intro2 — 3500px, vidéo termine à 80%, les 20% restants = affiches cliquables
+      // Scène 2 : intro2 — chargement lazy (seulement quand on approche)
+      var _intro2Loaded = false;
+      var vidIntro2El = document.getElementById('vid-intro2');
+      ScrollTrigger.create({
+        trigger: '#scene-intro2',
+        start: 'top 120%',
+        onEnter: function() {
+          if (!_intro2Loaded && vidIntro2El) { _intro2Loaded = true; vidIntro2El.load(); }
+        }
+      });
+
       var posterOverlays = document.getElementById('posterOverlays');
-      setupVideoScene('scene-intro2', 'vid-intro2', 'vid-intro2-loading', 3500, 0.80, function(progress) {
+      setupVideoScene('scene-intro2', 'vid-intro2', 'vid-intro2-loading', 3000, 0.80, function(progress) {
         if (posterOverlays) {
           if (progress >= 0.80) { posterOverlays.classList.add('visible'); }
           else                  { posterOverlays.classList.remove('visible'); }
         }
-      });
+      }, 0);
 
       // Clic sur les zones d'affiches → lightbox
       [0, 1, 2].forEach(function(i) {
@@ -1276,11 +1316,11 @@
           lbTechYear.textContent  = d.year;
           lbNote.textContent      = d.note;
           lbCanvas.innerHTML = '';
+          lbCanvas.classList.remove('zoom-3');
+          lbCanvas.classList.add('lb-photo');
           var img = new Image();
           img.src = POSTER_SRCS[i];
-          img.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;';
           lbCanvas.appendChild(img);
-          lbCanvas.classList.remove('zoom-3');
           lightbox.classList.add('active');
           lightbox.scrollTop = 0;
           lenis.stop();
@@ -1319,7 +1359,7 @@
       }
       function closeLightbox() {
         lightbox.classList.remove('active');
-        lbCanvas.classList.remove('zoom-3');
+        lbCanvas.classList.remove('zoom-3', 'lb-photo');
         loupe.classList.remove('active');
         lenis.start();
         document.body.style.overflow = '';
@@ -1349,11 +1389,11 @@
       });
 
       // =============== RENDER LOOP ===============
+      // S'arrête automatiquement quand la couronne est invisible (économise GPU/CPU)
       var clock = new THREE.Clock();
       function animate() {
         requestAnimationFrame(animate);
-        var t = clock.getElapsedTime();
-        renderer.render(scene, camera);
+        if (_renderActive) renderer.render(scene, camera);
       }
       animate();
 
