@@ -136,7 +136,7 @@
     .site-nav a:hover { opacity: 0.55; }
 
     main { position: relative; z-index: 2; pointer-events: none; }
-    main a, main button, main .poster-card { pointer-events: auto; }
+    main a, main button, main .p-btn { pointer-events: auto; }
 
     /* =====================================
        HERO
@@ -781,19 +781,21 @@
       .lb-zoom-hint { display: none; }
     }
 
-    /* ===== VIDEOS SCROLL SCRUB ===== */
-    #scene-affiche { height: calc(100vh + 2800px); background: #fff; }
-    #scene-intro2  { height: calc(100vh + 2800px); background: #000; }
-    .scene-video-sticky {
-      position: sticky;
-      top: 0;
+    /* ===== VIDEOS SCROLL SCRUB (pin via GSAP, compatible Lenis) ===== */
+    #scene-affiche,
+    #scene-intro2 {
+      width: 100%;
       height: 100vh;
       overflow: hidden;
+      position: relative;
+      background: #000;
     }
-    .scene-video-sticky video {
+    #scene-affiche video,
+    #scene-intro2 video {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      display: block;
     }
     .vid-loading {
       position: absolute;
@@ -801,84 +803,57 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      color: rgba(255,255,255,0.5);
-      font-size: 11px;
-      letter-spacing: 0.3em;
+      color: rgba(255,255,255,0.4);
+      font-size: 10px;
+      letter-spacing: 0.4em;
       text-transform: uppercase;
       pointer-events: none;
-      transition: opacity 0.5s;
+      transition: opacity 0.6s;
     }
     .vid-loading.hidden { opacity: 0; }
 
-    /* ===== POSTER GALLERY ===== */
-    #poster-gallery {
-      background: #f8f7f5;
-      padding: 100px 60px 140px;
-    }
-    .poster-invite {
+    /* Zones cliquables sur la dernière frame de intro2 */
+    .poster-overlays {
+      position: absolute;
+      inset: 0;
       display: flex;
       align-items: center;
-      gap: 24px;
-      justify-content: center;
-      margin-bottom: 70px;
-      color: #1a1a1a;
+      justify-content: space-around;
+      padding: 5% 8%;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.8s ease;
     }
-    .pi-line {
-      flex: 1;
-      max-width: 120px;
-      height: 1px;
-      background: #1a1a1a;
-      opacity: 0.25;
+    .poster-overlays.visible {
+      opacity: 1;
+      pointer-events: auto;
     }
-    .pi-text {
-      font-size: 11px;
-      letter-spacing: 0.35em;
-      text-transform: uppercase;
-      font-weight: 500;
-      color: #1a1a1a;
-      white-space: nowrap;
-    }
-    .poster-row {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 32px;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    .poster-card {
+    .p-btn {
+      flex: 0 0 26%;
+      aspect-ratio: 2/3;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.25);
       cursor: pointer;
       position: relative;
-      overflow: hidden;
-      aspect-ratio: 3/4;
-      background: #e8e6e2;
-      transition: transform 0.5s ease, box-shadow 0.5s ease;
+      transition: border-color 0.3s;
     }
-    .poster-card:hover { transform: translateY(-6px); box-shadow: 0 24px 60px rgba(0,0,0,0.15); }
-    .poster-card img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-    .poster-card-hint {
+    .p-btn:hover { border-color: rgba(255,255,255,0.7); }
+    .p-btn-label {
       position: absolute;
-      bottom: 0; left: 0; right: 0;
-      background: rgba(255,255,255,0.92);
-      text-align: center;
-      padding: 12px;
-      font-size: 10px;
-      letter-spacing: 0.3em;
+      bottom: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 9px;
+      letter-spacing: 0.4em;
+      color: rgba(255,255,255,0.7);
       text-transform: uppercase;
-      color: #1a1a1a;
-      font-weight: 600;
-      transform: translateY(100%);
-      transition: transform 0.3s ease;
+      white-space: nowrap;
+      background: rgba(0,0,0,0.45);
+      padding: 5px 14px;
     }
-    .poster-card:hover .poster-card-hint { transform: translateY(0); }
 
     @media (max-width: 768px) {
-      .poster-row { grid-template-columns: 1fr; gap: 20px; }
-      #poster-gallery { padding: 60px 20px 100px; }
+      .p-btn { flex: 0 0 30%; }
     }
   </style>
 </head>
@@ -950,51 +925,36 @@
       <div class="transition-stage"></div>
     </section>
 
-    <!-- AFFICHE EXPO — scroll scrub sur fond blanc -->
+    <!-- AFFICHE EXPO — pinné par GSAP ScrollTrigger (compatible Lenis) -->
     <div id="scene-affiche">
-      <div class="scene-video-sticky" style="position:relative;">
-        <video id="vid-affiche"
-          src="https://www.dropbox.com/scl/fi/4ft9e58s92tb84efv1bw6/AFFICHE_EXPO.mp4?rlkey=ueatj4jahanocdwznw5k977um&raw=1"
-          muted playsinline preload="auto"></video>
-        <div class="vid-loading" id="vid-affiche-loading">Chargement…</div>
-      </div>
+      <video id="vid-affiche"
+        src="https://www.dropbox.com/scl/fi/4ft9e58s92tb84efv1bw6/AFFICHE_EXPO.mp4?rlkey=ueatj4jahanocdwznw5k977um&raw=1"
+        muted playsinline preload="auto"></video>
+      <div class="vid-loading" id="vid-affiche-loading">Chargement…</div>
     </div>
 
-    <!-- INTRO 2 — animation salle de musée -->
+    <!-- INTRO 2 — animation salle de musée, affiches cliquables en overlay -->
     <div id="scene-intro2">
-      <div class="scene-video-sticky" style="position:relative;">
-        <video id="vid-intro2"
-          src="https://www.dropbox.com/scl/fi/437e2aufjsxxmspxfyqxi/intro2.mp4?rlkey=6seejoe84p0e7v0aipxktzx6p&raw=1"
-          muted playsinline preload="auto"></video>
-        <div class="vid-loading" id="vid-intro2-loading">Chargement…</div>
+      <video id="vid-intro2"
+        src="https://www.dropbox.com/scl/fi/437e2aufjsxxmspxfyqxi/intro2.mp4?rlkey=6seejoe84p0e7v0aipxktzx6p&raw=1"
+        muted playsinline preload="auto"></video>
+      <div class="vid-loading" id="vid-intro2-loading">Chargement…</div>
+      <!-- Zones cliquables qui apparaissent sur la dernière frame (les 3 affiches sur le mur) -->
+      <div class="poster-overlays" id="posterOverlays">
+        <button class="p-btn" id="pbtn-0">
+          <span class="p-btn-label">Cliquer</span>
+        </button>
+        <button class="p-btn" id="pbtn-1">
+          <span class="p-btn-label">Cliquer</span>
+        </button>
+        <button class="p-btn" id="pbtn-2">
+          <span class="p-btn-label">Cliquer</span>
+        </button>
       </div>
     </div>
-
-    <!-- AFFICHES CLIQUABLES — fond blanc -->
-    <section id="poster-gallery">
-      <div class="poster-invite">
-        <div class="pi-line"></div>
-        <span class="pi-text">Cliquer sur une affiche pour l'agrandir</span>
-        <div class="pi-line"></div>
-      </div>
-      <div class="poster-row">
-        <div class="poster-card" data-poster='{"no":"N° 001","title":"The Rolex Crown","year":"2023","note":"Couronne Rolex en silhouette sur fond gris clair. Les valeurs de la marque énoncées comme un manifeste."}'>
-          <img src="https://www.dropbox.com/scl/fi/79z7bxstc7fanngi7m3d0/TRYPTIQUE_003_HD_A_.webp?rlkey=favytsozhyeglui09f04xo440&raw=1" alt="The Rolex Crown" />
-          <div class="poster-card-hint">↑ Cliquer pour agrandir</div>
-        </div>
-        <div class="poster-card" data-poster='{"no":"N° 002","title":"Perpetual","year":"2023","note":"Op-art labyrinthe. La couronne cachée au centre du motif — visible seulement si on cherche."}'>
-          <img src="https://www.dropbox.com/scl/fi/u7q8kfzmxmrxv259kgf06/TRYPTIQUE_003_HD_B_.webp?rlkey=ydq4nkooabmwerjrbnyv50n83&raw=1" alt="Perpetual" />
-          <div class="poster-card-hint">↑ Cliquer pour agrandir</div>
-        </div>
-        <div class="poster-card" data-poster='{"no":"N° 003","title":"Crown Stripes","year":"2023","note":"Rayures bold noir/blanc. La couronne apparaît en négatif. Force graphique maximale."}'>
-          <img src="https://www.dropbox.com/scl/fi/ddyib5ixfvkfqj811t4ae/TRYPTIQUE_003_HD_C_.webp?rlkey=wsrqk3n3h0qlx4fr0gi3170bw&raw=1" alt="Crown Stripes" />
-          <div class="poster-card-hint">↑ Cliquer pour agrandir</div>
-        </div>
-      </div>
-    </section>
 
   </main>
-
+        </div>
   <!-- LIGHTBOX -->
   <div class="lightbox" id="lightbox">
     <div class="lb-bar">
@@ -1237,77 +1197,89 @@
         .fromTo(crownGroup.rotation, { y: 0.42 + Math.PI * 1.4 }, { y: 0.42 + Math.PI * 2.2 }, 0)
         .to(canvasContainer, { opacity: 0 }, 0.40);
 
-      // =============== SCROLL SCRUB VIDÉO — helper robuste ===============
-      // Stratégie : forcer le buffering par play/pause au chargement,
-      // puis scrubber en clampant à 75% max (les 25% restants = dwell/lecture).
-      function setupVideoScrub(videoId, triggerId, loadingId, dwellRatio) {
-        var vid = document.getElementById(videoId);
-        var loadingEl = document.getElementById(loadingId);
-        if (!vid) return;
+      // =============== SCROLL SCRUB VIDÉO — pin via GSAP (compatible Lenis) ===============
+      // CSS position:sticky ne fonctionne pas avec Lenis → on utilise ScrollTrigger pin:true
+      var POSTER_SRCS = [
+        'https://www.dropbox.com/scl/fi/79z7bxstc7fanngi7m3d0/TRYPTIQUE_003_HD_A_.webp?rlkey=favytsozhyeglui09f04xo440&raw=1',
+        'https://www.dropbox.com/scl/fi/u7q8kfzmxmrxv259kgf06/TRYPTIQUE_003_HD_B_.webp?rlkey=ydq4nkooabmwerjrbnyv50n83&raw=1',
+        'https://www.dropbox.com/scl/fi/ddyib5ixfvkfqj811t4ae/TRYPTIQUE_003_HD_C_.webp?rlkey=wsrqk3n3h0qlx4fr0gi3170bw&raw=1'
+      ];
+      var POSTER_DATA = [
+        { no: 'N° 001', title: 'The Rolex Crown',  year: '2023', note: 'Couronne Rolex en silhouette sur fond gris clair. Les valeurs de la marque énoncées comme un manifeste.' },
+        { no: 'N° 002', title: 'Perpetual',         year: '2023', note: 'Op-art labyrinthe. La couronne cachée au centre du motif — visible seulement si on cherche.' },
+        { no: 'N° 003', title: 'Crown Stripes',     year: '2023', note: 'Rayures bold noir/blanc. La couronne apparaît en négatif. Force graphique maximale.' }
+      ];
 
-        // Forcer le buffering : play silencieux → pause immédiate
+      function setupVideoScene(sceneId, videoId, loadingId, scrollPx, dwellRatio, onProgress) {
+        var scene = document.getElementById(sceneId);
+        var vid   = document.getElementById(videoId);
+        var ldg   = document.getElementById(loadingId);
+        if (!scene || !vid) return;
+
+        // Forcer le buffering dès le chargement
         vid.muted = true;
         vid.load();
-        var bufferStarted = false;
+        var _buffered = false;
         vid.addEventListener('canplay', function() {
-          if (!bufferStarted) {
-            bufferStarted = true;
-            var p = vid.play();
-            if (p && p.then) {
-              p.then(function() {
-                setTimeout(function() { vid.pause(); vid.currentTime = 0; }, 80);
-              }).catch(function() {});
-            }
-          }
-          if (loadingEl) loadingEl.classList.add('hidden');
+          if (ldg) ldg.classList.add('hidden');
+          if (_buffered) return;
+          _buffered = true;
+          var pr = vid.play();
+          if (pr && pr.then) pr.then(function() {
+            setTimeout(function() { vid.pause(); vid.currentTime = 0; }, 100);
+          }).catch(function(){});
         });
 
-        // Ratio du scroll où la vidéo se termine (le reste = dwell sur dernière frame)
-        var dr = dwellRatio || 0.72;
-        var lastTarget = 0;
+        var dr = dwellRatio || 0.75;
+        var _last = -1;
 
+        // GSAP pin = scroll contrôlé, compatible Lenis
         ScrollTrigger.create({
-          trigger: '#' + triggerId,
+          trigger: scene,
           start: 'top top',
-          end: 'bottom bottom',
-          scrub: 1.5,
+          end: '+=' + scrollPx,
+          pin: true,
+          pinSpacing: true,
+          scrub: 1.2,
           onUpdate: function(self) {
             if (!vid.duration) return;
-            // Compresser : la vidéo finit à dr% du scroll, reste = freeze
             var p = Math.min(1, self.progress / dr);
-            var target = p * vid.duration;
-            // N'envoyer la commande que si le delta est significatif
-            if (Math.abs(target - lastTarget) > 0.04) {
-              lastTarget = target;
-              // Ne seek que dans la plage bufferisée pour éviter le freeze
-              if (vid.readyState >= 2) {
-                vid.currentTime = target;
-              }
-            }
+            var t = p * vid.duration;
+            if (Math.abs(t - _last) > 0.033) { _last = t; vid.currentTime = t; }
+            if (onProgress) onProgress(self.progress);
           }
         });
       }
 
-      setupVideoScrub('vid-affiche', 'scene-affiche', 'vid-affiche-loading', 0.72);
-      setupVideoScrub('vid-intro2',  'scene-intro2',  'vid-intro2-loading',  0.78);
+      // Scène 1 : AFFICHE_EXPO — 3000px de scroll, vidéo termine à 75%
+      setupVideoScene('scene-affiche', 'vid-affiche', 'vid-affiche-loading', 3000, 0.75, null);
 
-      // =============== POSTER GALLERY — lightbox ===============
-      var posterCards = Array.from(document.querySelectorAll('.poster-card'));
-      posterCards.forEach(function(card) {
-        card.addEventListener('click', function() {
-          var data = JSON.parse(card.dataset.poster);
-          var img = card.querySelector('img');
-          lbNo.textContent        = data.no;
-          lbCounterNo.textContent = data.no;
-          lbTitle.textContent     = data.title;
-          lbYear.textContent      = data.year;
-          lbTechYear.textContent  = data.year;
-          lbNote.textContent      = data.note;
-          lbCanvas.innerHTML      = '';
-          var lbImg = document.createElement('img');
-          lbImg.src = img.src;
-          lbImg.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;';
-          lbCanvas.appendChild(lbImg);
+      // Scène 2 : intro2 — 3500px, vidéo termine à 80%, les 20% restants = affiches cliquables
+      var posterOverlays = document.getElementById('posterOverlays');
+      setupVideoScene('scene-intro2', 'vid-intro2', 'vid-intro2-loading', 3500, 0.80, function(progress) {
+        if (posterOverlays) {
+          if (progress >= 0.80) { posterOverlays.classList.add('visible'); }
+          else                  { posterOverlays.classList.remove('visible'); }
+        }
+      });
+
+      // Clic sur les zones d'affiches → lightbox
+      [0, 1, 2].forEach(function(i) {
+        var btn = document.getElementById('pbtn-' + i);
+        if (!btn) return;
+        btn.addEventListener('click', function() {
+          var d = POSTER_DATA[i];
+          lbNo.textContent        = d.no;
+          lbCounterNo.textContent = d.no;
+          lbTitle.textContent     = d.title;
+          lbYear.textContent      = d.year;
+          lbTechYear.textContent  = d.year;
+          lbNote.textContent      = d.note;
+          lbCanvas.innerHTML = '';
+          var img = new Image();
+          img.src = POSTER_SRCS[i];
+          img.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;';
+          lbCanvas.appendChild(img);
           lbCanvas.classList.remove('zoom-3');
           lightbox.classList.add('active');
           lightbox.scrollTop = 0;
