@@ -962,11 +962,11 @@
     <!-- MANIFESTE — 3 chapitres pinned via ScrollTrigger -->
     <div class="manifesto-zone">
 
-      <section class="chapter chapter-1 chapter-left">
+      <section class="chapter chapter-1 chapter-right">
         <div class="chapter-content">
-          <div class="chapter-eyebrow">Chapter One</div>
-          <h2 class="chapter-title">The icon,<br/><span class="italic">unobserved</span></h2>
-          <p class="chapter-text">Seen a thousand times. Five points, one circle, one seal. <strong>Rarely truly observed.</strong> The crown is the most famous mark in watchmaking, and yet it has never been examined as an object in itself.</p>
+          <div class="chapter-eyebrow">Chapter I</div>
+          <h2 class="chapter-title">A<br/><span class="italic">laboratory</span></h2>
+          <p class="chapter-text">Ten years of work on the crown under brand constraint. <strong>This series approaches it free.</strong> Like a painter who studies a single chair for months — same subject, hundreds of treatments, no commercial end.</p>
         </div>
         <div class="chapter-freeze-mark">
           <span class="dot"></span>
@@ -974,27 +974,15 @@
         </div>
       </section>
 
-      <section class="chapter chapter-2 chapter-right">
+      <section class="chapter chapter-2 chapter-center">
         <div class="chapter-content">
-          <div class="chapter-eyebrow">Chapter Two</div>
-          <h2 class="chapter-title">The<br/><span class="italic">laboratory</span></h2>
-          <p class="chapter-text">Ten years of work on the crown under brand constraint. <strong>This series approaches it free.</strong> Like a painter who studies a single chair for months — same subject, hundreds of treatments, no commercial end.</p>
-        </div>
-        <div class="chapter-freeze-mark">
-          <span class="dot"></span>
-          <span>II &nbsp;·&nbsp; Take time to read</span>
-        </div>
-      </section>
-
-      <section class="chapter chapter-3 chapter-center">
-        <div class="chapter-content">
-          <div class="chapter-eyebrow">Chapter Three</div>
+          <div class="chapter-eyebrow">Chapter II</div>
           <h2 class="chapter-title">The<br/><span class="italic">variations</span></h2>
           <p class="chapter-text"><strong>Twenty-four posters, six graphic registers.</strong> Op art, photography, typography, sculpture, illustration, brutalism. One single source motif. One question : how many images can one icon yield ?</p>
         </div>
         <div class="chapter-freeze-mark">
           <span class="dot"></span>
-          <span>III &nbsp;·&nbsp; Take time to read</span>
+          <span>II &nbsp;·&nbsp; Take time to read</span>
         </div>
       </section>
 
@@ -1003,63 +991,7 @@
     <!-- TRANSITION ZOOM + FRONTISPICE
          Pin sur ~350vh : couronne zoom → fade noir → frontispice apparaît → freeze → exit -->
     <section class="transition-zoom" id="transitionZoom">
-      <div class="transition-stage">
-        <div class="frontispiece-spotlight" id="frontispieceSpotlight"></div>
-        <div class="frontispiece-wrap" id="frontispiece">
-          <svg viewBox="0 0 700 1000" preserveAspectRatio="xMidYMid slice">
-            <defs>
-              <radialGradient id="fp-shade-1" cx="50%" cy="40%" r="65%">
-                <stop offset="0%" stop-color="#ffffff"/>
-                <stop offset="100%" stop-color="#d8d6d2"/>
-              </radialGradient>
-              <linearGradient id="fp-spike-shade" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stop-color="#ffffff"/>
-                <stop offset="50%" stop-color="#e6e4e0"/>
-                <stop offset="100%" stop-color="#c8c5c0"/>
-              </linearGradient>
-            </defs>
-            <rect width="700" height="1000" fill="url(#fp-shade-1)"/>
-            <g>
-              <path d="M 100 240 L 130 180 L 160 240 L 160 880 L 100 880 Z" fill="url(#fp-spike-shade)" opacity="0.95"/>
-              <circle cx="130" cy="180" r="56" fill="#ffffff"/>
-              <circle cx="130" cy="180" r="56" fill="#dadada" opacity="0.5"/>
-              <ellipse cx="130" cy="160" rx="48" ry="40" fill="#f8f6f3"/>
-              <path d="M 230 220 L 270 110 L 305 220 L 305 880 L 230 880 Z" fill="url(#fp-spike-shade)" opacity="0.97"/>
-              <circle cx="270" cy="110" r="60" fill="#ffffff"/>
-              <circle cx="270" cy="110" r="60" fill="#dadada" opacity="0.4"/>
-              <ellipse cx="270" cy="90" rx="52" ry="42" fill="#f8f6f3"/>
-              <path d="M 380 230 L 420 60 L 460 230 L 460 880 L 380 880 Z" fill="url(#fp-spike-shade)"/>
-              <circle cx="420" cy="60" r="64" fill="#ffffff"/>
-              <circle cx="420" cy="60" r="64" fill="#dadada" opacity="0.4"/>
-              <ellipse cx="420" cy="40" rx="56" ry="44" fill="#f8f6f3"/>
-              <path d="M 530 220 L 565 110 L 605 220 L 605 880 L 530 880 Z" fill="url(#fp-spike-shade)" opacity="0.97"/>
-              <circle cx="565" cy="110" r="60" fill="#ffffff"/>
-              <circle cx="565" cy="110" r="60" fill="#dadada" opacity="0.4"/>
-              <ellipse cx="565" cy="90" rx="52" ry="42" fill="#f8f6f3"/>
-              <ellipse cx="350" cy="880" rx="320" ry="60" fill="url(#fp-spike-shade)"/>
-            </g>
-            <g font-family="sweet-sans-pro, Helvetica, sans-serif" font-weight="600" fill="#0a0a0a" letter-spacing="-2">
-              <text x="45" y="240" font-size="86">RO</text>
-              <text x="45" y="370" font-size="86">LEX</text>
-              <text x="45" y="500" font-size="86">CROWN</text>
-              <text x="45" y="630" font-size="86">EXHI</text>
-              <text x="45" y="760" font-size="86">BI</text>
-              <text x="45" y="890" font-size="86">TION</text>
-            </g>
-            <g font-family="sweet-sans-pro, Helvetica, sans-serif" fill="#0a0a0a">
-              <text x="490" y="490" font-size="20" font-weight="500">Design</text>
-              <text x="490" y="514" font-size="20" font-weight="500">Art</text>
-              <text x="490" y="538" font-size="20" font-weight="500">Culture</text>
-              <text x="370" y="700" font-size="14">François <tspan font-weight="600">Peyranne</tspan></text>
-              <text x="370" y="722" font-size="14">Selected works of art'poster</text>
-            </g>
-          </svg>
-        </div>
-        <div class="frontispiece-caption" id="frontispieceCaption">
-          The Exhibition
-          <span class="italic">Variations on a Crown — 24 works</span>
-        </div>
-      </div>
+      <div class="transition-stage"></div>
     </section>
 
     <!-- DOLLY-IN : entrée dans la galerie (scroll-scrub) -->
