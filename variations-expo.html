@@ -139,14 +139,51 @@
     main a, main button, main .p-btn { pointer-events: auto; }
 
     /* =====================================
-       HERO
+       CROWN SEQUENCE — section unique, pin GSAP
        ===================================== */
-    .scene-hero {
-      min-height: 100vh; width: 100%;
-      padding: 120px 60px 0;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
+    #crown-sequence {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+    }
+    /* Couches superposées dans la section unique */
+    .seq-layer {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      opacity: 0;
+      pointer-events: none;
+      padding: 80px 60px;
+    }
+    #seq-hero {
+      opacity: 1;
+      pointer-events: auto;
+      flex-direction: column;
+      justify-content: center;
       text-align: center;
+    }
+    #seq-ch1 { justify-content: flex-end; }
+    #seq-ch2 { justify-content: center; }
+
+    .seq-freeze-mark {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 9px;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--ink-mute);
+    }
+    .seq-freeze-mark .dot {
+      width: 5px; height: 5px;
+      background: var(--ink-mute);
+      border-radius: 50%;
     }
     .scene-hero-eyebrow {
       font-size: 10px; letter-spacing: var(--tr-wide);
@@ -1079,58 +1116,49 @@
 
   <main>
 
-    <!-- HERO -->
-    <section class="scene-hero">
-      <div class="scene-hero-eyebrow">Perpetual · A solo study</div>
-      <h1 class="scene-hero-title">Variations<br/><span class="italic">on a Crown</span></h1>
-      <p class="scene-hero-sub">Twenty-four works on the same icon<br/>by François Peyranne.</p>
-      <div class="scroll-cue">
-        <span>Scroll to begin</span>
-        <svg width="14" height="20" viewBox="0 0 14 20" fill="none" stroke="currentColor" stroke-width="1">
-          <path d="M7 1v18M1 13l6 6 6-6" stroke-linecap="round"/>
-        </svg>
+    <!-- SÉQUENCE COURONNE — une seule section pinned, timeline continue -->
+    <div id="crown-sequence">
+
+      <!-- Couche 0 : Hero (visible au départ) -->
+      <div id="seq-hero" class="seq-layer">
+        <div class="scene-hero-eyebrow">Perpetual · A solo study</div>
+        <h1 class="scene-hero-title">Variations<br/><span class="italic">on a Crown</span></h1>
+        <p class="scene-hero-sub">Twenty-four works on the same icon<br/>by François Peyranne.</p>
+        <div class="scroll-cue">
+          <span>Scroll to begin</span>
+          <svg width="14" height="20" viewBox="0 0 14 20" fill="none" stroke="currentColor" stroke-width="1">
+            <path d="M7 1v18M1 13l6 6 6-6" stroke-linecap="round"/>
+          </svg>
+        </div>
       </div>
-    </section>
 
-    <!-- MANIFESTE — 3 chapitres pinned via ScrollTrigger -->
-    <div class="manifesto-zone">
-
-      <section class="chapter chapter-1 chapter-right">
+      <!-- Couche 1 : Chapter I (apparaît ~13% du scroll) -->
+      <div id="seq-ch1" class="seq-layer">
         <div class="chapter-content">
           <div class="chapter-eyebrow">Chapter I</div>
           <h2 class="chapter-title">A<br/><span class="italic">laboratory</span></h2>
           <p class="chapter-text">Ten years of work on the crown under brand constraint. <strong>This series approaches it free.</strong> Like a painter who studies a single chair for months — same subject, hundreds of treatments, no commercial end.</p>
         </div>
-        <div class="chapter-freeze-mark">
+        <div class="seq-freeze-mark">
           <span class="dot"></span>
           <span>I &nbsp;·&nbsp; Take time to read</span>
-          <svg class="scroll-arrow" width="10" height="14" viewBox="0 0 10 14" fill="none" stroke="currentColor" stroke-width="1.2">
-            <path d="M5 1v12M1 9l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
         </div>
-      </section>
+      </div>
 
-      <section class="chapter chapter-2 chapter-center">
-        <div class="chapter-content">
+      <!-- Couche 2 : Chapter II (apparaît ~47% du scroll) -->
+      <div id="seq-ch2" class="seq-layer">
+        <div class="chapter-content chapter-center" style="max-width:720px; text-align:center;">
           <div class="chapter-eyebrow">Chapter II</div>
           <h2 class="chapter-title">The<br/><span class="italic">variations</span></h2>
           <p class="chapter-text"><strong>Twenty-four posters, six graphic registers.</strong> Op art, photography, typography, sculpture, illustration, brutalism. One single source motif. One question : how many images can one icon yield ?</p>
         </div>
-        <div class="chapter-freeze-mark">
+        <div class="seq-freeze-mark">
           <span class="dot"></span>
           <span>II &nbsp;·&nbsp; Take time to read</span>
-          <svg class="scroll-arrow" width="10" height="14" viewBox="0 0 10 14" fill="none" stroke="currentColor" stroke-width="1.2">
-            <path d="M5 1v12M1 9l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
         </div>
-      </section>
+      </div>
 
     </div>
-
-    <!-- TRANSITION ZOOM -->
-    <section class="transition-zoom" id="transitionZoom">
-      <div class="transition-stage"></div>
-    </section>
 
     <!-- AFFICHE TITRE — glisse depuis le bas après le zoom couronne -->
     <div id="scene-affiche">
@@ -1343,105 +1371,100 @@
 
       // =============== LENIS + GSAP ===============
       // lerp:0.1 = démarrage immédiat (pas de dead-zone), décélération naturelle
+      // =============== LENIS — config premium ===============
+      // duration:1.15 + scrub:1.4 = inertie naturelle sans double-lag
       var lenis = new Lenis({
-        lerp: 0.1,
-        smoothWheel: true
+        duration: 1.15,
+        smoothWheel: true,
+        wheelMultiplier: 0.9,
+        touchMultiplier: 1.5,
+        infinite: false
       });
       lenis.on('scroll', function() { ScrollTrigger.update(); });
       gsap.ticker.add(function(time) {
         lenis.raf(time * 1000);
-        // Render AFTER Lenis+GSAP updates so crown position is already set for this frame
         if (_renderActive) renderer.render(scene, camera);
       });
       gsap.ticker.lagSmoothing(0);
       gsap.registerPlugin(ScrollTrigger);
 
-      // =============== ANIMATIONS COURONNE + PINS CHAPITRES ===============
-      // scrub: true = animation 1:1 avec le scroll, Lenis gère la fluidité (pas de double inertie)
-      // Pins réduits à 50vh (lecture rapide) pour éviter le scroll "vide"
-
       var canvasContainer = document.getElementById('canvas-container');
-      var bgDark = document.getElementById('bgDark');
-      var bgLight = document.getElementById('bgLight');
+      var _renderActive = true;
 
-      // --- CHAPTER I : PIN 50vh ---
-      ScrollTrigger.create({
-        trigger: '.chapter-1', start: 'top top', end: '+=50%',
-        pin: true, pinSpacing: true, anticipatePin: 1
-      });
-      gsap.fromTo(crownGroup.position,
-        { x: 0, y: 0, z: 0 },
-        { x: -1.6, y: 0, z: 0,
-          scrollTrigger: { trigger: '.chapter-1', start: 'top 80%', end: 'top top', scrub: true }
-        });
-      gsap.fromTo(crownGroup.rotation,
-        { y: 0.42 },
-        { y: 0.42 + 0.5,
-          scrollTrigger: { trigger: '.chapter-1', start: 'top 80%', end: 'top top', scrub: true }
-        });
+      // =============== TIMELINE UNIQUE — couronne 0%→100% du scroll ===============
+      // UNE seule section pinned, UNE seule timeline.
+      // Chaque état de la couronne est un % du scroll total (pas un déclencheur).
+      // ease:'none' partout = vitesse constante, pas d'accélération.
+      //
+      // Scroll 0-35%  : couronne passe de face → gauche (ch1)
+      // Scroll 13-44% : texte chapitre I apparaît/disparaît
+      // Scroll 35-60% : couronne retourne au centre (ch2)
+      // Scroll 47-73% : texte chapitre II apparaît/disparaît
+      // Scroll 60-90% : couronne zoom vers caméra
+      // Scroll 88-100%: canvas fade out → poster titre glisse
 
-      // --- CHAPTER II : PIN 50vh ---
-      ScrollTrigger.create({
-        trigger: '.chapter-2', start: 'top top', end: '+=50%',
-        pin: true, pinSpacing: true, anticipatePin: 1
-      });
-      gsap.fromTo(crownGroup.position,
-        { x: -1.6, y: 0, z: 0, immediateRender: false },
-        { x: 0, y: 0, z: -0.6,
-          scrollTrigger: { trigger: '.chapter-2', start: 'top 80%', end: 'top top', scrub: true }
-        });
-      gsap.fromTo(crownGroup.scale,
-        { x: crownBaseScale, y: crownBaseScale, z: crownBaseScale, immediateRender: false },
-        { x: crownBaseScale * 0.9, y: crownBaseScale * 0.9, z: crownBaseScale * 0.9,
-          scrollTrigger: { trigger: '.chapter-2', start: 'top 80%', end: 'top top', scrub: true }
-        });
-      gsap.fromTo(crownGroup.rotation,
-        { y: 0.42 + 0.5, immediateRender: false },
-        { y: 0.42 + 0.9,
-          scrollTrigger: { trigger: '.chapter-2', start: 'top 80%', end: 'top top', scrub: true }
-        });
-
-      // =============== TRANSITION ZOOM ===============
-      // Pin 80vh, scrub: true, zoom dès le début (0 scroll vide)
-      ScrollTrigger.create({
-        trigger: '#transitionZoom',
-        start: 'top top',
-        end: '+=80%',
-        pin: true,
-        pinSpacing: true,
-        anticipatePin: 1
-      });
-
-      var transTL = gsap.timeline({
+      var crownTL = gsap.timeline({
         scrollTrigger: {
-          trigger: '#transitionZoom',
+          trigger: '#crown-sequence',
           start: 'top top',
-          end: '+=80%',
-          scrub: true
+          end: '+=3500',
+          scrub: 1.4,
+          pin: true,
+          anticipatePin: 1,
+          invalidateOnRefresh: true
         }
       });
 
-      var _renderActive = true;
-      transTL
-        .fromTo(crownGroup.position, { x: 0, y: 0, z: -0.6, immediateRender: false }, { x: 0, y: 0, z: 7 }, 0)
-        .fromTo(crownGroup.scale, { x: crownBaseScale * 0.9, y: crownBaseScale * 0.9, z: crownBaseScale * 0.9, immediateRender: false }, { x: crownBaseScale * 4.5, y: crownBaseScale * 4.5, z: crownBaseScale * 4.5 }, 0)
-        .fromTo(crownGroup.rotation, { y: 0.42 + 0.9, immediateRender: false }, { y: 0.42 + 0.9 + Math.PI * 0.5 }, 0)
-        .to(canvasContainer, { opacity: 0, onComplete: function() { _renderActive = false; }, onReverseComplete: function() { _renderActive = true; } }, 0.5);
+      // Hero disparaît (0.5→2.0 / 5-20%)
+      crownTL.to('#seq-hero', { opacity: 0, duration: 1.5, ease: 'none' }, 0.5);
 
-      // =============== AFFICHE TITRE : glisse depuis le bas ===============
-      // Pas de fondu — une vraie page qui arrive (comme tourner une page)
+      // Texte ch1 : apparaît (1.3→1.8), disparaît (3.7→4.4) — 13-44%
+      crownTL
+        .to('#seq-ch1', { opacity: 1, duration: 0.5, ease: 'none' }, 1.3)
+        .to('#seq-ch1', { opacity: 0, duration: 0.7, ease: 'none' }, 3.7);
+
+      // Crown A→B : face → gauche (0→3.5 = 0-35%)
+      crownTL
+        .to(crownGroup.position, { x: -1.6, y: 0, z: 0, duration: 3.5, ease: 'none' }, 0)
+        .to(crownGroup.rotation, { y: 0.92, duration: 3.5, ease: 'none' }, 0);
+
+      // Texte ch2 : apparaît (4.7→5.2), disparaît (6.5→7.3) — 47-73%
+      crownTL
+        .to('#seq-ch2', { opacity: 1, duration: 0.5, ease: 'none' }, 4.7)
+        .to('#seq-ch2', { opacity: 0, duration: 0.8, ease: 'none' }, 6.5);
+
+      // Crown B→C : gauche → centre légèrement reculé (3.5→6.0 = 35-60%)
+      crownTL
+        .to(crownGroup.position, { x: 0, y: 0, z: -0.6, duration: 2.5, ease: 'none' }, 3.5)
+        .to(crownGroup.scale,    { x: crownBaseScale * 0.9, y: crownBaseScale * 0.9, z: crownBaseScale * 0.9, duration: 2.5, ease: 'none' }, 3.5)
+        .to(crownGroup.rotation, { y: 1.32, duration: 2.5, ease: 'none' }, 3.5);
+
+      // Crown C→D : zoom vers caméra (6.0→9.0 = 60-90%)
+      crownTL
+        .to(crownGroup.position, { x: 0, y: 0, z: 7, duration: 3, ease: 'none' }, 6)
+        .to(crownGroup.scale,    { x: crownBaseScale * 4.5, y: crownBaseScale * 4.5, z: crownBaseScale * 4.5, duration: 3, ease: 'none' }, 6)
+        .to(crownGroup.rotation, { y: 1.32 + Math.PI * 0.5, duration: 3, ease: 'none' }, 6);
+
+      // Canvas fade (8.8→10.0 = 88-100%)
+      crownTL.to(canvasContainer, { opacity: 0, duration: 1.2, ease: 'none' }, 8.8);
+
+      // =============== AFFICHE TITRE — slide-in + arrêt du scroll ===============
       var sceneAffiche = document.getElementById('scene-affiche');
       ScrollTrigger.create({
-        trigger: '#transitionZoom',
+        trigger: '#crown-sequence',
         start: 'top top',
-        end: '+=80%',
+        end: '+=3500',
         onLeave: function() {
+          _renderActive = false;
           gsap.to(sceneAffiche, { y: 0, duration: 0.7, ease: 'power3.out' });
           sceneAffiche.style.pointerEvents = 'auto';
+          lenis.stop(); // Scroll bloqué jusqu'au clic
         },
         onEnterBack: function() {
+          _renderActive = true;
           gsap.to(sceneAffiche, { y: '100vh', duration: 0.5, ease: 'power2.in' });
           sceneAffiche.style.pointerEvents = 'none';
+          lenis.start();
         }
       });
 
@@ -1532,12 +1555,17 @@
         }
       });
 
-      // Bouton "Découvrir l'exposition" → scroll vers scene-intro2
+      // Bouton "Découvrir l'exposition" → débloque le scroll + va à scene-intro2
       var btnEntrerExpo = document.getElementById('btnEntrerExpo');
       if (btnEntrerExpo) {
         btnEntrerExpo.addEventListener('click', function() {
+          gsap.to(sceneAffiche, { y: '-100vh', duration: 0.5, ease: 'power2.in' });
+          sceneAffiche.style.pointerEvents = 'none';
+          lenis.start();
           var intro2 = document.getElementById('scene-intro2');
-          if (intro2) lenis.scrollTo(intro2, { offset: 0, duration: 1.2, easing: function(t) { return 1 - Math.pow(1 - t, 3); } });
+          setTimeout(function() {
+            if (intro2) lenis.scrollTo(intro2, { duration: 1.2 });
+          }, 200);
         });
       }
 
