@@ -1022,20 +1022,8 @@
     }
     #btnEntrerExpo:hover { background: rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.6); }
 
-    /* ===== INTRO2 VIDEO ===== */
-    #scene-intro2 {
-      width: 100%;
-      height: 100vh;
-      overflow: hidden;
-      position: relative;
-      background: #000;
-    }
-    #scene-intro2 video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
+    /* ===== INTRO2 + GALLERY — cachés pour l'instant ===== */
+    #scene-intro2, #gallery-all, #lightbox { display: none !important; }
     .vid-loading {
       position: absolute;
       inset: 0;
@@ -1407,7 +1395,7 @@
         scrollTrigger: {
           trigger: '#crown-sequence',
           start: 'top top',
-          end: '+=3500',
+          end: '+=4500',
           scrub: 1.4,
           pin: true,
           anticipatePin: 1,
@@ -1439,21 +1427,21 @@
         .to('#seq-ch2', { opacity: 1, duration: 0.5, ease: 'none' }, 4.7)
         .to('#seq-ch2', { opacity: 0, duration: 0.8, ease: 'none' }, 7.2);
 
-      // Crown C→D : zoom vers caméra (7.5→13.0 = 58-100%) — RALENTI
+      // Crown C→D : zoom vers caméra (7.5→16.0 = 58-100%) — très lent et majestueux
       crownTL
-        .to(crownGroup.position, { x: 0, y: 0, z: 7, duration: 5.5, ease: 'none' }, 7.5)
-        .to(crownGroup.scale,    { x: crownBaseScale * 4.5, y: crownBaseScale * 4.5, z: crownBaseScale * 4.5, duration: 5.5, ease: 'none' }, 7.5)
-        .to(crownGroup.rotation, { y: 1.32 + Math.PI * 0.5, duration: 5.5, ease: 'none' }, 7.5);
+        .to(crownGroup.position, { x: 0, y: 0, z: 7, duration: 8.5, ease: 'none' }, 7.5)
+        .to(crownGroup.scale,    { x: crownBaseScale * 4.5, y: crownBaseScale * 4.5, z: crownBaseScale * 4.5, duration: 8.5, ease: 'none' }, 7.5)
+        .to(crownGroup.rotation, { y: 1.32 + Math.PI * 0.5, duration: 8.5, ease: 'none' }, 7.5);
 
-      // Canvas fade (11.5→13.0 = 88-100%)
-      crownTL.to(canvasContainer, { opacity: 0, duration: 1.5, ease: 'none' }, 11.5);
+      // Canvas fade (15.0→17.0)
+      crownTL.to(canvasContainer, { opacity: 0, duration: 2.0, ease: 'none' }, 15.0);
 
       // =============== AFFICHE TITRE — slide-in + arrêt du scroll ===============
       var sceneAffiche = document.getElementById('scene-affiche');
       ScrollTrigger.create({
         trigger: '#crown-sequence',
         start: 'top top',
-        end: '+=3500',
+        end: '+=4500',
         onLeave: function() {
           _renderActive = false;
           gsap.to(sceneAffiche, { y: 0, duration: 0.7, ease: 'power3.out' });
@@ -1555,19 +1543,8 @@
         }
       });
 
-      // Bouton "Découvrir l'exposition" → débloque le scroll + va à scene-intro2
-      var btnEntrerExpo = document.getElementById('btnEntrerExpo');
-      if (btnEntrerExpo) {
-        btnEntrerExpo.addEventListener('click', function() {
-          gsap.to(sceneAffiche, { y: '-100vh', duration: 0.5, ease: 'power2.in' });
-          sceneAffiche.style.pointerEvents = 'none';
-          lenis.start();
-          var intro2 = document.getElementById('scene-intro2');
-          setTimeout(function() {
-            if (intro2) lenis.scrollTo(intro2, { duration: 1.2 });
-          }, 200);
-        });
-      }
+      // Bouton poster — à connecter à la prochaine scène quand elle sera prête
+      // (pour l'instant le site s'arrête sur le poster)
 
       // =============== LIGHTBOX ===============
       var lightbox = document.getElementById('lightbox');
