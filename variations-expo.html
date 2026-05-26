@@ -1321,7 +1321,11 @@
         smoothWheel: true
       });
       lenis.on('scroll', function() { ScrollTrigger.update(); });
-      gsap.ticker.add(function(time) { lenis.raf(time * 1000); });
+      gsap.ticker.add(function(time) {
+        lenis.raf(time * 1000);
+        // Render AFTER Lenis+GSAP updates so crown position is already set for this frame
+        if (_renderActive) renderer.render(scene, camera);
+      });
       gsap.ticker.lagSmoothing(0);
       gsap.registerPlugin(ScrollTrigger);
 
@@ -1440,13 +1444,13 @@
           if (self.progress >= 0.85 && !_aficheOn) {
             _aficheOn = true;
             sceneAffiche.style.pointerEvents = 'auto';
-            gsap.to(sceneAffiche, { opacity: 1, duration: 0.7, ease: 'power1.out' });
+            gsap.set(sceneAffiche, { opacity: 1 });
             vidAffiche.currentTime = 0;
             vidAffiche.play().catch(function(){});
           } else if (self.progress < 0.80 && _aficheOn) {
             _aficheOn = false;
             sceneAffiche.style.pointerEvents = 'none';
-            gsap.to(sceneAffiche, { opacity: 0, duration: 0.4 });
+            gsap.set(sceneAffiche, { opacity: 0 });
             vidAffiche.pause();
           }
         }
@@ -1500,8 +1504,8 @@
           pin: true,
           pinSpacing: true,
           scrub: 1.2,
-          onEnter: function() { gsap.to(sceneEl, { opacity: 1, duration: 0.7, ease: 'power1.out' }); },
-          onEnterBack: function() { gsap.to(sceneEl, { opacity: 1, duration: 0.4 }); },
+          onEnter: function() { gsap.set(sceneEl, { opacity: 1 }); },
+          onEnterBack: function() { gsap.set(sceneEl, { opacity: 1 }); },
           onUpdate: function(self) {
             if (!vid.duration) return;
             // Mapping : [0→dr] du progress = [startPct→1.0] de la vidéo
@@ -1789,14 +1793,7 @@
         }
       });
 
-      // =============== RENDER LOOP ===============
-      // S'arrête automatiquement quand la couronne est invisible (économise GPU/CPU)
-      var clock = new THREE.Clock();
-      function animate() {
-        requestAnimationFrame(animate);
-        if (_renderActive) renderer.render(scene, camera);
-      }
-      animate();
+      // Render loop géré dans gsap.ticker (voir ci-dessus) pour éviter le décalage 1-frame
 
       window.addEventListener('resize', function() {
         camera.aspect = window.innerWidth / window.innerHeight;
