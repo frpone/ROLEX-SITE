@@ -616,64 +616,62 @@
     /* =====================================
        LIGHTBOX
        ===================================== */
+    /* ===== LIGHTBOX — fond blanc, style galerie ===== */
     .lightbox {
       position: fixed; inset: 0; z-index: 250;
-      background: rgba(5, 5, 5, 0.97);
-      backdrop-filter: blur(10px);
+      background: #fff;
       opacity: 0; pointer-events: none;
-      transition: opacity 0.5s;
+      transition: opacity 0.45s ease;
       overflow-y: auto;
       overscroll-behavior: contain;
     }
     .lightbox.active { opacity: 1; pointer-events: auto; }
     .lb-bar {
       position: sticky; top: 0; z-index: 5;
-      padding: 24px 40px;
+      padding: 20px 40px;
       display: grid;
       grid-template-columns: 1fr auto 1fr;
       align-items: center;
-      background: linear-gradient(to bottom, rgba(5,5,5,0.95), rgba(5,5,5,0.7) 70%, transparent);
-      backdrop-filter: blur(6px);
+      background: rgba(255,255,255,0.96);
+      border-bottom: 1px solid #e8e6e2;
       font-size: 10px; letter-spacing: var(--tr-wide);
       text-transform: uppercase;
-      color: var(--text-dark);
+      color: #1a1a1a;
     }
-    .lb-counter .yellow { color: var(--accent-yellow); margin-right: 16px; }
-    .lb-counter { color: var(--text-dark-mute); }
-    .lb-zoom-hint { text-align: center; color: var(--text-dark-mute); }
+    .lb-counter .yellow { color: #8a7355; margin-right: 14px; font-weight: 600; }
+    .lb-counter { color: #888; }
+    .lb-zoom-hint { text-align: center; color: #aaa; }
     .lb-zoom-hint .key {
       display: inline-block;
-      padding: 3px 8px; margin: 0 4px;
-      border: 1px solid rgba(255,255,255,0.15);
-      color: var(--text-dark);
+      padding: 2px 7px; margin: 0 3px;
+      border: 1px solid #ddd;
+      color: #666;
     }
     .lb-close-btn {
       justify-self: end;
-      width: 40px; height: 40px;
+      width: 36px; height: 36px;
       background: transparent;
-      border: 1px solid rgba(255,255,255,0.2);
-      color: var(--text-dark);
-      font-size: 16px; cursor: pointer;
-      transition: all 0.3s;
+      border: 1px solid #ccc;
+      color: #1a1a1a;
+      font-size: 14px; cursor: pointer;
+      transition: all 0.25s;
     }
-    .lb-close-btn:hover {
-      border-color: var(--accent-yellow);
-      color: var(--accent-yellow);
-    }
+    .lb-close-btn:hover { border-color: #1a1a1a; background: #1a1a1a; color: #fff; }
     .lb-content {
       max-width: 1100px;
       margin: 0 auto;
       padding: 40px 40px 120px;
       display: grid;
-      grid-template-columns: 640px 1fr;
-      gap: 80px;
+      grid-template-columns: minmax(0,640px) 1fr;
+      gap: 60px;
       align-items: flex-start;
     }
     .lb-canvas {
-      width: 640px;
+      width: 100%;
+      max-width: 640px;
       aspect-ratio: 70 / 100;
-      background: var(--paper);
-      box-shadow: 0 40px 120px rgba(0,0,0,0.85);
+      background: #f4f2ef;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.08);
       position: relative;
       overflow: hidden;
       cursor: zoom-in;
@@ -689,22 +687,24 @@
       transform: scale(3.2);
       transform-origin: var(--mx, 50%) var(--my, 50%);
     }
-    /* Mode photo : affiche plein pot, sans crop */
+    /* Mode photo — affiche plein pot sur fond blanc */
     .lb-canvas.lb-photo {
-      width: auto;
+      width: 100%;
       max-width: 640px;
       aspect-ratio: auto;
-      background: #000;
+      background: #fff;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.10);
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: visible;
     }
     .lb-canvas.lb-photo img {
       display: block;
       width: auto;
       height: auto;
       max-width: 100%;
-      max-height: 80vh;
+      max-height: 82vh;
       object-fit: contain;
       transition: transform 0.3s ease-out;
       pointer-events: none;
@@ -723,47 +723,124 @@
     .lb-info {
       position: sticky; top: 100px;
       padding-top: 20px;
-      color: var(--text-dark);
+      color: #1a1a1a;
     }
     .lb-info .lb-no {
       font-size: 10px; letter-spacing: var(--tr-wide);
       text-transform: uppercase;
-      color: var(--accent-yellow);
+      color: #8a7355;
       margin-bottom: 16px;
     }
     .lb-info h3 {
       font-family: var(--ff-serif);
       font-style: italic; font-weight: 400;
-      font-size: 40px; line-height: 1.05;
-      color: var(--paper); margin-bottom: 8px;
+      font-size: 36px; line-height: 1.05;
+      color: #1a1a1a; margin-bottom: 8px;
     }
     .lb-info .lb-year {
       font-size: 11px; letter-spacing: var(--tr-loose);
       text-transform: uppercase;
-      color: var(--text-dark-mute);
+      color: #888;
       margin-bottom: 32px;
     }
     .lb-info p {
       font-size: 14px; line-height: 1.7;
-      color: var(--text-dark-mute);
+      color: #555;
       margin-bottom: 24px;
     }
     .lb-tech {
       padding: 20px 0;
-      border-top: 1px solid rgba(255,255,255,0.08);
-      border-bottom: 1px solid rgba(255,255,255,0.08);
+      border-top: 1px solid #e8e6e2;
+      border-bottom: 1px solid #e8e6e2;
       margin-top: 32px;
       font-size: 11px; letter-spacing: var(--tr-loose);
       text-transform: uppercase;
-      color: var(--text-dark-dim);
+      color: #888;
     }
     .lb-tech .row { display: flex; justify-content: space-between; padding: 6px 0; }
-    .lb-tech .row .val { color: var(--text-dark-mute); }
+    .lb-tech .row .val { color: #333; }
+
+    /* ===== GALERIE 20 AFFICHES — overlay fond blanc ===== */
+    #gallery-all {
+      position: fixed; inset: 0; z-index: 200;
+      background: #f8f7f5;
+      display: flex; flex-direction: column;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.6s ease;
+    }
+    #gallery-all.active { opacity: 1; pointer-events: auto; }
+    .ga-topbar {
+      display: grid; grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      padding: 20px 40px;
+      background: rgba(248,247,245,0.97);
+      border-bottom: 1px solid #e8e6e2;
+      font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase;
+    }
+    .ga-back { background: none; border: 1px solid #ccc; padding: 8px 16px; cursor: pointer; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; transition: all 0.2s; }
+    .ga-back:hover { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+    .ga-room-label { text-align: center; color: #888; }
+    .ga-counter { text-align: right; color: #1a1a1a; font-weight: 600; }
+    .ga-stage {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      gap: 40px; padding: 20px;
+      min-height: 0;
+    }
+    .ga-poster-wrap {
+      position: relative; height: 100%; max-height: 72vh;
+      aspect-ratio: 3/4;
+      display: flex; align-items: center; justify-content: center;
+      cursor: zoom-in;
+    }
+    .ga-poster-wrap img {
+      width: auto; height: 100%; max-width: 100%;
+      object-fit: contain; display: block;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.10);
+      transition: opacity 0.3s;
+    }
+    .ga-placeholder {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: #ebe9e4;
+      color: #aaa; font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase;
+    }
+    .ga-placeholder.hidden { display: none; }
+    .ga-arrow {
+      width: 48px; height: 48px; flex-shrink: 0;
+      background: none; border: 1px solid #ccc;
+      font-size: 18px; cursor: pointer;
+      transition: all 0.2s; color: #1a1a1a;
+    }
+    .ga-arrow:hover { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+    .ga-arrow:disabled { opacity: 0.2; cursor: default; }
+    .ga-meta {
+      text-align: center; padding: 16px 40px 8px;
+      font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase;
+    }
+    .ga-no { color: #8a7355; margin-bottom: 4px; font-weight: 600; }
+    .ga-title { color: #1a1a1a; font-size: 13px; }
+    .ga-year { color: #aaa; margin-top: 4px; }
+    .ga-hint { text-align: center; padding: 8px; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #ccc; }
+
+    /* Bouton "Voir les 20 affiches" sur l'overlay vidéo */
+    .p-room-nav {
+      position: absolute; bottom: 32px; left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.4);
+      color: #fff; padding: 10px 28px;
+      font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase;
+      cursor: pointer; transition: all 0.25s; white-space: nowrap;
+    }
+    .p-room-nav:hover { background: rgba(255,255,255,0.25); }
+
+    /* Fondu scene-affiche à l'entrée */
+    #scene-affiche { opacity: 0; transition: none; }
 
     .loupe-cursor {
       position: fixed;
       width: 80px; height: 80px;
-      border: 1px solid var(--accent-yellow);
+      border: 1px solid #8a7355;
       border-radius: 50%;
       pointer-events: none; z-index: 300;
       transform: translate(-50%, -50%);
@@ -965,20 +1042,40 @@
       <div class="vid-loading" id="vid-intro2-loading">Chargement…</div>
       <!-- Zones cliquables qui apparaissent sur la dernière frame (les 3 affiches sur le mur) -->
       <div class="poster-overlays" id="posterOverlays">
-        <button class="p-btn" id="pbtn-0">
-          <span class="p-btn-label">Cliquer</span>
-        </button>
-        <button class="p-btn" id="pbtn-1">
-          <span class="p-btn-label">Cliquer</span>
-        </button>
-        <button class="p-btn" id="pbtn-2">
-          <span class="p-btn-label">Cliquer</span>
-        </button>
+        <button class="p-btn" id="pbtn-0"><span class="p-btn-label">Cliquer</span></button>
+        <button class="p-btn" id="pbtn-1"><span class="p-btn-label">Cliquer</span></button>
+        <button class="p-btn" id="pbtn-2"><span class="p-btn-label">Cliquer</span></button>
+        <button class="p-room-nav" id="btnGallery">Voir les 20 affiches &nbsp;→</button>
       </div>
     </div>
 
   </main>
+
+  <!-- GALERIE COMPLÈTE — 20 affiches, overlay fond blanc, style galerie épurée -->
+  <div id="gallery-all">
+    <div class="ga-topbar">
+      <button class="ga-back" id="gaBack">← Retour</button>
+      <div class="ga-room-label">Salle I · Variations on a Crown</div>
+      <div class="ga-counter" id="gaCounter">1 / 20</div>
+    </div>
+    <div class="ga-stage">
+      <button class="ga-arrow ga-prev" id="gaPrev" aria-label="Précédent">&#8592;</button>
+      <div class="ga-poster-wrap" id="gaPosterWrap">
+        <img id="gaPosterImg" src="" alt="" />
+        <div class="ga-placeholder" id="gaPlaceholder">
+          <span>À venir</span>
         </div>
+      </div>
+      <button class="ga-arrow ga-next" id="gaNext" aria-label="Suivant">&#8594;</button>
+    </div>
+    <div class="ga-meta">
+      <div class="ga-no" id="gaNo">N° 001</div>
+      <div class="ga-title" id="gaTitle">The Rolex Crown</div>
+      <div class="ga-year" id="gaYear">2023</div>
+    </div>
+    <div class="ga-hint">Cliquer sur l'affiche pour agrandir · Clic secondaire pour le détail</div>
+  </div>
+
   <!-- LIGHTBOX -->
   <div class="lightbox" id="lightbox">
     <div class="lb-bar">
@@ -1270,6 +1367,8 @@
           pin: true,
           pinSpacing: true,
           scrub: 1.2,
+          onEnter: function() { gsap.to(sceneEl, { opacity: 1, duration: 0.7, ease: 'power1.out' }); },
+          onEnterBack: function() { gsap.to(sceneEl, { opacity: 1, duration: 0.4 }); },
           onUpdate: function(self) {
             if (!vid.duration) return;
             // Mapping : [0→dr] du progress = [startPct→1.0] de la vidéo
@@ -1386,6 +1485,118 @@
       lbCanvas.addEventListener('mouseleave', function() { loupe.classList.remove('active'); });
       lbCanvas.addEventListener('mouseenter', function() {
         if (lbCanvas.classList.contains('zoom-3')) loupe.classList.add('active');
+      });
+
+      // =============== GALERIE 20 AFFICHES ===============
+      var ALL_POSTERS = [
+        { no:'N° 001', title:'The Rolex Crown',  year:'2023', src: POSTER_SRCS[0] },
+        { no:'N° 002', title:'Perpetual',         year:'2023', src: POSTER_SRCS[1] },
+        { no:'N° 003', title:'Crown Stripes',     year:'2023', src: POSTER_SRCS[2] },
+        { no:'N° 004', title:'À venir',           year:'—',    src: '' },
+        { no:'N° 005', title:'À venir',           year:'—',    src: '' },
+        { no:'N° 006', title:'À venir',           year:'—',    src: '' },
+        { no:'N° 007', title:'À venir',           year:'—',    src: '' },
+        { no:'N° 008', title:'À venir',           year:'—',    src: '' },
+        { no:'N° 009', title:'À venir',           year:'—',    src: '' },
+        { no:'N° 010', title:'À venir',           year:'—',    src: '' },
+        { no:'N° 011', title:'À venir',           year:'—',    src: '' },
+        { no:'N° 012', title:'À venir',           year:'—',    src: '' },
+        { no:'N° 013', title:'À venir',           year:'—',    src: '' },
+        { no:'N° 014', title:'À venir',           year:'—',    src: '' },
+        { no:'N° 015', title:'À venir',           year:'—',    src: '' },
+        { no:'N° 016', title:'À venir',           year:'—',    src: '' },
+        { no:'N° 017', title:'À venir',           year:'—',    src: '' },
+        { no:'N° 018', title:'À venir',           year:'—',    src: '' },
+        { no:'N° 019', title:'À venir',           year:'—',    src: '' },
+        { no:'N° 020', title:'À venir',           year:'—',    src: '' }
+      ];
+
+      var gaEl       = document.getElementById('gallery-all');
+      var gaPosterImg = document.getElementById('gaPosterImg');
+      var gaPlaceholder = document.getElementById('gaPlaceholder');
+      var gaCounter  = document.getElementById('gaCounter');
+      var gaNo       = document.getElementById('gaNo');
+      var gaTitle    = document.getElementById('gaTitle');
+      var gaYear     = document.getElementById('gaYear');
+      var gaPrev     = document.getElementById('gaPrev');
+      var gaNext     = document.getElementById('gaNext');
+      var gaBack     = document.getElementById('gaBack');
+      var gaPosterWrap = document.getElementById('gaPosterWrap');
+      var _gaIdx     = 0;
+
+      function gaShow(idx) {
+        _gaIdx = Math.max(0, Math.min(ALL_POSTERS.length - 1, idx));
+        var p = ALL_POSTERS[_gaIdx];
+        gaCounter.textContent = (_gaIdx + 1) + ' / ' + ALL_POSTERS.length;
+        gaNo.textContent    = p.no;
+        gaTitle.textContent = p.title;
+        gaYear.textContent  = p.year;
+        gaPrev.disabled = (_gaIdx === 0);
+        gaNext.disabled = (_gaIdx === ALL_POSTERS.length - 1);
+        if (p.src) {
+          gaPlaceholder.classList.add('hidden');
+          gaPosterImg.style.opacity = '0';
+          gaPosterImg.src = p.src;
+          gaPosterImg.onload = function() { gaPosterImg.style.opacity = '1'; };
+        } else {
+          gaPosterImg.src = '';
+          gaPlaceholder.classList.remove('hidden');
+        }
+      }
+
+      function gaOpen(idx) {
+        gaShow(idx);
+        gaEl.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        lenis.stop();
+      }
+      function gaClose() {
+        gaEl.classList.remove('active');
+        document.body.style.overflow = '';
+        lenis.start();
+      }
+
+      // Clic sur la galerie → lightbox zoom
+      gaPosterWrap.addEventListener('click', function() {
+        var p = ALL_POSTERS[_gaIdx];
+        if (!p.src) return;
+        lbNo.textContent        = p.no;
+        lbCounterNo.textContent = p.no;
+        lbTitle.textContent     = p.title;
+        lbYear.textContent      = p.year;
+        lbTechYear.textContent  = p.year;
+        lbNote.textContent      = '';
+        lbCanvas.innerHTML = '';
+        lbCanvas.classList.remove('zoom-3');
+        lbCanvas.classList.add('lb-photo');
+        var img = new Image();
+        img.src = p.src;
+        lbCanvas.appendChild(img);
+        lightbox.classList.add('active');
+        lightbox.scrollTop = 0;
+      });
+
+      gaPrev.addEventListener('click', function() { if (_gaIdx > 0) gaShow(_gaIdx - 1); });
+      gaNext.addEventListener('click', function() { if (_gaIdx < ALL_POSTERS.length - 1) gaShow(_gaIdx + 1); });
+      gaBack.addEventListener('click', gaClose);
+      document.addEventListener('keydown', function(e) {
+        if (!gaEl.classList.contains('active')) return;
+        if (e.key === 'ArrowLeft')  gaPrev.click();
+        if (e.key === 'ArrowRight') gaNext.click();
+        if (e.key === 'Escape') gaClose();
+      });
+
+      // Bouton "Voir les 20 affiches" sur l'overlay vidéo
+      var btnGallery = document.getElementById('btnGallery');
+      if (btnGallery) btnGallery.addEventListener('click', function() { gaOpen(0); });
+
+      // Préchargement des 3 affiches réelles dès l'entrée dans scene-intro2
+      ScrollTrigger.create({
+        trigger: '#scene-intro2', start: 'top 80%',
+        once: true,
+        onEnter: function() {
+          POSTER_SRCS.forEach(function(src) { var img = new Image(); img.src = src; });
+        }
       });
 
       // =============== RENDER LOOP ===============
