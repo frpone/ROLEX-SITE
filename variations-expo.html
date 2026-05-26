@@ -1109,7 +1109,7 @@
     <!-- AFFICHE EXPO — overlay fixe, crossfade automatique depuis la couronne -->
     <div id="scene-affiche">
       <video id="vid-affiche"
-        src="https://www.dropbox.com/scl/fi/4ft9e58s92tb84efv1bw6/AFFICHE_EXPO.mp4?rlkey=ueatj4jahanocdwznw5k977um&raw=1"
+        src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/VIDOES_export-def/AFFICHE_EXPO.mp4"
         muted playsinline preload="auto"></video>
       <div class="vid-loading" id="vid-affiche-loading">Chargement…</div>
       <div class="affiche-scroll-hint" id="aficheHint">↓ Scroll to continue</div>
@@ -1118,7 +1118,7 @@
     <!-- INTRO 2 — animation salle de musée -->
     <div id="scene-intro2">
       <video id="vid-intro2"
-        src="https://www.dropbox.com/scl/fi/437e2aufjsxxmspxfyqxi/intro2.mp4?rlkey=6seejoe84p0e7v0aipxktzx6p&raw=1"
+        src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/VIDOES_export-def/intro2.mp4"
         muted playsinline preload="none"></video>
       <div class="vid-loading" id="vid-intro2-loading">Chargement…</div>
       <!-- Carousel 3-par-3 : flèches + zones cliquables sur la dernière frame -->
@@ -1388,7 +1388,7 @@
       ScrollTrigger.create({
         trigger: '#transitionZoom',
         start: 'top top',
-        end: '+=150%',
+        end: '+=80%',
         pin: true,
         pinSpacing: true,
         anticipatePin: 1
@@ -1398,8 +1398,8 @@
         scrollTrigger: {
           trigger: '#transitionZoom',
           start: 'top top',
-          end: '+=150%',
-          scrub: 0.6
+          end: '+=80%',
+          scrub: 0.3
         }
       });
 
@@ -1409,8 +1409,8 @@
       transTL
         .fromTo(crownGroup.position, { x: 0, y: 0, z: -0.6, immediateRender: false }, { x: 0, y: 0, z: 7 }, 0)
         .fromTo(crownGroup.scale, { x: crownBaseScale * 0.9, y: crownBaseScale * 0.9, z: crownBaseScale * 0.9, immediateRender: false }, { x: crownBaseScale * 4.5, y: crownBaseScale * 4.5, z: crownBaseScale * 4.5 }, 0)
-        .fromTo(crownGroup.rotation, { y: 0.42 + 0.9, immediateRender: false }, { y: 0.42 + 0.9 + Math.PI * 1.8 }, 0)
-        .to(canvasContainer, { opacity: 0, onComplete: function() { _renderActive = false; }, onReverseComplete: function() { _renderActive = true; } }, 0.45);
+        .fromTo(crownGroup.rotation, { y: 0.42 + 0.9, immediateRender: false }, { y: 0.42 + 0.9 + Math.PI * 0.5 }, 0)
+        .to(canvasContainer, { opacity: 0, onComplete: function() { _renderActive = false; }, onReverseComplete: function() { _renderActive = true; } }, 0.35);
 
       // =============== AFFICHE EXPO: crossfade automatique ===============
       // Quand la couronne remplit l'écran (85% du zoom), la vidéo fond in sans scroll
@@ -1458,15 +1458,12 @@
 
       // =============== SCROLL SCRUB VIDÉO — pin via GSAP (compatible Lenis) ===============
       // CSS position:sticky ne fonctionne pas avec Lenis → on utilise ScrollTrigger pin:true
+      var _GH = 'https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/';
+      // Les 3 affiches affichées à la fin de l'animation intro2 (tryptique haute def)
       var POSTER_SRCS = [
-        'https://www.dropbox.com/scl/fi/79z7bxstc7fanngi7m3d0/TRYPTIQUE_003_HD_A_.webp?rlkey=favytsozhyeglui09f04xo440&raw=1',
-        'https://www.dropbox.com/scl/fi/u7q8kfzmxmrxv259kgf06/TRYPTIQUE_003_HD_B_.webp?rlkey=ydq4nkooabmwerjrbnyv50n83&raw=1',
-        'https://www.dropbox.com/scl/fi/ddyib5ixfvkfqj811t4ae/TRYPTIQUE_003_HD_C_.webp?rlkey=wsrqk3n3h0qlx4fr0gi3170bw&raw=1'
-      ];
-      var POSTER_DATA = [
-        { no: 'N° 001', title: 'The Rolex Crown',  year: '2023', note: 'Couronne Rolex en silhouette sur fond gris clair. Les valeurs de la marque énoncées comme un manifeste.' },
-        { no: 'N° 002', title: 'Perpetual',         year: '2023', note: 'Op-art labyrinthe. La couronne cachée au centre du motif — visible seulement si on cherche.' },
-        { no: 'N° 003', title: 'Crown Stripes',     year: '2023', note: 'Rayures bold noir/blanc. La couronne apparaît en négatif. Force graphique maximale.' }
+        _GH + 'TRYPTIQUE_003_HD_A.webp',
+        _GH + 'TRYPTIQUE_003_HD_B.webp',
+        _GH + 'TRYPTIQUE_003_HD_C.webp'
       ];
 
       // startPct = fraction de la vidéo à sauter au début (ex: 0.15 = skip 15%)
@@ -1628,28 +1625,29 @@
         if (lbCanvas.classList.contains('zoom-3')) loupe.classList.add('active');
       });
 
-      // =============== GALERIE 20 AFFICHES ===============
+      // =============== GALERIE — toutes les affiches ===============
       var ALL_POSTERS = [
-        { no:'N° 001', title:'The Rolex Crown',  year:'2023', src: POSTER_SRCS[0] },
-        { no:'N° 002', title:'Perpetual',         year:'2023', src: POSTER_SRCS[1] },
-        { no:'N° 003', title:'Crown Stripes',     year:'2023', src: POSTER_SRCS[2] },
-        { no:'N° 004', title:'À venir',           year:'—',    src: '' },
-        { no:'N° 005', title:'À venir',           year:'—',    src: '' },
-        { no:'N° 006', title:'À venir',           year:'—',    src: '' },
-        { no:'N° 007', title:'À venir',           year:'—',    src: '' },
-        { no:'N° 008', title:'À venir',           year:'—',    src: '' },
-        { no:'N° 009', title:'À venir',           year:'—',    src: '' },
-        { no:'N° 010', title:'À venir',           year:'—',    src: '' },
-        { no:'N° 011', title:'À venir',           year:'—',    src: '' },
-        { no:'N° 012', title:'À venir',           year:'—',    src: '' },
-        { no:'N° 013', title:'À venir',           year:'—',    src: '' },
-        { no:'N° 014', title:'À venir',           year:'—',    src: '' },
-        { no:'N° 015', title:'À venir',           year:'—',    src: '' },
-        { no:'N° 016', title:'À venir',           year:'—',    src: '' },
-        { no:'N° 017', title:'À venir',           year:'—',    src: '' },
-        { no:'N° 018', title:'À venir',           year:'—',    src: '' },
-        { no:'N° 019', title:'À venir',           year:'—',    src: '' },
-        { no:'N° 020', title:'À venir',           year:'—',    src: '' }
+        { no:'N° 000', title:'Uniptyque',           year:'2023', src: _GH+'uniptique%20_000_HD.webp' },
+        { no:'N° 001A', title:'Dyptique 001 — A',   year:'2023', src: _GH+'DYPTIQUE_001_HD_A.webp' },
+        { no:'N° 001B', title:'Dyptique 001 — B',   year:'2023', src: _GH+'DYPTIQUE_001_HD_B.webp' },
+        { no:'N° 002A', title:'Dyptique 002 — A',   year:'2023', src: _GH+'DYPTIQUE_002_HD_A.webp' },
+        { no:'N° 002B', title:'Dyptique 002 — B',   year:'2023', src: _GH+'DYPTIQUE_002_HD_B.webp' },
+        { no:'N° 003A', title:'Tryptique 003 — A',  year:'2023', src: _GH+'TRYPTIQUE_003_HD_A.webp' },
+        { no:'N° 003B', title:'Tryptique 003 — B',  year:'2023', src: _GH+'TRYPTIQUE_003_HD_B.webp' },
+        { no:'N° 003C', title:'Tryptique 003 — C',  year:'2023', src: _GH+'TRYPTIQUE_003_HD_C.webp' },
+        { no:'N° 004A', title:'Dyptique 004 — A',   year:'2023', src: _GH+'DYPTIQUE_004_HD_A.webp' },
+        { no:'N° 004B', title:'Dyptique 004 — B',   year:'2023', src: _GH+'DYPTIQUE_004_HD_B.webp' },
+        { no:'N° 005A', title:'Dyptique 005 — A',   year:'2023', src: _GH+'DYPTIQUE_005_HD_A.webp' },
+        { no:'N° 005B', title:'Dyptique 005 — B',   year:'2023', src: _GH+'DYPTIQUE_005_HD_B.webp' },
+        { no:'N° 006',  title:'Dyptique 006',        year:'2023', src: _GH+'DYPTIQUE_006_HD_A%2BB.webp' },
+        { no:'N° 007A', title:'Dyptique 007 — A',   year:'2023', src: _GH+'DYPTIQUE_007_HD_A.webp' },
+        { no:'N° 007B', title:'Dyptique 007 — B',   year:'2023', src: _GH+'DYPTIQUE_007_HD_B.webp' },
+        { no:'N° 008A', title:'Dyptique 008 — A',   year:'2023', src: _GH+'DYPTIQUE_008_HD_A.webp' },
+        { no:'N° 008B', title:'Dyptique 008 — B',   year:'2023', src: _GH+'DYPTIQUE_008_HD_B.webp' },
+        { no:'N° 010A', title:'Dyptique 010 — A',   year:'2023', src: _GH+'DYPTIQUE_010_HD_A.webp' },
+        { no:'N° 010B', title:'Dyptique 010 — B',   year:'2023', src: _GH+'DYPTIQUE_010_HD_B.webp' },
+        { no:'N° 011A', title:'Dyptique 011 — A',   year:'2023', src: _GH+'DYPTIQUE_011_HD_A.webp' },
+        { no:'N° 011B', title:'Dyptique 011 — B',   year:'2023', src: _GH+'DYPTIQUE_011_HD_B.webp' }
       ];
 
       var gaEl       = document.getElementById('gallery-all');
