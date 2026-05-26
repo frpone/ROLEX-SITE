@@ -949,16 +949,43 @@
       .lb-zoom-hint { display: none; }
     }
 
-    /* ===== VIDEOS ===== */
+    /* ===== AFFICHE TITRE (slide depuis le bas) ===== */
     #scene-affiche {
       position: fixed;
       inset: 0;
       z-index: 8;
       overflow: hidden;
-      background: #000;
-      opacity: 0;
+      background: #f0ede7;
+      transform: translateY(100vh);
       pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 32px;
     }
+    #affiche-titre-img {
+      max-height: 82vh;
+      max-width: 80vw;
+      object-fit: contain;
+      display: block;
+    }
+    .affiche-titre-cta { text-align: center; }
+    #btnEntrerExpo {
+      background: none;
+      border: 1px solid rgba(0,0,0,0.3);
+      color: var(--ink);
+      padding: 12px 36px;
+      font-family: var(--ff-display);
+      font-size: 10px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: border-color 0.25s, background 0.25s;
+    }
+    #btnEntrerExpo:hover { background: rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.6); }
+
+    /* ===== INTRO2 VIDEO ===== */
     #scene-intro2 {
       width: 100%;
       height: 100vh;
@@ -966,7 +993,6 @@
       position: relative;
       background: #000;
     }
-    #scene-affiche video,
     #scene-intro2 video {
       width: 100%;
       height: 100%;
@@ -1106,13 +1132,14 @@
       <div class="transition-stage"></div>
     </section>
 
-    <!-- AFFICHE EXPO — overlay fixe, crossfade automatique depuis la couronne -->
+    <!-- AFFICHE TITRE — glisse depuis le bas après le zoom couronne -->
     <div id="scene-affiche">
-      <video id="vid-affiche"
-        src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/VIDOES_export-def/AFFICHE_EXPO.mp4"
-        muted playsinline preload="auto"></video>
-      <div class="vid-loading" id="vid-affiche-loading">Chargement…</div>
-      <div class="affiche-scroll-hint" id="aficheHint">↓ Scroll to continue</div>
+      <img id="affiche-titre-img"
+        src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/AFFICHE%20TITRE%20.webp"
+        alt="Rolex Crown Exhibition — François Peyranne" />
+      <div class="affiche-titre-cta">
+        <button id="btnEntrerExpo">Découvrir l'exposition &nbsp;↓</button>
+      </div>
     </div>
 
     <!-- INTRO 2 — animation salle de musée -->
@@ -1330,61 +1357,52 @@
       gsap.registerPlugin(ScrollTrigger);
 
       // =============== ANIMATIONS COURONNE + PINS CHAPITRES ===============
-      // Stratégie : chaque chapitre est PINNÉ via ScrollTrigger pendant 100vh.
-      // L'animation de la couronne SE TERMINE PILE quand le pin commence,
-      // donc texte et couronne se figent EN MÊME TEMPS pour la lecture.
+      // scrub: true = animation 1:1 avec le scroll, Lenis gère la fluidité (pas de double inertie)
+      // Pins réduits à 50vh (lecture rapide) pour éviter le scroll "vide"
 
       var canvasContainer = document.getElementById('canvas-container');
       var bgDark = document.getElementById('bgDark');
       var bgLight = document.getElementById('bgLight');
 
-      // --- CHAPTER I : PIN — couronne anime EN ENTRANT dans le chapitre (top 80% → top top)
-      // Quand le chapitre se fige, la couronne est déjà à sa position de lecture
+      // --- CHAPTER I : PIN 50vh ---
       ScrollTrigger.create({
-        trigger: '.chapter-1', start: 'top top', end: '+=100%',
+        trigger: '.chapter-1', start: 'top top', end: '+=50%',
         pin: true, pinSpacing: true, anticipatePin: 1
       });
-      // scrub:0.4 avec lerp:0.1 Lenis = animation rapide et lisse, pas de double-lag
-      // Angle max ~28° : couronne reste clairement de face (pas de profil)
       gsap.fromTo(crownGroup.position,
         { x: 0, y: 0, z: 0 },
         { x: -1.6, y: 0, z: 0,
-          scrollTrigger: { trigger: '.chapter-1', start: 'top 80%', end: 'top top', scrub: 0.4 }
+          scrollTrigger: { trigger: '.chapter-1', start: 'top 80%', end: 'top top', scrub: true }
         });
       gsap.fromTo(crownGroup.rotation,
         { y: 0.42 },
         { y: 0.42 + 0.5,
-          scrollTrigger: { trigger: '.chapter-1', start: 'top 80%', end: 'top top', scrub: 0.4 }
+          scrollTrigger: { trigger: '.chapter-1', start: 'top 80%', end: 'top top', scrub: true }
         });
 
-      // --- CHAPTER II : PIN — couronne continue depuis la fin du chapitre I
+      // --- CHAPTER II : PIN 50vh ---
       ScrollTrigger.create({
-        trigger: '.chapter-2', start: 'top top', end: '+=100%',
+        trigger: '.chapter-2', start: 'top top', end: '+=50%',
         pin: true, pinSpacing: true, anticipatePin: 1
       });
-      // immediateRender:false = les from-vars ne s'appliquent qu'au déclenchement (pas à l'init page)
       gsap.fromTo(crownGroup.position,
         { x: -1.6, y: 0, z: 0, immediateRender: false },
         { x: 0, y: 0, z: -0.6,
-          scrollTrigger: { trigger: '.chapter-2', start: 'top 80%', end: 'top top', scrub: 0.4 }
+          scrollTrigger: { trigger: '.chapter-2', start: 'top 80%', end: 'top top', scrub: true }
         });
       gsap.fromTo(crownGroup.scale,
         { x: crownBaseScale, y: crownBaseScale, z: crownBaseScale, immediateRender: false },
         { x: crownBaseScale * 0.9, y: crownBaseScale * 0.9, z: crownBaseScale * 0.9,
-          scrollTrigger: { trigger: '.chapter-2', start: 'top 80%', end: 'top top', scrub: 0.4 }
+          scrollTrigger: { trigger: '.chapter-2', start: 'top 80%', end: 'top top', scrub: true }
         });
       gsap.fromTo(crownGroup.rotation,
         { y: 0.42 + 0.5, immediateRender: false },
         { y: 0.42 + 0.9,
-          scrollTrigger: { trigger: '.chapter-2', start: 'top 80%', end: 'top top', scrub: 0.4 }
+          scrollTrigger: { trigger: '.chapter-2', start: 'top 80%', end: 'top top', scrub: true }
         });
 
       // =============== TRANSITION ZOOM ===============
-      // Pin de 350vh, timeline interne :
-      // - 0-40% : couronne zoom in (vers caméra, grossit)
-      // - 40-100% : canvas fade out (fondu blanc)
-
-      // Transition couronne : 150vh
+      // Pin 80vh, scrub: true, zoom dès le début (0 scroll vide)
       ScrollTrigger.create({
         trigger: '#transitionZoom',
         start: 'top top',
@@ -1399,60 +1417,31 @@
           trigger: '#transitionZoom',
           start: 'top top',
           end: '+=80%',
-          scrub: 0.3
+          scrub: true
         }
       });
 
-      // Three.js render loop actif seulement quand le canvas est visible
       var _renderActive = true;
-      // from-vars = fin exacte du chapitre II (chaîne sans discontinuité)
       transTL
         .fromTo(crownGroup.position, { x: 0, y: 0, z: -0.6, immediateRender: false }, { x: 0, y: 0, z: 7 }, 0)
         .fromTo(crownGroup.scale, { x: crownBaseScale * 0.9, y: crownBaseScale * 0.9, z: crownBaseScale * 0.9, immediateRender: false }, { x: crownBaseScale * 4.5, y: crownBaseScale * 4.5, z: crownBaseScale * 4.5 }, 0)
         .fromTo(crownGroup.rotation, { y: 0.42 + 0.9, immediateRender: false }, { y: 0.42 + 0.9 + Math.PI * 0.5 }, 0)
-        .to(canvasContainer, { opacity: 0, onComplete: function() { _renderActive = false; }, onReverseComplete: function() { _renderActive = true; } }, 0.35);
+        .to(canvasContainer, { opacity: 0, onComplete: function() { _renderActive = false; }, onReverseComplete: function() { _renderActive = true; } }, 0.5);
 
-      // =============== AFFICHE EXPO: crossfade automatique ===============
-      // Quand la couronne remplit l'écran (85% du zoom), la vidéo fond in sans scroll
+      // =============== AFFICHE TITRE : glisse depuis le bas ===============
+      // Pas de fondu — une vraie page qui arrive (comme tourner une page)
       var sceneAffiche = document.getElementById('scene-affiche');
-      var vidAffiche   = document.getElementById('vid-affiche');
-      var _aficheOn    = false;
-
-      // Pré-buffer pour un seek propre au départ
-      vidAffiche.addEventListener('canplay', function() {
-        document.getElementById('vid-affiche-loading').classList.add('hidden');
-        if (!vidAffiche._pBuf) {
-          vidAffiche._pBuf = true;
-          var pr = vidAffiche.play();
-          if (pr && pr.then) pr.then(function() {
-            setTimeout(function() { vidAffiche.pause(); vidAffiche.currentTime = 0; }, 100);
-          }).catch(function(){});
-        }
-      });
-      // Tenir la dernière frame à la fin
-      vidAffiche.addEventListener('ended', function() {
-        vidAffiche.currentTime = Math.max(0, vidAffiche.duration - 0.05);
-        vidAffiche.pause();
-      });
-
-      // Déclencher le crossfade à 85% du zoom
       ScrollTrigger.create({
         trigger: '#transitionZoom',
         start: 'top top',
-        end: '+=150%',
-        onUpdate: function(self) {
-          if (self.progress >= 0.85 && !_aficheOn) {
-            _aficheOn = true;
-            sceneAffiche.style.pointerEvents = 'auto';
-            gsap.set(sceneAffiche, { opacity: 1 });
-            vidAffiche.currentTime = 0;
-            vidAffiche.play().catch(function(){});
-          } else if (self.progress < 0.80 && _aficheOn) {
-            _aficheOn = false;
-            sceneAffiche.style.pointerEvents = 'none';
-            gsap.set(sceneAffiche, { opacity: 0 });
-            vidAffiche.pause();
-          }
+        end: '+=80%',
+        onLeave: function() {
+          gsap.to(sceneAffiche, { y: 0, duration: 0.7, ease: 'power3.out' });
+          sceneAffiche.style.pointerEvents = 'auto';
+        },
+        onEnterBack: function() {
+          gsap.to(sceneAffiche, { y: '100vh', duration: 0.5, ease: 'power2.in' });
+          sceneAffiche.style.pointerEvents = 'none';
         }
       });
 
@@ -1533,17 +1522,24 @@
         }
       }, 0);
 
-      // Effacer scene-affiche quand scene-intro2 entre en pin
+      // Masquer scene-affiche quand scene-intro2 arrive
       ScrollTrigger.create({
         trigger: '#scene-intro2',
         start: 'top top',
         onEnter: function() {
-          _aficheOn = false;
+          gsap.to(sceneAffiche, { y: '-100vh', duration: 0.5, ease: 'power2.in' });
           sceneAffiche.style.pointerEvents = 'none';
-          gsap.to(sceneAffiche, { opacity: 0, duration: 0.5 });
-          vidAffiche.pause();
         }
       });
+
+      // Bouton "Découvrir l'exposition" → scroll vers scene-intro2
+      var btnEntrerExpo = document.getElementById('btnEntrerExpo');
+      if (btnEntrerExpo) {
+        btnEntrerExpo.addEventListener('click', function() {
+          var intro2 = document.getElementById('scene-intro2');
+          if (intro2) lenis.scrollTo(intro2, { offset: 0, duration: 1.2, easing: function(t) { return 1 - Math.pow(1 - t, 3); } });
+        });
+      }
 
       // =============== LIGHTBOX ===============
       var lightbox = document.getElementById('lightbox');
