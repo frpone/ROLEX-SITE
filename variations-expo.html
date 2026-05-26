@@ -953,7 +953,7 @@
     #scene-affiche {
       position: fixed;
       inset: 0;
-      z-index: 9;
+      z-index: 8;
       overflow: hidden;
       background: #000;
       opacity: 0;
@@ -1101,11 +1101,19 @@
 
     </div>
 
-    <!-- TRANSITION ZOOM + FRONTISPICE
-         Pin sur ~350vh : couronne zoom → fade noir → frontispice apparaît → freeze → exit -->
+    <!-- TRANSITION ZOOM -->
     <section class="transition-zoom" id="transitionZoom">
       <div class="transition-stage"></div>
     </section>
+
+    <!-- AFFICHE EXPO — overlay fixe, crossfade automatique depuis la couronne -->
+    <div id="scene-affiche">
+      <video id="vid-affiche"
+        src="https://www.dropbox.com/scl/fi/4ft9e58s92tb84efv1bw6/AFFICHE_EXPO.mp4?rlkey=ueatj4jahanocdwznw5k977um&raw=1"
+        muted playsinline preload="auto"></video>
+      <div class="vid-loading" id="vid-affiche-loading">Chargement…</div>
+      <div class="affiche-scroll-hint" id="aficheHint">↓ Scroll to continue</div>
+    </div>
 
     <!-- INTRO 2 — animation salle de musée -->
     <div id="scene-intro2">
@@ -1125,15 +1133,6 @@
     </div>
 
   </main>
-
-  <!-- AFFICHE EXPO — overlay fixe, z-index root (hors main pour éviter conflit empilement) -->
-  <div id="scene-affiche">
-    <video id="vid-affiche"
-      src="https://www.dropbox.com/scl/fi/4ft9e58s92tb84efv1bw6/AFFICHE_EXPO.mp4?rlkey=ueatj4jahanocdwznw5k977um&raw=1"
-      muted playsinline preload="auto"></video>
-    <div class="vid-loading" id="vid-affiche-loading">Chargement…</div>
-    <div class="affiche-scroll-hint" id="aficheHint">↓ Scroll to continue</div>
-  </div>
 
   <!-- GALERIE COMPLÈTE — 20 affiches, overlay fond blanc, style galerie épurée -->
   <div id="gallery-all">
@@ -1316,13 +1315,10 @@
       window.scrollTo(0, 0);
 
       // =============== LENIS + GSAP ===============
-      // lerp:0.1 = réponse immédiate au premier pixel de scroll (pas de dead-zone)
-      // versus duration qui crée une rampe lente au démarrage
+      // lerp:0.1 = démarrage immédiat (pas de dead-zone), décélération naturelle
       var lenis = new Lenis({
         lerp: 0.1,
-        smoothWheel: true,
-        wheelMultiplier: 1.0,
-        touchMultiplier: 1.8
+        smoothWheel: true
       });
       lenis.on('scroll', function() { ScrollTrigger.update(); });
       gsap.ticker.add(function(time) { lenis.raf(time * 1000); });
@@ -1338,45 +1334,45 @@
       var bgDark = document.getElementById('bgDark');
       var bgLight = document.getElementById('bgLight');
 
-      // --- CHAPTER I : PIN + couronne animée PENDANT le pin (pas avant d'entrer)
-      // Ainsi l'animation est toujours visible — pas de risque de la "rater" en scrollant
+      // --- CHAPTER I : PIN — couronne anime EN ENTRANT dans le chapitre (top 80% → top top)
+      // Quand le chapitre se fige, la couronne est déjà à sa position de lecture
       ScrollTrigger.create({
         trigger: '.chapter-1', start: 'top top', end: '+=100%',
         pin: true, pinSpacing: true, anticipatePin: 1
       });
-      // scrub:true = mapping direct scroll→animation, zéro lag GSAP (Lenis fournit déjà le lissage)
-      // rotation réduite : couronne reste face au viewer (max ~40° rotation)
+      // scrub:0.4 avec lerp:0.1 Lenis = animation rapide et lisse, pas de double-lag
+      // Angle max ~28° : couronne reste clairement de face (pas de profil)
       gsap.fromTo(crownGroup.position,
         { x: 0, y: 0, z: 0 },
-        { x: -1.8, y: 0.0, z: 0,
-          scrollTrigger: { trigger: '.chapter-1', start: 'top top', end: '+=100%', scrub: true }
+        { x: -1.6, y: 0, z: 0,
+          scrollTrigger: { trigger: '.chapter-1', start: 'top 80%', end: 'top top', scrub: 0.4 }
         });
       gsap.fromTo(crownGroup.rotation,
         { y: 0.42 },
-        { y: 0.42 + 0.65,
-          scrollTrigger: { trigger: '.chapter-1', start: 'top top', end: '+=100%', scrub: true }
+        { y: 0.42 + 0.5,
+          scrollTrigger: { trigger: '.chapter-1', start: 'top 80%', end: 'top top', scrub: 0.4 }
         });
 
-      // --- CHAPTER II : PIN + couronne continue depuis la fin du chapitre I
+      // --- CHAPTER II : PIN — couronne continue depuis la fin du chapitre I
       ScrollTrigger.create({
         trigger: '.chapter-2', start: 'top top', end: '+=100%',
         pin: true, pinSpacing: true, anticipatePin: 1
       });
-      // immediateRender: false → n'écrase PAS l'état initial au chargement
+      // immediateRender:false = les from-vars ne s'appliquent qu'au déclenchement (pas à l'init page)
       gsap.fromTo(crownGroup.position,
-        { x: -1.8, y: 0.0, z: 0, immediateRender: false },
-        { x: 0, y: 0, z: -0.8,
-          scrollTrigger: { trigger: '.chapter-2', start: 'top top', end: '+=100%', scrub: true }
+        { x: -1.6, y: 0, z: 0, immediateRender: false },
+        { x: 0, y: 0, z: -0.6,
+          scrollTrigger: { trigger: '.chapter-2', start: 'top 80%', end: 'top top', scrub: 0.4 }
         });
       gsap.fromTo(crownGroup.scale,
         { x: crownBaseScale, y: crownBaseScale, z: crownBaseScale, immediateRender: false },
-        { x: crownBaseScale * 0.88, y: crownBaseScale * 0.88, z: crownBaseScale * 0.88,
-          scrollTrigger: { trigger: '.chapter-2', start: 'top top', end: '+=100%', scrub: true }
+        { x: crownBaseScale * 0.9, y: crownBaseScale * 0.9, z: crownBaseScale * 0.9,
+          scrollTrigger: { trigger: '.chapter-2', start: 'top 80%', end: 'top top', scrub: 0.4 }
         });
       gsap.fromTo(crownGroup.rotation,
-        { y: 0.42 + 0.65, immediateRender: false },
-        { y: 0.42 + 1.25,
-          scrollTrigger: { trigger: '.chapter-2', start: 'top top', end: '+=100%', scrub: true }
+        { y: 0.42 + 0.5, immediateRender: false },
+        { y: 0.42 + 0.9,
+          scrollTrigger: { trigger: '.chapter-2', start: 'top 80%', end: 'top top', scrub: 0.4 }
         });
 
       // =============== TRANSITION ZOOM ===============
@@ -1405,12 +1401,11 @@
 
       // Three.js render loop actif seulement quand le canvas est visible
       var _renderActive = true;
-      // immediateRender: false → from-vars ne s'appliquent qu'au déclenchement du trigger
-      // Les from-vars correspondent exactement à la fin du chapitre II
+      // from-vars = fin exacte du chapitre II (chaîne sans discontinuité)
       transTL
-        .fromTo(crownGroup.position, { x: 0, y: 0, z: -0.8, immediateRender: false }, { x: 0, y: 0, z: 7 }, 0)
-        .fromTo(crownGroup.scale, { x: crownBaseScale * 0.88, y: crownBaseScale * 0.88, z: crownBaseScale * 0.88, immediateRender: false }, { x: crownBaseScale * 4.5, y: crownBaseScale * 4.5, z: crownBaseScale * 4.5 }, 0)
-        .fromTo(crownGroup.rotation, { y: 0.42 + 1.25, immediateRender: false }, { y: 0.42 + 1.25 + Math.PI * 1.4 }, 0)
+        .fromTo(crownGroup.position, { x: 0, y: 0, z: -0.6, immediateRender: false }, { x: 0, y: 0, z: 7 }, 0)
+        .fromTo(crownGroup.scale, { x: crownBaseScale * 0.9, y: crownBaseScale * 0.9, z: crownBaseScale * 0.9, immediateRender: false }, { x: crownBaseScale * 4.5, y: crownBaseScale * 4.5, z: crownBaseScale * 4.5 }, 0)
+        .fromTo(crownGroup.rotation, { y: 0.42 + 0.9, immediateRender: false }, { y: 0.42 + 0.9 + Math.PI * 1.8 }, 0)
         .to(canvasContainer, { opacity: 0, onComplete: function() { _renderActive = false; }, onReverseComplete: function() { _renderActive = true; } }, 0.45);
 
       // =============== AFFICHE EXPO: crossfade automatique ===============
