@@ -419,6 +419,41 @@
       #btnEntrerExpo { font-size: 9px; padding: 13px 36px; letter-spacing: 0.25em; }
     }
 
+    /* ===== PHASE EXPO — intro2 video scroll-scrubbed ===== */
+    #phase-expo {
+      display: none;
+      position: relative;
+      z-index: 2;
+    }
+    #intro2-section {
+      /* Hauteur définie en JS selon la durée vidéo (ex: 400px/s) */
+      position: relative;
+    }
+    #intro2-sticky {
+      position: sticky;
+      top: 0;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #intro2-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      /* Même chromie que le poster : température froide */
+      filter: saturate(0.85) brightness(1.02) contrast(0.98);
+    }
+    /* Transition de sortie du poster */
+    #scene-affiche.leaving {
+      transition: opacity 0.6s ease;
+      opacity: 0 !important;
+    }
+
   </style>
 </head>
 <body>
@@ -483,6 +518,19 @@
         </div>
       </div>
 
+    </div>
+
+    <!-- PHASE EXPO : intro2 video scrubbed par le scroll -->
+    <!-- Chargée en avance (preload auto) mais cachée, pilotée au clic du bouton -->
+    <div id="phase-expo">
+      <section id="intro2-section">
+        <div id="intro2-sticky">
+          <video id="intro2-video"
+            src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/VIDOES_export-def/intro2.mp4"
+            preload="auto" muted playsinline webkit-playsinline>
+          </video>
+        </div>
+      </section>
     </div>
 
     <!-- AFFICHE TITRE — glisse depuis le bas après le zoom couronne -->
@@ -751,6 +799,75 @@
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+
+      // ═══════════════════════════════════════════════════════
+      //  BOUTON "Explorer l'exposition" → lance la phase expo
+      // ═══════════════════════════════════════════════════════
+      document.getElementById('btnEntrerExpo').addEventListener('click', function() {
+
+        // 1. Fade-out du poster avant de switcher
+        sceneAffiche.classList.add('leaving');
+
+        setTimeout(function() {
+
+          // 2. Tuer le ScrollTrigger couronne (retire aussi le pin spacer)
+          if (crownTL.scrollTrigger) crownTL.scrollTrigger.kill(true);
+          _renderActive = false;
+
+          // 3. Cacher la phase couronne et l'affiche
+          document.getElementById('crown-sequence').style.display = 'none';
+          sceneAffiche.style.display = 'none';
+          canvasContainer.style.display = 'none';
+          document.getElementById('bgLight').style.display = 'none';
+          document.getElementById('bgDark').style.display = 'none';
+
+          // 4. Afficher la phase expo
+          var phaseExpo = document.getElementById('phase-expo');
+          phaseExpo.style.display = 'block';
+
+          // 5. Scroll immédiat au top
+          lenis.scrollTo(0, { immediate: true });
+          window.scrollTo(0, 0);
+
+          // 6. Setup vidéo scrub
+          var video = document.getElementById('intro2-video');
+          video.pause();
+          video.currentTime = 0;
+
+          function setupIntro2() {
+            var dur = video.duration || 10;
+            // Hauteur scrollable : 400px par seconde de vidéo, min 4000px
+            var scrollH = Math.max(4000, Math.round(dur * 400));
+            document.getElementById('intro2-section').style.height =
+              (window.innerHeight + scrollH) + 'px';
+
+            // Scrub : le scroll de 0→scrollH pilote currentTime de 0→dur
+            ScrollTrigger.create({
+              trigger: '#intro2-section',
+              start: 'top top',
+              end: '+=' + scrollH,
+              scrub: 0.3,
+              onUpdate: function(self) {
+                var t = dur * self.progress;
+                // Seek seulement si l'écart est > 1 frame (évite les micro-jerks)
+                if (Math.abs(video.currentTime - t) > 0.04) {
+                  video.currentTime = t;
+                }
+              }
+            });
+
+            ScrollTrigger.refresh();
+          }
+
+          if (video.readyState >= 1) {
+            setupIntro2();
+          } else {
+            video.addEventListener('loadedmetadata', setupIntro2, { once: true });
+            video.load();
+          }
+
+        }, 650); // attend la fin du fade-out du poster (0.6s + marge)
       });
 
       // Refresh ScrollTrigger une fois tout setup, après un petit délai
