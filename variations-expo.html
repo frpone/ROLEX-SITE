@@ -253,9 +253,9 @@
       #seq-ch1 { justify-content: center; align-items: flex-start; }
       #seq-ch2 { justify-content: center; }
       .chapter-content { max-width: 100%; }
-      .chapter-title { font-size: clamp(30px, 9vw, 48px); }
-      .chapter-text { font-size: 14px; line-height: 1.7; }
-      .chapter-eyebrow { font-size: 9px; }
+      .chapter-title { font-size: clamp(38px, 10vw, 60px); }
+      .chapter-text { font-size: 16px; line-height: 1.75; }
+      .chapter-eyebrow { font-size: 10px; }
       .seq-freeze-mark { font-size: 8px; bottom: 28px; }
 
       /* Affiche */
@@ -267,7 +267,7 @@
     @media (min-width: 641px) and (max-width: 980px) {
       .scene-hero-title { font-size: clamp(44px, 8vw, 100px); }
       .seq-layer { padding: 64px 40px; }
-      .chapter-title { font-size: clamp(36px, 5vw, 56px); }
+      .chapter-title { font-size: clamp(46px, 6vw, 72px); }
       .scene-hero-sub { font-size: 12px; bottom: 96px; }
     }
 
@@ -292,9 +292,9 @@
     .chapter-center .chapter-content { max-width: 720px; text-align: center; }
 
     .chapter-eyebrow {
-      font-size: 10px; letter-spacing: var(--tr-wide);
+      font-size: 12px; letter-spacing: var(--tr-wide);
       text-transform: uppercase; color: var(--ink-mute);
-      margin-bottom: 24px;
+      margin-bottom: 28px;
       display: flex; align-items: center; gap: 14px;
     }
     .chapter-eyebrow::before {
@@ -302,10 +302,10 @@
     }
     .chapter-center .chapter-eyebrow { justify-content: center; }
     .chapter-title {
-      font-size: clamp(40px, 4.5vw, 60px);
-      font-weight: 500; line-height: 1.05;
+      font-size: clamp(56px, 6.5vw, 96px);
+      font-weight: 500; line-height: 1.0;
       letter-spacing: var(--tr-tight);
-      text-transform: uppercase; margin-bottom: 24px;
+      text-transform: uppercase; margin-bottom: 32px;
     }
     .chapter-title .italic {
       font-family: var(--ff-serif);
@@ -313,7 +313,8 @@
       text-transform: none; letter-spacing: 0;
     }
     .chapter-text {
-      font-size: 15px; line-height: 1.7;
+      font-size: clamp(16px, 1.4vw, 22px);
+      line-height: 1.75;
       color: var(--ink-soft);
     }
     .chapter-text strong { color: var(--ink); font-weight: 500; }
