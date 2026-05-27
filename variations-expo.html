@@ -419,16 +419,18 @@
       #btnEntrerExpo { font-size: 9px; padding: 13px 36px; letter-spacing: 0.25em; }
     }
 
-    /* ─── Bouton pulsé ─── */
-    @keyframes btnPulse {
-      0%, 100% { opacity: 1; letter-spacing: 0.35em; }
-      50%       { opacity: 0.45; letter-spacing: 0.42em; }
+    /* ─── Bouton : zoom typographique, toujours noir ─── */
+    @keyframes btnBreath {
+      0%, 100% { letter-spacing: 0.35em; font-size: 10px; }
+      50%       { letter-spacing: 0.48em; font-size: 10.5px; }
     }
     #btnEntrerExpo {
-      animation: btnPulse 2.6s ease-in-out infinite;
+      animation: btnBreath 3s ease-in-out infinite;
+      background: var(--ink) !important; /* toujours noir */
     }
     #btnEntrerExpo:hover {
-      animation: none; /* stoppe le pulse au hover */
+      animation: none;
+      letter-spacing: 0.48em;
     }
 
     /* ─── Texte latéral sur le poster ─── */
@@ -437,34 +439,65 @@
       right: 7vw;
       top: 50%;
       transform: translateY(-50%);
-      max-width: 200px;
+      max-width: 240px;
       text-align: left;
       pointer-events: none;
     }
     .affiche-side-label {
-      font-size: 9px;
-      letter-spacing: 0.30em;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.22em;
       text-transform: uppercase;
-      color: var(--ink-mute);
-      margin-bottom: 18px;
-      display: flex; align-items: center; gap: 10px;
+      color: var(--ink);
+      margin-bottom: 20px;
+      display: flex; align-items: center; gap: 12px;
     }
     .affiche-side-label::before {
-      content: ''; width: 20px; height: 1px; background: var(--ink-mute);
+      content: ''; width: 24px; height: 1.5px; background: var(--ink);
+      flex-shrink: 0;
     }
     .affiche-side-body {
       font-family: var(--ff-serif);
       font-style: italic;
-      font-size: 15px;
-      line-height: 1.75;
+      font-size: 18px;
+      line-height: 1.72;
       color: var(--ink-soft);
     }
     @media (max-width: 980px) {
       .affiche-side-text { display: none; }
     }
 
+    /* ─── Zoom poster au hover ─── */
+    .affiche-img-wrap {
+      overflow: hidden;
+      cursor: pointer;
+      display: block;
+      /* reprend les tailles du parent */
+      max-height: 78vh;
+      max-width: 56vw;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.18), 0 8px 24px rgba(0,0,0,0.08);
+    }
+    #affiche-titre-img {
+      max-height: 78vh;
+      max-width: 56vw;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      box-shadow: none; /* shadow portée au wrapper */
+      filter: saturate(0.82) brightness(1.01) contrast(0.97);
+      transform: scale(1);
+      transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    .affiche-img-wrap:hover #affiche-titre-img {
+      transform: scale(1.045);
+    }
+    @media (max-width: 640px) {
+      .affiche-img-wrap { max-height: 65vh; max-width: 88vw; }
+      #affiche-titre-img { max-height: 65vh; max-width: 88vw; }
+    }
+
     /* ─── Phase expo — même architecture que la couronne ─── */
-    /* La vidéo est fixed (comme le canvas), le spacer fournit la hauteur de scroll */
     #phase-expo { display: none; }
 
     #intro2-fixed {
@@ -478,10 +511,8 @@
       height: 100%;
       object-fit: cover;
       display: block;
-      /* Chromie froide : même palette que le poster */
       filter: saturate(0.80) brightness(1.02) contrast(0.96);
     }
-    /* Le spacer crée la hauteur scrollable, height définie en JS */
     #intro2-spacer { position: relative; z-index: 2; }
 
     /* Transition de sortie du poster */
@@ -571,16 +602,19 @@
 
     <!-- AFFICHE TITRE — fondu après zoom couronne -->
     <div id="scene-affiche">
-      <img id="affiche-titre-img"
-        src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/AFFICHE%20TITRE%20.webp"
-        alt="Rolex Crown Exhibition — François Peyranne" />
-      <!-- Texte atmosphérique latéral -->
+      <!-- Wrapper pour le zoom au hover + clic -->
+      <div class="affiche-img-wrap" id="affiche-img-wrap">
+        <img id="affiche-titre-img"
+          src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/AFFICHE%20TITRE%20.webp"
+          alt="Rolex Crown Exhibition — François Peyranne" />
+      </div>
+      <!-- Texte atmosphérique latéral (anglais) -->
       <div class="affiche-side-text">
-        <p class="affiche-side-label">L'exposition</p>
-        <p class="affiche-side-body">Un objet.<br>Une décennie.<br>Vingt-quatre regards.<br><br>Design, typographie,<br>sculpture, illustration —<br>autant de variations libres<br>sur une seule icône.</p>
+        <p class="affiche-side-label">The Exhibition</p>
+        <p class="affiche-side-body">One object.<br>A decade.<br>Twenty-four perspectives.<br><br>Design, typography,<br>sculpture, illustration —<br>as many free variations<br>on a single icon.</p>
       </div>
       <div class="affiche-titre-cta">
-        <button id="btnEntrerExpo">Explorer l'exposition &nbsp;→</button>
+        <button id="btnEntrerExpo">Enter the exhibition &nbsp;→</button>
       </div>
     </div>
 
@@ -843,10 +877,9 @@
       });
 
       // ═══════════════════════════════════════════════════════
-      //  BOUTON "Explorer l'exposition" → lance la phase expo
+      //  Entrer dans l'exposition — bouton + clic sur l'affiche
       // ═══════════════════════════════════════════════════════
-      document.getElementById('btnEntrerExpo').addEventListener('click', function() {
-
+      function enterExpo() {
         // 1. Fade-out du poster avant de switcher
         sceneAffiche.classList.add('leaving');
 
@@ -892,8 +925,13 @@
               end: '+=' + scrollH,
               scrub: 0.3,
               onUpdate: function(self) {
+                // Snap vers la dernière frame quand on approche de la fin
+                // (compense le délai du scrub pour ne jamais manquer la fin)
+                if (self.progress >= 0.99) {
+                  video.currentTime = dur;
+                  return;
+                }
                 var t = dur * self.progress;
-                // Seek seulement si l'écart est > 1 frame (évite les micro-jerks)
                 if (Math.abs(video.currentTime - t) > 0.04) {
                   video.currentTime = t;
                 }
@@ -911,7 +949,11 @@
           }
 
         }, 650); // attend la fin du fade-out du poster (0.6s + marge)
-      });
+      }
+
+      // Bouton + clic sur l'affiche déclenchent tous les deux enterExpo()
+      document.getElementById('btnEntrerExpo').addEventListener('click', enterExpo);
+      document.getElementById('affiche-img-wrap').addEventListener('click', enterExpo);
 
       // Refresh ScrollTrigger une fois tout setup, après un petit délai
       setTimeout(function() {
