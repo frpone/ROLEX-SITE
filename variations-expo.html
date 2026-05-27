@@ -419,35 +419,71 @@
       #btnEntrerExpo { font-size: 9px; padding: 13px 36px; letter-spacing: 0.25em; }
     }
 
-    /* ===== PHASE EXPO — intro2 video scroll-scrubbed ===== */
-    #phase-expo {
-      display: none;
-      position: relative;
-      z-index: 2;
+    /* ─── Bouton pulsé ─── */
+    @keyframes btnPulse {
+      0%, 100% { opacity: 1; letter-spacing: 0.35em; }
+      50%       { opacity: 0.45; letter-spacing: 0.42em; }
     }
-    #intro2-section {
-      /* Hauteur définie en JS selon la durée vidéo (ex: 400px/s) */
-      position: relative;
+    #btnEntrerExpo {
+      animation: btnPulse 2.6s ease-in-out infinite;
     }
-    #intro2-sticky {
-      position: sticky;
-      top: 0;
-      width: 100%;
-      height: 100vh;
-      overflow: hidden;
+    #btnEntrerExpo:hover {
+      animation: none; /* stoppe le pulse au hover */
+    }
+
+    /* ─── Texte latéral sur le poster ─── */
+    .affiche-side-text {
+      position: absolute;
+      right: 7vw;
+      top: 50%;
+      transform: translateY(-50%);
+      max-width: 200px;
+      text-align: left;
+      pointer-events: none;
+    }
+    .affiche-side-label {
+      font-size: 9px;
+      letter-spacing: 0.30em;
+      text-transform: uppercase;
+      color: var(--ink-mute);
+      margin-bottom: 18px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .affiche-side-label::before {
+      content: ''; width: 20px; height: 1px; background: var(--ink-mute);
+    }
+    .affiche-side-body {
+      font-family: var(--ff-serif);
+      font-style: italic;
+      font-size: 15px;
+      line-height: 1.75;
+      color: var(--ink-soft);
+    }
+    @media (max-width: 980px) {
+      .affiche-side-text { display: none; }
+    }
+
+    /* ─── Phase expo — même architecture que la couronne ─── */
+    /* La vidéo est fixed (comme le canvas), le spacer fournit la hauteur de scroll */
+    #phase-expo { display: none; }
+
+    #intro2-fixed {
+      position: fixed;
+      inset: 0;
+      z-index: 6;
       background: #000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
     #intro2-video {
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
-      /* Même chromie que le poster : température froide */
-      filter: saturate(0.85) brightness(1.02) contrast(0.98);
+      /* Chromie froide : même palette que le poster */
+      filter: saturate(0.80) brightness(1.02) contrast(0.96);
     }
+    /* Le spacer crée la hauteur scrollable, height définie en JS */
+    #intro2-spacer { position: relative; z-index: 2; }
+
     /* Transition de sortie du poster */
     #scene-affiche.leaving {
       transition: opacity 0.6s ease;
@@ -520,24 +556,29 @@
 
     </div>
 
-    <!-- PHASE EXPO : intro2 video scrubbed par le scroll -->
-    <!-- Chargée en avance (preload auto) mais cachée, pilotée au clic du bouton -->
+    <!-- PHASE EXPO : video fixed + spacer scrollable (même archi que la couronne) -->
     <div id="phase-expo">
-      <section id="intro2-section">
-        <div id="intro2-sticky">
-          <video id="intro2-video"
-            src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/VIDOES_export-def/intro2.mp4"
-            preload="auto" muted playsinline webkit-playsinline>
-          </video>
-        </div>
-      </section>
+      <!-- Vidéo fixée — ne bouge pas, c'est le scroll qui pilote currentTime -->
+      <div id="intro2-fixed">
+        <video id="intro2-video"
+          src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/VIDOES_export-def/intro2.mp4"
+          preload="auto" muted playsinline webkit-playsinline>
+        </video>
+      </div>
+      <!-- Spacer : fournit la hauteur scrollable, height définie en JS -->
+      <div id="intro2-spacer"></div>
     </div>
 
-    <!-- AFFICHE TITRE — glisse depuis le bas après le zoom couronne -->
+    <!-- AFFICHE TITRE — fondu après zoom couronne -->
     <div id="scene-affiche">
       <img id="affiche-titre-img"
         src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/AFFICHE%20TITRE%20.webp"
         alt="Rolex Crown Exhibition — François Peyranne" />
+      <!-- Texte atmosphérique latéral -->
+      <div class="affiche-side-text">
+        <p class="affiche-side-label">L'exposition</p>
+        <p class="affiche-side-body">Un objet.<br>Une décennie.<br>Vingt-quatre regards.<br><br>Design, typographie,<br>sculpture, illustration —<br>autant de variations libres<br>sur une seule icône.</p>
+      </div>
       <div class="affiche-titre-cta">
         <button id="btnEntrerExpo">Explorer l'exposition &nbsp;→</button>
       </div>
@@ -830,21 +871,23 @@
           lenis.scrollTo(0, { immediate: true });
           window.scrollTo(0, 0);
 
-          // 6. Setup vidéo scrub
+          // 6. Setup vidéo scrub — architecture fixed + spacer (comme le canvas couronne)
           var video = document.getElementById('intro2-video');
           video.pause();
           video.currentTime = 0;
 
           function setupIntro2() {
             var dur = video.duration || 10;
-            // Hauteur scrollable : 400px par seconde de vidéo, min 4000px
-            var scrollH = Math.max(4000, Math.round(dur * 400));
-            document.getElementById('intro2-section').style.height =
-              (window.innerHeight + scrollH) + 'px';
+            // 450px par seconde → ~4500px pour 10s, confortable pour scrubber
+            var scrollH = Math.max(4000, Math.round(dur * 450));
 
-            // Scrub : le scroll de 0→scrollH pilote currentTime de 0→dur
+            // Le spacer fournit la hauteur de scroll (la vidéo est fixed, elle ne bouge pas)
+            var spacer = document.getElementById('intro2-spacer');
+            spacer.style.height = scrollH + 'px';
+
+            // ScrollTrigger sur le spacer — pilote video.currentTime
             ScrollTrigger.create({
-              trigger: '#intro2-section',
+              trigger: spacer,
               start: 'top top',
               end: '+=' + scrollH,
               scrub: 0.3,
