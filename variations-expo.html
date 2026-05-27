@@ -699,9 +699,9 @@
       // =============== LENIS — config premium ===============
       // duration:1.15 + scrub:1.4 = inertie naturelle sans double-lag
       var lenis = new Lenis({
-        duration: 1.15,
+        duration: 0.75,
         smoothWheel: true,
-        wheelMultiplier: 0.9,
+        wheelMultiplier: 1.0,
         touchMultiplier: 1.5,
         infinite: false
       });
@@ -741,111 +741,128 @@
         })(_fi);
       }
 
-      // =============== TIMELINE UNIQUE — couronne 0%→100% du scroll ===============
-      // UNE seule section pinned, UNE seule timeline.
-      // Chaque état de la couronne est un % du scroll total (pas un déclencheur).
-      // ease:'none' partout = vitesse constante, pas d'accélération.
-      //
-      // Scroll 0-35%  : couronne passe de face → gauche (ch1)
-      // Scroll 13-44% : texte chapitre I apparaît/disparaît
-      // Scroll 35-60% : couronne retourne au centre (ch2)
-      // Scroll 47-73% : texte chapitre II apparaît/disparaît
-      // Scroll 60-90% : couronne zoom vers caméra
-      // Scroll 88-100%: canvas fade out → poster titre glisse
+      // =============== MOTEUR DIRECT — couronne pilotée par progress ===============
+      // Pas de timeline scrubbed. Toutes les valeurs sont calculées depuis p = self.progress.
+      // ScrollTrigger sert uniquement à pin la section et fournir la progression.
+      // Résultat : réactivité immédiate, aucun double-lissage, rotation + zoom simultanés.
 
-      // ─── Helper : texte de chapitre lisible dans la timeline scrubbed ───────────
-      // Phase 1 : entrée depuis le bas  (entryDur  unités) — texte monte lentement
-      // Phase 2 : pause lisible longue  (holdDur   unités) — texte immobile
-      // Phase 3 : sortie vers le haut   (exitDur   unités)
-      //
-      // Avec end:'+=7000' → 1 unité ≈ 412 px de scroll  (timeline ≈ 17 unités)
-      // entryDur 1.5 = ~618px — l'utilisateur lit pendant que le texte monte
-      // holdDur  3.0 = ~1240px — zone lisible même en scrollant vite
-      // exitDur  0.7 = ~288px
-      //
-      // Pour allonger encore la lecture : augmenter holdDur (3e argument de l'appel)
-      // Pour ralentir encore l'entrée : augmenter entryDur ci-dessous
-      function addReadableChapterText(tl, selector, startT, holdDur) {
-        var entryDur = 1.5;    // montée lente depuis le bas — on lit pendant qu'il arrive
-        var exitDur  = 0.7;    // sortie vers le haut
-        holdDur = holdDur || 3.0;
-
-        // Phase 1 : bas → centre (opacity 0→1, y 90→0) — lente
-        tl.fromTo(selector,
-          { opacity: 0, y: 90 },
-          { opacity: 1, y: 0, duration: entryDur, ease: 'none' },
-          startT
-        );
-        // Phase 2 : pause lisible (aucun mouvement — durée la plus longue)
-        tl.to(selector,
-          { opacity: 1, y: 0, duration: holdDur, ease: 'none' },
-          startT + entryDur
-        );
-        // Phase 3 : centre → haut (opacity 1→0, y 0→-90)
-        tl.to(selector,
-          { opacity: 0, y: -90, duration: exitDur, ease: 'none' },
-          startT + entryDur + holdDur
-        );
-      }
-      // ─────────────────────────────────────────────────────────────────────────────
-
-      // Affiche — définis avant la timeline (référencés dans onLeave/onEnterBack)
+      // Affiche — définis avant le ScrollTrigger
       var sceneAffiche = document.getElementById('scene-affiche');
       var afCta = sceneAffiche.querySelector('.affiche-titre-cta');
-      // Pas de gsap.set y — l'affiche est déjà opacity:0 en CSS, le scrub fait le fondu
 
-      var crownTL = gsap.timeline({
-        scrollTrigger: {
-          trigger: '#crown-sequence',
-          start: 'top top',
-          end: '+=7000',
-          scrub: 1.4,
-          pin: true,
-          anticipatePin: 1,
-          invalidateOnRefresh: true,
-          // markers: true,  // désactivé en prod
-          // Seuls les états non-animables (renderActive, pointerEvents) ici.
-          // Les animations poster/bouton sont dans la timeline scrubbed ci-dessous
-          // → elles se reversent automatiquement quand on scrolle en arrière.
-          onLeave:     function() { _renderActive = false; sceneAffiche.style.pointerEvents = 'auto'; },
-          onEnterBack: function() { _renderActive = true;  sceneAffiche.style.pointerEvents = 'none'; }
+      // ─── Helpers mathématiques ────────────────────────────────────────────────
+      function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+      function lerp(a, b, t)  { return a + (b - a) * t; }
+      function smoothstep(t)  { t = clamp(t, 0, 1); return t * t * (3 - 2 * t); }
+      function range(p, a, b) { return clamp((p - a) / (b - a), 0, 1); }
+      function rangeSmooth(p, a, b) { return smoothstep(range(p, a, b)); }
+
+      // ─── Texte de chapitre : entrée bas→centre, pause, sortie centre→haut ────
+      function setReadableLayer(selector, p, enterStart, enterEnd, holdEnd, exitEnd) {
+        var el = document.querySelector(selector);
+        if (!el) return;
+        var opacity, y;
+        if (p < enterStart || p > exitEnd) {
+          opacity = 0;
+          y = p <= enterStart ? 90 : -90;
+        } else if (p <= enterEnd) {
+          var tIn = rangeSmooth(p, enterStart, enterEnd);
+          opacity = tIn;
+          y = lerp(90, 0, tIn);
+        } else if (p <= holdEnd) {
+          opacity = 1;
+          y = 0;
+        } else {
+          var tOut = rangeSmooth(p, holdEnd, exitEnd);
+          opacity = 1 - tOut;
+          y = lerp(0, -90, tOut);
+        }
+        gsap.set(el, { opacity: opacity, y: y });
+      }
+
+      // ─── Mise à jour complète de la scène pour un progress p ∈ [0, 1] ────────
+      function updateCrownSequence(p) {
+        // Hero
+        var heroFade = rangeSmooth(p, 0.05, 0.20);
+        gsap.set('#seq-hero', {
+          opacity: 1 - heroFade,
+          pointerEvents: p < 0.18 ? 'auto' : 'none'
+        });
+
+        // Chapitres avec vraie zone de lecture
+        setReadableLayer('#seq-ch1', p, 0.13, 0.24, 0.42, 0.50);
+        setReadableLayer('#seq-ch2', p, 0.47, 0.58, 0.72, 0.80);
+
+        // Progressions de mouvement (smoothstep sur chaque segment)
+        var a = rangeSmooth(p, 0.00, 0.27); // face → gauche
+        var b = rangeSmooth(p, 0.27, 0.58); // gauche → centre
+        var c = rangeSmooth(p, 0.58, 0.86); // approche lente
+        var d = rangeSmooth(p, 0.86, 1.00); // traversée finale
+
+        var x = lerp(0, -2.2, a);
+        x = lerp(x, 0, b);
+        x = lerp(x, 0.15, d);
+
+        var z = 0;
+        z = lerp(z, -0.6, b);
+        z = lerp(z, 2.4,  c);
+        z = lerp(z, 7.0,  d);
+
+        var scale = crownBaseScale;
+        scale = lerp(scale, crownBaseScale * 0.9,  b);
+        scale = lerp(scale, crownBaseScale * 1.75, c);
+        scale = lerp(scale, crownBaseScale * 4.5,  d);
+
+        var rotY = 0.42;
+        rotY = lerp(rotY, 0.92, a);
+        rotY = lerp(rotY, 1.32, b);
+        rotY = lerp(rotY, 1.32 + Math.PI * 0.22, c);
+        rotY = lerp(rotY, 1.32 + Math.PI * 0.5,  d);
+
+        crownGroup.position.set(x, 0, z);
+        crownGroup.scale.set(scale, scale, scale);
+        crownGroup.rotation.set(Math.PI + 0.18, rotY, 0);
+
+        // Crossfade affiche finale
+        var poster = rangeSmooth(p, 0.88, 1.00);
+        gsap.set(canvasContainer, { opacity: 1 - poster });
+        gsap.set(sceneAffiche,    { opacity: poster });
+        gsap.set(afCta,           { opacity: rangeSmooth(p, 0.94, 1.00) });
+        sceneAffiche.style.pointerEvents = p > 0.985 ? 'auto' : 'none';
+      }
+
+      // ─── ScrollTrigger : pin uniquement, progress → updateCrownSequence ──────
+      var crownST = ScrollTrigger.create({
+        trigger: '#crown-sequence',
+        start: 'top top',
+        end: '+=7600',
+        pin: true,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+
+        onUpdate: function(self) {
+          updateCrownSequence(self.progress);
+        },
+        onLeave: function() {
+          updateCrownSequence(1);
+          _renderActive = false;
+          sceneAffiche.style.pointerEvents = 'auto';
+        },
+        onEnterBack: function() {
+          _renderActive = true;
+          sceneAffiche.style.pointerEvents = 'none';
+          updateCrownSequence(crownST.progress || 0);
+        },
+        onRefresh: function(self) {
+          updateCrownSequence(self.progress || 0);
         }
       });
 
-      // Hero disparaît (0.5→2.0)
-      crownTL.to('#seq-hero', { opacity: 0, duration: 1.5, ease: 'none' }, 0.5);
+      // Wrapper de compatibilité : enterExpo() appelle crownTL.scrollTrigger.kill(true)
+      var crownTL = { scrollTrigger: crownST };
 
-      // ── Chapitre I ── entrée t=1.3, hold 3.0 unités, sortie = fin t=6.5
-      addReadableChapterText(crownTL, '#seq-ch1', 1.30, 3.0);
-
-      // Crown A→B : face → gauche (0→3.5 = 0-27%)
-      crownTL
-        .to(crownGroup.position, { x: -2.2, y: 0, z: 0, duration: 3.5, ease: 'none' }, 0)
-        .to(crownGroup.rotation, { y: 0.92, duration: 3.5, ease: 'none' }, 0);
-
-      // Crown B→C : gauche → centre reculé (3.5→7.5 = 27-58%)
-      crownTL
-        .to(crownGroup.position, { x: 0, y: 0, z: -0.6, duration: 4.0, ease: 'none' }, 3.5)
-        .to(crownGroup.scale,    { x: crownBaseScale * 0.9, y: crownBaseScale * 0.9, z: crownBaseScale * 0.9, duration: 4.0, ease: 'none' }, 3.5)
-        .to(crownGroup.rotation, { y: 1.32, duration: 4.0, ease: 'none' }, 3.5);
-
-      // ── Chapitre II ── entrée t=6.8, hold 3.0 unités, sortie = fin t=12.0
-      addReadableChapterText(crownTL, '#seq-ch2', 6.80, 3.0);
-
-      // Crown C→D : zoom vers caméra (7.5→16.0) — très lent et majestueux
-      crownTL
-        .to(crownGroup.position, { x: 0, y: 0, z: 7, duration: 8.5, ease: 'none' }, 7.5)
-        .to(crownGroup.scale,    { x: crownBaseScale * 4.5, y: crownBaseScale * 4.5, z: crownBaseScale * 4.5, duration: 8.5, ease: 'none' }, 7.5)
-        .to(crownGroup.rotation, { y: 1.32 + Math.PI * 0.5, duration: 8.5, ease: 'none' }, 7.5);
-
-      // ── Fondu canvas + fondu poster (crossfade synchronisé à t=15.0) ──────────
-      // La couronne disparaît et le poster apparaît en fondu au même instant.
-      // Aucun mouvement vertical — pure transition d'opacité.
-      // Le scrub reverse tout automatiquement quand on scrolle en arrière.
-      crownTL.to(canvasContainer, { opacity: 0, duration: 2.0, ease: 'none' }, 15.0);
-      crownTL.to(sceneAffiche,   { opacity: 1, duration: 2.0, ease: 'none' }, 15.0);
-      // Bouton apparaît en fin de fondu (t=16.5→17.0)
-      crownTL.to(afCta, { opacity: 1, duration: 0.5, ease: 'none' }, 16.5);
+      // État initial
+      updateCrownSequence(0);
 
       window.addEventListener('resize', function() {
         camera.aspect = window.innerWidth / window.innerHeight;
