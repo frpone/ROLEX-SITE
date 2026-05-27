@@ -520,12 +520,9 @@
 
     <!-- PHASE EXPO : video fixed + spacer scrollable (même archi que la couronne) -->
     <div id="phase-expo">
-      <!-- Vidéo fixée — ne bouge pas, c'est le scroll qui pilote currentTime -->
+      <!-- Vidéo fixée — src injecté en JS après fetch blob -->
       <div id="intro2-fixed">
-        <video id="intro2-video"
-          src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/VIDOES_export-def/intro2.mp4"
-          preload="auto" muted playsinline webkit-playsinline>
-        </video>
+        <video id="intro2-video" muted playsinline webkit-playsinline></video>
       </div>
       <!-- Spacer : fournit la hauteur scrollable, height définie en JS -->
       <div id="intro2-spacer"></div>
@@ -690,13 +687,12 @@
       var canvasContainer = document.getElementById('canvas-container');
       var _renderActive = true;
 
-      // ── Préchargement vidéo intro2 en blob dès le départ ────────────────────
-      // Démarre en arrière-plan pendant que l'utilisateur scrolle la couronne.
-      // Quand il clique "Enter the exhibition", la vidéo est déjà en mémoire
-      // → seeking frame-accurate même vers la fin (raw.githubusercontent.com
-      //   ne supporte pas les range requests suffisamment rapides pour le scrub).
+      // ── Préchargement vidéo intro2 en blob ──────────────────────────────────
+      // Démarre en arrière-plan pendant le scroll couronne.
+      // Pas de src sur la <video> en HTML — on l'injecte NOUS-MÊMES après fetch
+      // pour éviter toute race condition entre le chargement raw et le blob.
       var INTRO2_SRC = 'https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/VIDOES_export-def/intro2.mp4';
-      var intro2BlobUrl = null;
+      var intro2BlobUrl = null;   // null = fetch pas encore fini
       fetch(INTRO2_SRC)
         .then(function(r) {
           if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -704,12 +700,13 @@
         })
         .then(function(blob) {
           intro2BlobUrl = URL.createObjectURL(blob);
-          // Met à jour le src de la balise video dès que le blob est prêt
-          var vid = document.getElementById('intro2-video');
-          if (vid) { vid.src = intro2BlobUrl; vid.load(); }
-          console.log('intro2 préchargée en blob ✓');
+          console.log('intro2 blob prêt ✓ — ' + (blob.size / 1024 / 1024).toFixed(2) + 'MB');
         })
-        .catch(function(e) { console.warn('Préchargement intro2 échoué, fallback raw URL:', e); });
+        .catch(function(e) {
+          // En cas d'échec, on utilisera l'URL raw directement
+          intro2BlobUrl = INTRO2_SRC;
+          console.warn('Blob fetch échoué, fallback raw:', e.message);
+        });
 
       // =============== TIMELINE UNIQUE — couronne 0%→100% du scroll ===============
       // UNE seule section pinned, UNE seule timeline.
@@ -851,22 +848,15 @@
           lenis.scrollTo(0, { immediate: true });
           window.scrollTo(0, 0);
 
-          // 6. Setup vidéo scrub — architecture fixed + spacer
+          // 6. Setup vidéo — même séquence exacte que la page de test qui marche
           var video = document.getElementById('intro2-video');
-          video.pause();
-
-          // Si le blob est prêt, l'utiliser (seeking fiable) ; sinon fallback raw URL
-          if (intro2BlobUrl && video.src !== intro2BlobUrl) {
-            video.src = intro2BlobUrl;
-            video.load();
-          }
-          video.currentTime = 0;
 
           function setupIntro2() {
-            var dur = video.duration || 10;
-            // 500px/s → scrubbing confortable, ~5s visible par page-height
-            var scrollH = Math.max(4000, Math.round(dur * 500));
+            var dur = video.duration;
+            console.log('setupIntro2 — duration=' + dur);
 
+            // 500px/s → ~5000px pour 10s de vidéo
+            var scrollH = Math.max(4000, Math.round(dur * 500));
             var spacer = document.getElementById('intro2-spacer');
             spacer.style.height = scrollH + 'px';
 
@@ -876,11 +866,10 @@
               end: '+=' + scrollH,
               scrub: 0.5,
               onUpdate: function(self) {
-                var t = dur * self.progress;
-                // Snap à la toute dernière frame decodable dès 95%
-                if (self.progress >= 0.95) {
-                  t = dur - 0.001;
-                }
+                // Snap à la dernière frame décodable dès 95% du scroll
+                var t = self.progress >= 0.95
+                  ? dur - 0.001
+                  : dur * self.progress;
                 if (Math.abs(video.currentTime - t) > 0.033) {
                   video.currentTime = t;
                 }
@@ -890,11 +879,40 @@
             ScrollTrigger.refresh();
           }
 
-          if (video.readyState >= 1) {
-            setupIntro2();
-          } else {
-            video.addEventListener('loadedmetadata', setupIntro2, { once: true });
+          // Réplique la page de test :
+          // 1. Attendre que le blob soit prêt (poll toutes les 200ms max 15s)
+          // 2. Injecter src, load(), écouter loadedmetadata, puis setupIntro2()
+          function waitForBlobAndStart() {
+            var waited = 0;
+            function tryStart() {
+              if (intro2BlobUrl) {
+                // Blob (ou fallback raw) disponible — on injecte proprement
+                console.log('Source vidéo:', intro2BlobUrl.substr(0, 40));
+                video.src = intro2BlobUrl;
+                video.addEventListener('loadedmetadata', function() {
+                  console.log('loadedmetadata ✓ duration=' + video.duration);
+                  video.currentTime = 0;
+                  setupIntro2();
+                }, { once: true });
+                video.load();
+              } else if (waited < 15000) {
+                // Blob pas encore là — on attend 200ms de plus
+                waited += 200;
+                setTimeout(tryStart, 200);
+              } else {
+                // Timeout : fallback direct sur raw
+                console.warn('Timeout blob — fallback raw URL');
+                video.src = INTRO2_SRC;
+                video.addEventListener('loadedmetadata', function() {
+                  video.currentTime = 0;
+                  setupIntro2();
+                }, { once: true });
+                video.load();
+              }
+            }
+            tryStart();
           }
+          waitForBlobAndStart();
 
         }, 650); // attend la fin du fade-out du poster (0.6s + marge)
       }
