@@ -670,10 +670,10 @@
       }
       // ─────────────────────────────────────────────────────────────────────────────
 
-      // Affiche : définis avant la timeline pour pouvoir les référencer dans onLeave
+      // Affiche — définis avant la timeline (référencés dans onLeave/onEnterBack)
       var sceneAffiche = document.getElementById('scene-affiche');
       var afCta = sceneAffiche.querySelector('.affiche-titre-cta');
-      gsap.set(sceneAffiche, { y: '100vh' });
+      gsap.set(sceneAffiche, { y: '100vh' });   // cachée sous le bas de l'écran
 
       var crownTL = gsap.timeline({
         scrollTrigger: {
@@ -685,27 +685,11 @@
           anticipatePin: 1,
           invalidateOnRefresh: true,
           markers: true,
-          // ─── Affiche dans le MÊME ScrollTrigger que le pin ───────────────────
-          // Un ScrollTrigger séparé sur le même trigger ne tient pas compte du pin
-          // et ne se déclenche jamais correctement.
-          onLeave: function() {
-            _renderActive = false;
-            gsap.to(sceneAffiche, {
-              y: 0, duration: 0.9, ease: 'power3.out',
-              onComplete: function() {
-                gsap.to(afCta, { opacity: 1, duration: 0.5, ease: 'power2.out' });
-              }
-            });
-            sceneAffiche.style.pointerEvents = 'auto';
-            lenis.stop();
-          },
-          onEnterBack: function() {
-            _renderActive = true;
-            gsap.to(afCta, { opacity: 0, duration: 0.2, ease: 'none' });
-            gsap.to(sceneAffiche, { y: '100vh', duration: 0.5, ease: 'power2.in' });
-            sceneAffiche.style.pointerEvents = 'none';
-            lenis.start();
-          }
+          // Seuls les états non-animables (renderActive, pointerEvents) ici.
+          // Les animations poster/bouton sont dans la timeline scrubbed ci-dessous
+          // → elles se reversent automatiquement quand on scrolle en arrière.
+          onLeave:     function() { _renderActive = false; sceneAffiche.style.pointerEvents = 'auto'; },
+          onEnterBack: function() { _renderActive = true;  sceneAffiche.style.pointerEvents = 'none'; }
         }
       });
 
@@ -716,7 +700,6 @@
       addReadableChapterText(crownTL, '#seq-ch1', 1.30, 3.0);
 
       // Crown A→B : face → gauche (0→3.5 = 0-27%)
-      // x:-2.2 = entre -1.6 (trop proche) et -3.2 (trop loin)
       crownTL
         .to(crownGroup.position, { x: -2.2, y: 0, z: 0, duration: 3.5, ease: 'none' }, 0)
         .to(crownGroup.rotation, { y: 0.92, duration: 3.5, ease: 'none' }, 0);
@@ -730,14 +713,20 @@
       // ── Chapitre II ── entrée t=6.8, hold 3.0 unités, sortie = fin t=12.0
       addReadableChapterText(crownTL, '#seq-ch2', 6.80, 3.0);
 
-      // Crown C→D : zoom vers caméra (7.5→16.0 = 58-100%) — très lent et majestueux
+      // Crown C→D : zoom vers caméra (7.5→16.0) — très lent et majestueux
       crownTL
         .to(crownGroup.position, { x: 0, y: 0, z: 7, duration: 8.5, ease: 'none' }, 7.5)
         .to(crownGroup.scale,    { x: crownBaseScale * 4.5, y: crownBaseScale * 4.5, z: crownBaseScale * 4.5, duration: 8.5, ease: 'none' }, 7.5)
         .to(crownGroup.rotation, { y: 1.32 + Math.PI * 0.5, duration: 8.5, ease: 'none' }, 7.5);
 
-      // Canvas fade (15.0→17.0)
+      // ── Fondu canvas + montée poster (simultanés à t=15.0) ──────────────────
+      // Le poster monte en même temps que la couronne disparaît dans le scrub.
+      // Quand l'utilisateur scrolle en arrière, le scrub reverse tout automatiquement
+      // → pas besoin de lenis.stop(), l'animation est pilotée par la position de scroll.
       crownTL.to(canvasContainer, { opacity: 0, duration: 2.0, ease: 'none' }, 15.0);
+      crownTL.to(sceneAffiche,   { y: 0,       duration: 2.0, ease: 'power2.out' }, 15.0);
+      // Bouton apparaît en fin de montée (t=16.5→17.0)
+      crownTL.to(afCta, { opacity: 1, duration: 0.5, ease: 'none' }, 16.5);
 
       window.addEventListener('resize', function() {
         camera.aspect = window.innerWidth / window.innerHeight;
