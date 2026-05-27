@@ -853,22 +853,30 @@
 
           function setupIntro2() {
             var dur = video.duration;
-            console.log('setupIntro2 — duration=' + dur);
+            console.log('setupIntro2 — duration=' + dur + 's');
 
-            // 500px/s → ~5000px pour 10s de vidéo
+            // 500px/s de scroll pour la vidéo
             var scrollH = Math.max(4000, Math.round(dur * 500));
+
+            // ★ FIX CRITIQUE ★
+            // Le scroll max d'une page = scrollHeight - innerHeight.
+            // Si spacer = scrollH px, le scroll max = scrollH - innerHeight
+            // → progress max = (scrollH - innerHeight) / scrollH < 1.0
+            // → la dernière frame n'est JAMAIS atteinte.
+            // Solution : spacer = scrollH + innerHeight, comme GSAP pin le fait.
+            // Ainsi : scroll max = (scrollH + innerHeight) - innerHeight = scrollH
+            // → progress max = scrollH / scrollH = 1.0 ✓
             var spacer = document.getElementById('intro2-spacer');
-            spacer.style.height = scrollH + 'px';
+            spacer.style.height = (scrollH + window.innerHeight) + 'px';
 
             ScrollTrigger.create({
               trigger: spacer,
               start: 'top top',
               end: '+=' + scrollH,
-              scrub: 0.5,
+              scrub: true,          // sans lag → seeking immédiat (blob = rapide)
               onUpdate: function(self) {
-                // Snap à la dernière frame décodable dès 95% du scroll
-                var t = self.progress >= 0.95
-                  ? dur - 0.001
+                var t = self.progress >= 0.98
+                  ? dur - 0.001    // snap à la toute dernière frame
                   : dur * self.progress;
                 if (Math.abs(video.currentTime - t) > 0.033) {
                   video.currentTime = t;
