@@ -670,16 +670,42 @@
       }
       // ─────────────────────────────────────────────────────────────────────────────
 
+      // Affiche : définis avant la timeline pour pouvoir les référencer dans onLeave
+      var sceneAffiche = document.getElementById('scene-affiche');
+      var afCta = sceneAffiche.querySelector('.affiche-titre-cta');
+      gsap.set(sceneAffiche, { y: '100vh' });
+
       var crownTL = gsap.timeline({
         scrollTrigger: {
           trigger: '#crown-sequence',
           start: 'top top',
-          end: '+=7000',        // ← augmenté (était 4500) — plus de pixels par unité
+          end: '+=7000',
           scrub: 1.4,
           pin: true,
           anticipatePin: 1,
           invalidateOnRefresh: true,
-          markers: true   // ← retirer quand les zones sont validées
+          markers: true,
+          // ─── Affiche dans le MÊME ScrollTrigger que le pin ───────────────────
+          // Un ScrollTrigger séparé sur le même trigger ne tient pas compte du pin
+          // et ne se déclenche jamais correctement.
+          onLeave: function() {
+            _renderActive = false;
+            gsap.to(sceneAffiche, {
+              y: 0, duration: 0.9, ease: 'power3.out',
+              onComplete: function() {
+                gsap.to(afCta, { opacity: 1, duration: 0.5, ease: 'power2.out' });
+              }
+            });
+            sceneAffiche.style.pointerEvents = 'auto';
+            lenis.stop();
+          },
+          onEnterBack: function() {
+            _renderActive = true;
+            gsap.to(afCta, { opacity: 0, duration: 0.2, ease: 'none' });
+            gsap.to(sceneAffiche, { y: '100vh', duration: 0.5, ease: 'power2.in' });
+            sceneAffiche.style.pointerEvents = 'none';
+            lenis.start();
+          }
         }
       });
 
@@ -687,14 +713,12 @@
       crownTL.to('#seq-hero', { opacity: 0, duration: 1.5, ease: 'none' }, 0.5);
 
       // ── Chapitre I ── entrée t=1.3, hold 3.0 unités, sortie = fin t=6.5
-      // Zone lisible : t=2.8 → t=5.8  (≈ 1240px de scroll immobile)
-      // L'entrée elle-même dure 618px → on a le temps de lire pendant la montée
       addReadableChapterText(crownTL, '#seq-ch1', 1.30, 3.0);
 
       // Crown A→B : face → gauche (0→3.5 = 0-27%)
-      // x:-3.2 pousse la couronne bien à gauche pour dégager le texte ch1 à droite
+      // x:-2.2 = entre -1.6 (trop proche) et -3.2 (trop loin)
       crownTL
-        .to(crownGroup.position, { x: -3.2, y: 0, z: 0, duration: 3.5, ease: 'none' }, 0)
+        .to(crownGroup.position, { x: -2.2, y: 0, z: 0, duration: 3.5, ease: 'none' }, 0)
         .to(crownGroup.rotation, { y: 0.92, duration: 3.5, ease: 'none' }, 0);
 
       // Crown B→C : gauche → centre reculé (3.5→7.5 = 27-58%)
@@ -704,8 +728,6 @@
         .to(crownGroup.rotation, { y: 1.32, duration: 4.0, ease: 'none' }, 3.5);
 
       // ── Chapitre II ── entrée t=6.8, hold 3.0 unités, sortie = fin t=12.0
-      // Démarre après la sortie de ch1 (t=6.5) — petit gap de 0.3 unités
-      // Zone lisible : t=8.3 → t=11.3  (≈ 1240px de scroll immobile)
       addReadableChapterText(crownTL, '#seq-ch2', 6.80, 3.0);
 
       // Crown C→D : zoom vers caméra (7.5→16.0 = 58-100%) — très lent et majestueux
@@ -716,41 +738,6 @@
 
       // Canvas fade (15.0→17.0)
       crownTL.to(canvasContainer, { opacity: 0, duration: 2.0, ease: 'none' }, 15.0);
-
-      // =============== AFFICHE TITRE — slide-in + arrêt du scroll ===============
-      var sceneAffiche = document.getElementById('scene-affiche');
-      var afCta = sceneAffiche.querySelector('.affiche-titre-cta');
-      gsap.set(sceneAffiche, { y: '100vh' });
-
-      ScrollTrigger.create({
-        trigger: '#crown-sequence',
-        start: 'top top',
-        end: '+=7000',          // ← aligné sur la timeline principale
-        onLeave: function() {
-          // 1. Arrêt du rendu 3D
-          _renderActive = false;
-          // 2. Le poster monte depuis le bas
-          gsap.to(sceneAffiche, {
-            y: 0,
-            duration: 0.9,
-            ease: 'power3.out',
-            onComplete: function() {
-              // 3. Le bouton apparaît après l'arrivée du poster
-              gsap.to(afCta, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' });
-            }
-          });
-          sceneAffiche.style.pointerEvents = 'auto';
-          lenis.stop();   // scroll bloqué sur le poster
-        },
-        onEnterBack: function() {
-          // Retour vers la couronne — poster redescend
-          _renderActive = true;
-          gsap.to(afCta, { opacity: 0, duration: 0.2, ease: 'none' });
-          gsap.to(sceneAffiche, { y: '100vh', duration: 0.5, ease: 'power2.in' });
-          sceneAffiche.style.pointerEvents = 'none';
-          lenis.start();
-        }
-      });
 
       window.addEventListener('resize', function() {
         camera.aspect = window.innerWidth / window.innerHeight;
