@@ -431,20 +431,38 @@
     /* ─── Phase expo ─── */
     #phase-expo { display: none; }
 
-    /* Vidéo fixed — reste en place pendant le scroll du spacer */
+    /* Canvas fixed — reste en place pendant le scroll du spacer */
     #intro2-fixed {
       position: fixed;
       inset: 0;
       z-index: 6;
       background: #000;
     }
-    #intro2-video {
+    #intro2-canvas {
       width: 100%;
       height: 100%;
-      object-fit: cover;
       display: block;
-      /* Aucune transition CSS — le scrub doit être instantané */
-      filter: saturate(0.80) brightness(1.02) contrast(0.96);
+    }
+    /* Loader frames */
+    #intro2-loader {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+      z-index: 2;
+    }
+    #intro2-loader-bar-wrap {
+      width: 160px;
+      height: 1px;
+      background: rgba(255,255,255,0.15);
+    }
+    #intro2-loader-bar {
+      height: 1px;
+      width: 0%;
+      background: rgba(255,255,255,0.7);
+      transition: width 0.1s linear;
     }
     /* Spacer : fournit la hauteur scrollable (height définie en JS) */
     #intro2-spacer {
@@ -524,13 +542,16 @@
 
     </div>
 
-    <!-- PHASE EXPO : vidéo fixed + spacer scrollable -->
-    <!-- La vidéo reste immobile. C'est le spacer qui crée la hauteur de scroll. -->
-    <!-- Le scroll est lu directement via Lenis, sans ScrollTrigger (plus fiable). -->
+    <!-- PHASE EXPO : séquence d'images sur canvas + spacer scrollable -->
+    <!-- Le canvas reste fixe. Le spacer crée la hauteur de scroll. -->
     <div id="phase-expo">
       <div id="intro2-fixed">
-        <!-- src injecté en JS après blob fetch -->
-        <video id="intro2-video" muted playsinline webkit-playsinline></video>
+        <canvas id="intro2-canvas"></canvas>
+        <div id="intro2-loader">
+          <div id="intro2-loader-bar-wrap">
+            <div id="intro2-loader-bar"></div>
+          </div>
+        </div>
       </div>
       <!-- height = SCROLL_H + window.innerHeight, calculé en JS -->
       <div id="intro2-spacer"></div>
@@ -695,26 +716,30 @@
       var canvasContainer = document.getElementById('canvas-container');
       var _renderActive = true;
 
-      // ── Préchargement vidéo intro2 en blob ──────────────────────────────────
-      // Démarre en arrière-plan pendant le scroll couronne.
-      // Pas de src sur la <video> en HTML — on l'injecte NOUS-MÊMES après fetch
-      // pour éviter toute race condition entre le chargement raw et le blob.
-      var INTRO2_SRC = 'https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/VIDOES_export-def/intro2.mp4';
-      var intro2BlobUrl = null;   // null = fetch pas encore fini
-      fetch(INTRO2_SRC)
-        .then(function(r) {
-          if (!r.ok) throw new Error('HTTP ' + r.status);
-          return r.blob();
-        })
-        .then(function(blob) {
-          intro2BlobUrl = URL.createObjectURL(blob);
-          console.log('intro2 blob prêt ✓ — ' + (blob.size / 1024 / 1024).toFixed(2) + 'MB');
-        })
-        .catch(function(e) {
-          // En cas d'échec, on utilisera l'URL raw directement
-          intro2BlobUrl = INTRO2_SRC;
-          console.warn('Blob fetch échoué, fallback raw:', e.message);
-        });
+      // ── Séquence d'images intro2 — 69 frames JPEG ───────────────────────────
+      // Architecture Apple-style : chaque frame = un <img> en mémoire RAM.
+      // Seek = 0ms (drawImage instantané), aucune décompression vidéo.
+      var FRAMES_BASE  = 'https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/FRAMES_INTRO2/frame_';
+      var FRAMES_COUNT = 69;
+      var _frames      = new Array(FRAMES_COUNT); // Image objects pré-chargées
+      var _framesReady = 0;                        // nb de frames chargées
+
+      // Préchargement en arrière-plan (démarre dès le chargement de la page)
+      for (var _fi = 0; _fi < FRAMES_COUNT; _fi++) {
+        (function(idx) {
+          var img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = img.onerror = function() {
+            _framesReady++;
+            // Mettre à jour la barre de progression si la phase expo est active
+            var bar = document.getElementById('intro2-loader-bar');
+            if (bar) bar.style.width = Math.round(_framesReady / FRAMES_COUNT * 100) + '%';
+          };
+          var n = String(idx + 1).padStart(3, '0');
+          img.src = FRAMES_BASE + n + '.jpg';
+          _frames[idx] = img;
+        })(_fi);
+      }
 
       // =============== TIMELINE UNIQUE — couronne 0%→100% du scroll ===============
       // UNE seule section pinned, UNE seule timeline.
@@ -829,86 +854,83 @@
       });
 
       // ═══════════════════════════════════════════════════════
-      //  initScrollVideo — pilote video.currentTime via Lenis
+      //  initImageSequence — scrub Apple-style via canvas
       //
-      //  Architecture : vidéo fixed + spacer scrollable.
-      //  Pas de ScrollTrigger pour la vidéo (évite les conflits
-      //  Lenis ↔ pin:true constatés en production).
-      //  Le scroll Lenis est lu directement → currentTime.
-      //
-      //  Diagnostic : A — vraie vidéo (intro2.mp4)
-      //  lastFrameTime = video.duration - 0.2 (jamais = duration exacte)
+      //  Architecture : 69 frames JPEG pré-chargées en RAM,
+      //  canvas fixed + spacer scrollable.
+      //  drawImage() = 0ms de latence, scroll 100% fluide.
       // ═══════════════════════════════════════════════════════
 
-      var SCROLL_H = 5000;          // px de scroll total pour la vidéo
-      var _introRafId        = null; // rAF loop id
-      var _introLenisHandler = null; // Lenis backup handler
+      var SCROLL_H   = 5000;  // px de scroll total
+      var _introRafId = null;
 
-      function initScrollVideo(video) {
-        // ── Cleanup boucle précédente ──
+      function initImageSequence() {
         if (_introRafId) { cancelAnimationFrame(_introRafId); _introRafId = null; }
-        if (_introLenisHandler) { lenis.off('scroll', _introLenisHandler); _introLenisHandler = null; }
 
-        // ── Propriétés vidéo requises ──
-        video.muted       = true;
-        video.playsInline = true;
-        video.preload     = 'auto';
-        video.pause();
+        var canvas  = document.getElementById('intro2-canvas');
+        var ctx     = canvas.getContext('2d');
+        var loader  = document.getElementById('intro2-loader');
+        var bar     = document.getElementById('intro2-loader-bar');
+        var spacer  = document.getElementById('intro2-spacer');
+        var lastIdx = -1;
 
-        function setup() {
-          var dur = video.duration;
-          // lastFrameTime : 0.05s avant la fin (évite currentTime === duration)
-          var lastFrameTime = Math.max(0, dur - 0.05);
-          console.log('[initScrollVideo] duration=' + dur.toFixed(3)
-                      + '  lastFrameTime=' + lastFrameTime.toFixed(3));
-
-          // ── Spacer : scroll_max = spacer.height − window.innerHeight = SCROLL_H ──
-          var spacer = document.getElementById('intro2-spacer');
-          spacer.style.height = (SCROLL_H + window.innerHeight) + 'px';
-
-          // Afficher la première frame immédiatement
-          video.pause();
-          video.currentTime = 0.001;
-
-          // ── Fonction de scrub centrale ──
-          // Lit window.scrollY (position physique Lenis — Lenis appelle window.scrollTo())
-          // Snap à lastFrameTime dès 92% du scroll → garantit que la dernière frame
-          // est toujours atteinte, même si l'utilisateur stoppe à ~90%
-          function scrub() {
-            var scroll   = window.scrollY || window.pageYOffset || 0;
-            var progress = Math.max(0, Math.min(1, scroll / SCROLL_H));
-            var target   = progress >= 0.92 ? lastFrameTime : progress * lastFrameTime;
-            // Mise à jour uniquement si l'écart dépasse 1ms (évite seeks redondants)
-            if (Math.abs(video.currentTime - target) > 0.001) {
-              video.currentTime = target;
-            }
+        // Taille canvas = taille viewport (pixel perfect)
+        function resizeCanvas() {
+          canvas.width  = window.innerWidth;
+          canvas.height = window.innerHeight;
+          if (lastIdx >= 0 && _frames[lastIdx] && _frames[lastIdx].complete) {
+            drawIdx(lastIdx);
           }
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
 
-          // ── Boucle rAF — lit window.scrollY à 60fps (indépendant du ticker GSAP) ──
-          function tick() {
-            scrub();
-            _introRafId = requestAnimationFrame(tick);
-          }
+        // Spacer = hauteur de scroll voulue
+        spacer.style.height = (SCROLL_H + window.innerHeight) + 'px';
+
+        // Dessin d'un frame : object-fit:cover (centre, recadre)
+        function drawIdx(idx) {
+          var img = _frames[idx];
+          if (!img || !img.naturalWidth) return;
+          var cw = canvas.width, ch = canvas.height;
+          var iw = img.naturalWidth, ih = img.naturalHeight;
+          var scale = Math.max(cw / iw, ch / ih);
+          var dw = iw * scale, dh = ih * scale;
+          var dx = (cw - dw) / 2, dy = (ch - dh) / 2;
+          ctx.drawImage(img, dx, dy, dw, dh);
+          lastIdx = idx;
+        }
+
+        // Filtres couleur identiques à l'ancienne vidéo (saturate 0.80 etc.)
+        canvas.style.filter = 'saturate(0.80) brightness(1.02) contrast(0.96)';
+
+        // Boucle scrub : progress → index frame
+        function tick() {
+          var scroll   = window.scrollY || window.pageYOffset || 0;
+          var progress = Math.max(0, Math.min(1, scroll / SCROLL_H));
+          // Snap à la dernière frame dès 92% du scroll
+          var idx = progress >= 0.92
+            ? FRAMES_COUNT - 1
+            : Math.min(FRAMES_COUNT - 1, Math.floor(progress * FRAMES_COUNT));
+          if (idx !== lastIdx) drawIdx(idx);
           _introRafId = requestAnimationFrame(tick);
-
-          // ── Fallback Lenis : déclenche scrub() aussi sur chaque event scroll ──
-          _introLenisHandler = function() { scrub(); };
-          lenis.on('scroll', _introLenisHandler);
-
-          // ── Sécurité : si la vidéo joue accidentellement ──
-          video.addEventListener('ended', function() {
-            video.pause();
-            video.currentTime = lastFrameTime;
-          }, { once: true });
         }
 
-        // Attendre loadedmetadata si nécessaire
-        if (video.readyState >= 1 && Number.isFinite(video.duration)) {
-          setup();
-        } else {
-          video.addEventListener('loadedmetadata', setup, { once: true });
-          video.load();
+        // Démarrer quand toutes les frames sont prêtes
+        function tryStart() {
+          if (_framesReady >= FRAMES_COUNT) {
+            // Masquer le loader, démarrer le scrub
+            if (loader) { loader.style.opacity = '0'; setTimeout(function() { loader.style.display = 'none'; }, 400); }
+            drawIdx(0);   // première frame immédiate
+            _introRafId = requestAnimationFrame(tick);
+            console.log('[initImageSequence] ' + FRAMES_COUNT + ' frames prêtes → scrub démarré');
+          } else {
+            // Attendre encore
+            if (bar) bar.style.width = Math.round(_framesReady / FRAMES_COUNT * 100) + '%';
+            setTimeout(tryStart, 50);
+          }
         }
+        tryStart();
       }
 
       // ═══════════════════════════════════════════════════════
@@ -930,46 +952,17 @@
           document.getElementById('bgLight').style.display = 'none';
           document.getElementById('bgDark').style.display = 'none';
 
-          // 4. Afficher la phase expo (vidéo fixed + spacer)
+          // 4. Afficher la phase expo (canvas fixed + spacer)
           document.getElementById('phase-expo').style.display = 'block';
-
-          // Pré-dimensionner le spacer AVANT le scroll (SCROLL_H connu dès maintenant)
-          // → évite un document trop court si l'utilisateur scrolle avant loadedmetadata
-          document.getElementById('intro2-spacer').style.height =
-            (SCROLL_H + window.innerHeight) + 'px';
 
           // 5. Scroll au top (Lenis + natif)
           lenis.scrollTo(0, { immediate: true });
           window.scrollTo(0, 0);
 
-          // 6. Séquence d'init :
-          //    blob prêt → video.src → video.load → loadedmetadata → setup
-          var video = document.getElementById('intro2-video');
-
-          function doInit(src) {
-            video.src = src;
-            // rAF : DOM de #phase-expo rendu, puis init
-            requestAnimationFrame(function() {
-              setTimeout(function() {
-                initScrollVideo(video);
-              }, 100);
-            });
-          }
-
-          // Poll blob (max 15s), fallback raw si timeout
-          var waited = 0;
-          function waitAndInject() {
-            if (intro2BlobUrl) {
-              doInit(intro2BlobUrl);
-            } else if (waited < 15000) {
-              waited += 200;
-              setTimeout(waitAndInject, 200);
-            } else {
-              console.warn('[enterExpo] Timeout blob — fallback raw URL');
-              doInit(INTRO2_SRC);
-            }
-          }
-          waitAndInject();
+          // 6. Démarrer la séquence d'images (frames déjà pré-chargées en arrière-plan)
+          requestAnimationFrame(function() {
+            initImageSequence();
+          });
 
         }, 650); // attend la fin du fade-out du poster (600ms + marge)
       }
