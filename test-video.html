@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Test vidéo intro2</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #111; color: #fff; font-family: monospace; }
+
+    #video-wrap {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+      background: #000;
+    }
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    #controls {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: rgba(0,0,0,0.85);
+      padding: 16px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 100;
+    }
+    #scrubber {
+      width: 100%;
+      height: 8px;
+      cursor: pointer;
+      accent-color: #fff;
+    }
+    #info {
+      font-size: 12px;
+      color: #aaa;
+      display: flex;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+    #info span { color: #fff; }
+
+    #btn-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    button {
+      background: #333;
+      color: #fff;
+      border: 1px solid #555;
+      padding: 6px 14px;
+      font-family: monospace;
+      font-size: 11px;
+      cursor: pointer;
+    }
+    button:hover { background: #555; }
+    button.active { background: #0a6; border-color: #0a6; }
+
+    #log {
+      position: fixed;
+      top: 0; right: 0;
+      width: 300px;
+      max-height: 50vh;
+      overflow-y: auto;
+      background: rgba(0,0,0,0.8);
+      padding: 10px;
+      font-size: 10px;
+      color: #8f8;
+      z-index: 200;
+    }
+    #status {
+      position: fixed;
+      top: 12px; left: 12px;
+      background: rgba(0,0,0,0.7);
+      padding: 8px 14px;
+      font-size: 11px;
+      border-radius: 4px;
+      z-index: 200;
+    }
+    .ok { color: #0f0; }
+    .warn { color: #fa0; }
+    .err { color: #f44; }
+  </style>
+</head>
+<body>
+
+<div id="video-wrap">
+  <video id="vid" muted playsinline webkit-playsinline preload="auto"></video>
+</div>
+
+<div id="status">Chargement…</div>
+<div id="log"></div>
+
+<div id="controls">
+  <input type="range" id="scrubber" min="0" max="1000" value="0" step="1" />
+  <div id="info">
+    <div>currentTime: <span id="ct">—</span>s</div>
+    <div>duration: <span id="dur">—</span>s</div>
+    <div>progress: <span id="prog">—</span>%</div>
+    <div>readyState: <span id="rs">—</span></div>
+    <div>buffered: <span id="buf">—</span></div>
+    <div>Source: <span id="src-type">—</span></div>
+  </div>
+  <div id="btn-row">
+    <button id="btn-raw">Load RAW url</button>
+    <button id="btn-blob">Load BLOB (fetch)</button>
+    <button id="btn-end">→ Dernière frame (direct)</button>
+    <button id="btn-95">→ 95%</button>
+    <button id="btn-play">▶ Play</button>
+    <button id="btn-pause">⏸ Pause</button>
+    <button id="btn-scroll">TEST SCROLL SCRUB</button>
+  </div>
+</div>
+
+<script>
+  var RAW_URL = 'https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/VIDOES_export-def/intro2.mp4';
+  var vid = document.getElementById('vid');
+  var scrubber = document.getElementById('scrubber');
+  var statusEl = document.getElementById('status');
+  var logEl = document.getElementById('log');
+
+  function log(msg, cls) {
+    var d = document.createElement('div');
+    d.className = cls || '';
+    d.textContent = new Date().toISOString().substr(11,8) + ' ' + msg;
+    logEl.prepend(d);
+  }
+
+  function updateInfo() {
+    document.getElementById('ct').textContent   = vid.currentTime.toFixed(3);
+    document.getElementById('dur').textContent  = isFinite(vid.duration) ? vid.duration.toFixed(3) : '?';
+    document.getElementById('prog').textContent = isFinite(vid.duration) && vid.duration > 0
+      ? (vid.currentTime / vid.duration * 100).toFixed(1) : '?';
+    document.getElementById('rs').textContent   = vid.readyState;
+
+    var buf = '—';
+    if (vid.buffered.length > 0) {
+      var ranges = [];
+      for (var i = 0; i < vid.buffered.length; i++) {
+        ranges.push(vid.buffered.start(i).toFixed(1) + '→' + vid.buffered.end(i).toFixed(1));
+      }
+      buf = ranges.join(', ');
+    }
+    document.getElementById('buf').textContent = buf;
+  }
+
+  setInterval(updateInfo, 200);
+
+  // Events vidéo
+  vid.addEventListener('loadedmetadata', function() {
+    log('loadedmetadata — duration=' + vid.duration.toFixed(3) + 's', 'ok');
+    statusEl.innerHTML = '<span class="ok">Metadata OK</span> — durée: ' + vid.duration.toFixed(2) + 's';
+    scrubber.max = 1000;
+  });
+  vid.addEventListener('canplaythrough', function() {
+    log('canplaythrough ✓', 'ok');
+    statusEl.innerHTML = '<span class="ok">Prête à jouer</span>';
+  });
+  vid.addEventListener('error', function() {
+    var e = vid.error;
+    log('ERROR code=' + (e ? e.code : '?') + ' ' + (e ? e.message : ''), 'err');
+    statusEl.innerHTML = '<span class="err">Erreur vidéo</span>';
+  });
+  vid.addEventListener('seeked', function() {
+    log('seeked → ' + vid.currentTime.toFixed(3), 'ok');
+  });
+  vid.addEventListener('seeking', function() {
+    log('seeking → ' + vid.currentTime.toFixed(3));
+  });
+  vid.addEventListener('ended', function() {
+    log('ENDED', 'ok');
+  });
+  vid.addEventListener('waiting', function() {
+    log('waiting (buffering…)', 'warn');
+  });
+  vid.addEventListener('stalled', function() {
+    log('stalled', 'warn');
+  });
+
+  // Scrubber manuel
+  scrubber.addEventListener('input', function() {
+    if (!isFinite(vid.duration)) return;
+    var t = (this.value / 1000) * vid.duration;
+    vid.currentTime = t;
+    log('scrub manual → ' + t.toFixed(3));
+  });
+
+  // Boutons
+  document.getElementById('btn-raw').addEventListener('click', function() {
+    document.getElementById('src-type').textContent = 'RAW';
+    vid.src = RAW_URL;
+    vid.load();
+    log('Load RAW URL');
+    statusEl.innerHTML = '<span class="warn">Chargement RAW…</span>';
+  });
+
+  document.getElementById('btn-blob').addEventListener('click', function() {
+    document.getElementById('src-type').textContent = 'BLOB (fetching…)';
+    log('Fetch blob START…');
+    statusEl.innerHTML = '<span class="warn">Fetch blob en cours…</span>';
+    fetch(RAW_URL)
+      .then(function(r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        log('Response OK, lecture du body…', 'ok');
+        return r.blob();
+      })
+      .then(function(blob) {
+        var url = URL.createObjectURL(blob);
+        document.getElementById('src-type').textContent = 'BLOB ✓ (' + (blob.size / 1024 / 1024).toFixed(2) + 'MB)';
+        log('Blob créé — ' + (blob.size / 1024 / 1024).toFixed(2) + 'MB', 'ok');
+        vid.src = url;
+        vid.load();
+        statusEl.innerHTML = '<span class="ok">Blob prêt ✓</span>';
+      })
+      .catch(function(e) {
+        log('FETCH ERROR: ' + e.message, 'err');
+        statusEl.innerHTML = '<span class="err">Fetch échoué: ' + e.message + '</span>';
+      });
+  });
+
+  document.getElementById('btn-end').addEventListener('click', function() {
+    if (!isFinite(vid.duration)) { log('duration inconnue', 'warn'); return; }
+    var t = vid.duration - 0.001;
+    log('Force dernière frame: currentTime = ' + t.toFixed(3));
+    vid.currentTime = t;
+    scrubber.value = 999;
+  });
+
+  document.getElementById('btn-95').addEventListener('click', function() {
+    if (!isFinite(vid.duration)) { log('duration inconnue', 'warn'); return; }
+    var t = vid.duration * 0.95;
+    log('Seek 95% = ' + t.toFixed(3));
+    vid.currentTime = t;
+    scrubber.value = 950;
+  });
+
+  document.getElementById('btn-play').addEventListener('click', function() {
+    vid.play();
+    log('play()');
+  });
+
+  document.getElementById('btn-pause').addEventListener('click', function() {
+    vid.pause();
+    log('pause()');
+  });
+
+  // Test scroll scrub automatique (simule le site)
+  var scrollTest = false;
+  var scrollFrame;
+  document.getElementById('btn-scroll').addEventListener('click', function() {
+    scrollTest = !scrollTest;
+    this.classList.toggle('active', scrollTest);
+    if (scrollTest) {
+      log('Scroll scrub TEST démarré (0→100% en 10s)');
+      var start = performance.now();
+      var dur = vid.duration || 10;
+      function tick() {
+        if (!scrollTest) return;
+        var elapsed = (performance.now() - start) / 10000; // 10s total
+        var progress = Math.min(elapsed, 1);
+        var t = progress >= 0.95 ? dur - 0.001 : dur * progress;
+        if (Math.abs(vid.currentTime - t) > 0.033) {
+          vid.currentTime = t;
+        }
+        scrubber.value = Math.round(progress * 1000);
+        if (progress < 1) {
+          scrollFrame = requestAnimationFrame(tick);
+        } else {
+          log('Scroll scrub TEST terminé → ' + vid.currentTime.toFixed(3), 'ok');
+          scrollTest = false;
+          document.getElementById('btn-scroll').classList.remove('active');
+        }
+      }
+      scrollFrame = requestAnimationFrame(tick);
+    } else {
+      cancelAnimationFrame(scrollFrame);
+      log('Scroll scrub TEST stoppé');
+    }
+  });
+
+  // Chargement auto en RAW au départ
+  log('Page chargée — clique "Load BLOB" pour le test fiable');
+  statusEl.innerHTML = '<span class="warn">Clique un bouton pour charger la vidéo</span>';
+</script>
+</body>
+</html>
