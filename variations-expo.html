@@ -358,7 +358,8 @@
       position: fixed;
       inset: 0;
       z-index: 8;
-      background: #f2f0ec;
+      /* Fond assorti à l'animation : bleu-gris froid, pas crème */
+      background: var(--bg-light);
       pointer-events: none;
       display: flex;
       align-items: center;
@@ -373,8 +374,25 @@
       object-fit: contain;
       display: block;
       box-shadow: 0 32px 80px rgba(0,0,0,0.18), 0 8px 24px rgba(0,0,0,0.08);
-      /* Chromie assortie à l'animation couronne : bleu-gris froid, clinique */
-      filter: saturate(0.22) brightness(1.07) hue-rotate(188deg) contrast(1.04);
+      /*
+       * Chromie bleu-gris froide — technique grayscale→sepia→hue-rotate :
+       *  1. grayscale(0.82) : désature les teintes chaudes de l'image
+       *  2. sepia(0.35)     : ajoute une base tonale (~35° jaune chaud)
+       *  3. hue-rotate(178°): fait pivoter 35°+178°=213° → zone bleu-cyan
+       *  4. saturate(0.8)   : contrôle l'intensité du bleu obtenu
+       *  5. brightness/contrast : compensation luminosité
+       */
+      filter: grayscale(0.82) sepia(0.35) hue-rotate(178deg) saturate(0.8) brightness(1.08) contrast(1.04);
+    }
+    /* Voile coloré par-dessus l'image — renforce la teinte froide */
+    #scene-affiche::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(195, 210, 222, 0.18);
+      mix-blend-mode: color;
+      pointer-events: none;
+      z-index: 9;
     }
     .affiche-titre-cta {
       text-align: center;
