@@ -677,8 +677,9 @@
       addReadableChapterText(crownTL, '#seq-ch1', 1.30, 3.0);
 
       // Crown A→B : face → gauche (0→3.5 = 0-27%)
+      // x:-3.2 pousse la couronne bien à gauche pour dégager le texte ch1 à droite
       crownTL
-        .to(crownGroup.position, { x: -1.6, y: 0, z: 0, duration: 3.5, ease: 'none' }, 0)
+        .to(crownGroup.position, { x: -3.2, y: 0, z: 0, duration: 3.5, ease: 'none' }, 0)
         .to(crownGroup.rotation, { y: 0.92, duration: 3.5, ease: 'none' }, 0);
 
       // Crown B→C : gauche → centre reculé (3.5→7.5 = 27-58%)
