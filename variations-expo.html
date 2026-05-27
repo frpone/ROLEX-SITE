@@ -186,13 +186,13 @@
       border-radius: 50%;
     }
     .scene-hero-eyebrow {
-      font-size: 10px; letter-spacing: var(--tr-wide);
+      font-size: 13px; letter-spacing: 0.28em;
       text-transform: uppercase; color: var(--ink);
       font-weight: 500;
-      margin-bottom: 32px;
+      margin-bottom: 28px;
     }
     .scene-hero-title {
-      font-size: clamp(64px, 9vw, 140px);
+      font-size: clamp(44px, 9vw, 140px);
       font-weight: 500; line-height: 0.95;
       letter-spacing: var(--tr-tight);
       text-transform: uppercase; max-width: 1100px;
@@ -202,18 +202,24 @@
       font-style: italic; font-weight: 300;
       text-transform: none; letter-spacing: 0;
     }
+    /* Sous-titre sorti du flux flex — positionné en bas, au-dessus du scroll-cue */
     .scene-hero-sub {
-      margin-top: 28px; font-size: 14px;
+      position: absolute;
+      bottom: 100px;
+      left: 50%; transform: translateX(-50%);
+      white-space: nowrap;
+      font-size: 13px;
       letter-spacing: var(--tr-loose);
-      text-transform: uppercase; color: var(--ink-soft);
-      max-width: 560px;
+      text-transform: uppercase;
+      color: var(--ink);
+      font-weight: 500;
     }
     .scroll-cue {
-      position: absolute; bottom: 40px;
+      position: absolute; bottom: 36px;
       left: 50%; transform: translateX(-50%);
       display: flex; flex-direction: column;
       align-items: center; gap: 10px;
-      font-size: 9px; letter-spacing: var(--tr-wide);
+      font-size: 10px; letter-spacing: var(--tr-wide);
       color: var(--ink); font-weight: 500;
       text-transform: uppercase;
     }
@@ -221,6 +227,48 @@
     @keyframes bob {
       0%, 100% { transform: translateY(0); opacity: 0.5; }
       50% { transform: translateY(8px); opacity: 1; }
+    }
+
+    /* =====================================
+       RESPONSIVE — MOBILE (≤ 640px)
+       ===================================== */
+    @media (max-width: 640px) {
+      /* Hero */
+      .seq-layer { padding: 56px 24px; }
+      .scene-hero-eyebrow { font-size: 11px; margin-bottom: 20px; }
+      .scene-hero-title { font-size: clamp(38px, 11vw, 72px); }
+      .scene-hero-sub {
+        bottom: 88px;
+        white-space: normal;
+        text-align: center;
+        width: 88vw;
+        left: 6vw;
+        transform: none;
+        font-size: 11px;
+        line-height: 1.7;
+      }
+      .scroll-cue { font-size: 9px; bottom: 28px; }
+
+      /* Chapitres */
+      #seq-ch1 { justify-content: center; align-items: flex-start; }
+      #seq-ch2 { justify-content: center; }
+      .chapter-content { max-width: 100%; }
+      .chapter-title { font-size: clamp(30px, 9vw, 48px); }
+      .chapter-text { font-size: 14px; line-height: 1.7; }
+      .chapter-eyebrow { font-size: 9px; }
+      .seq-freeze-mark { font-size: 8px; bottom: 28px; }
+
+      /* Affiche */
+      #affiche-titre-img { max-height: 75vh; max-width: 90vw; }
+      #btnEntrerExpo { font-size: 9px; padding: 10px 24px; }
+    }
+
+    /* Tablette (641–980px) */
+    @media (min-width: 641px) and (max-width: 980px) {
+      .scene-hero-title { font-size: clamp(44px, 8vw, 100px); }
+      .seq-layer { padding: 64px 40px; }
+      .chapter-title { font-size: clamp(36px, 5vw, 56px); }
+      .scene-hero-sub { font-size: 12px; bottom: 96px; }
     }
 
     /* =====================================
@@ -363,9 +411,9 @@
 
       <!-- Couche 0 : Hero (visible au départ) -->
       <div id="seq-hero" class="seq-layer">
-        <div class="scene-hero-eyebrow">Perpetual · A solo study</div>
+        <div class="scene-hero-eyebrow">Solo Study</div>
         <h1 class="scene-hero-title">Variations<br/><span class="italic">on a Crown</span></h1>
-        <p class="scene-hero-sub">Twenty-four works on the same icon<br/>by François Peyranne.</p>
+        <p class="scene-hero-sub">Twenty-four works on the same icon · François Peyranne</p>
         <div class="scroll-cue">
           <span>Scroll to begin</span>
           <svg width="14" height="20" viewBox="0 0 14 20" fill="none" stroke="currentColor" stroke-width="1">
