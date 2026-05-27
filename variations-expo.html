@@ -428,23 +428,25 @@
       #affiche-titre-img { max-height: 65vh; max-width: 88vw; }
     }
 
-    /* ─── Phase expo — même architecture que la couronne ─── */
+    /* ─── Phase expo — section pinned par GSAP (pin:true gère le spacer) ─── */
     #phase-expo { display: none; }
 
-    #intro2-fixed {
-      position: fixed;
-      inset: 0;
-      z-index: 6;
+    #intro2-section {
+      width: 100%;
+      height: 100vh;
+      position: relative;
       background: #000;
+      overflow: hidden;
     }
     #intro2-video {
+      position: absolute;
+      inset: 0;
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
       filter: saturate(0.80) brightness(1.02) contrast(0.96);
     }
-    #intro2-spacer { position: relative; z-index: 2; }
 
     /* Transition de sortie du poster */
     #scene-affiche.leaving {
@@ -518,14 +520,12 @@
 
     </div>
 
-    <!-- PHASE EXPO : video fixed + spacer scrollable (même archi que la couronne) -->
+    <!-- PHASE EXPO : section unique, pin:true GSAP gère le scroll spacer -->
     <div id="phase-expo">
-      <!-- Vidéo fixée — src injecté en JS après fetch blob -->
-      <div id="intro2-fixed">
+      <section id="intro2-section">
+        <!-- src injecté en JS après blob fetch — pas de src HTML -->
         <video id="intro2-video" muted playsinline webkit-playsinline></video>
-      </div>
-      <!-- Spacer : fournit la hauteur scrollable, height définie en JS -->
-      <div id="intro2-spacer"></div>
+      </section>
     </div>
 
     <!-- AFFICHE TITRE — fondu après zoom couronne -->
@@ -821,19 +821,99 @@
       });
 
       // ═══════════════════════════════════════════════════════
+      //  initScrollVideo — pilote video.currentTime via scroll
+      //  Conforme au brief : pin:true, lastFrameTime, onLeave, ended
+      // ═══════════════════════════════════════════════════════
+      var intro2Trigger = null;
+
+      function initScrollVideo(video, section) {
+        // Tuer un éventuel trigger précédent
+        if (intro2Trigger) { intro2Trigger.kill(); intro2Trigger = null; }
+
+        // Propriétés requises
+        video.pause();
+        video.muted       = true;
+        video.playsInline = true;
+        video.preload     = 'auto';
+
+        function setup() {
+          var lastFrameTime = Math.max(0, video.duration - 0.2);
+          console.log('initScrollVideo — duration=' + video.duration + 's  lastFrameTime=' + lastFrameTime);
+
+          // Première frame visible immédiatement
+          video.currentTime = 0.001;
+
+          // pin:true = GSAP ajoute 5000px de spacer automatiquement
+          // → progress peut atteindre 1.0 sans calcul manuel de hauteur
+          intro2Trigger = ScrollTrigger.create({
+            trigger: section,
+            start: 'top top',
+            end: '+=5000',
+            scrub: true,
+            pin: true,
+            anticipatePin: 1,
+            invalidateOnRefresh: true,
+
+            onUpdate: function(self) {
+              var progress   = self.progress;
+              var targetTime = progress * lastFrameTime;
+              if (Number.isFinite(targetTime)) {
+                video.currentTime = targetTime;
+              }
+              // Forcer la dernière frame à la fin
+              if (progress >= 0.999) {
+                video.pause();
+                video.currentTime = lastFrameTime;
+              }
+            },
+
+            onLeave: function() {
+              // L'utilisateur est passé au-delà → figer sur dernière frame
+              video.pause();
+              video.currentTime = lastFrameTime;
+            },
+
+            onEnterBack: function(self) {
+              var targetTime = self.progress * lastFrameTime;
+              if (Number.isFinite(targetTime)) {
+                video.currentTime = targetTime;
+              }
+            }
+          });
+
+          ScrollTrigger.refresh();
+        }
+
+        // Évenement 'ended' — sécurité si la vidéo joue par erreur
+        video.addEventListener('ended', function() {
+          if (Number.isFinite(video.duration)) {
+            var lastFrameTime = Math.max(0, video.duration - 0.2);
+            video.pause();
+            video.currentTime = lastFrameTime;
+          }
+        });
+
+        if (video.readyState >= 1 && Number.isFinite(video.duration)) {
+          setup();
+        } else {
+          video.addEventListener('loadedmetadata', setup, { once: true });
+          video.load();
+        }
+      }
+
+      // ═══════════════════════════════════════════════════════
       //  Entrer dans l'exposition — bouton + clic sur l'affiche
       // ═══════════════════════════════════════════════════════
       function enterExpo() {
-        // 1. Fade-out du poster avant de switcher
+        // 1. Fade-out du poster
         sceneAffiche.classList.add('leaving');
 
         setTimeout(function() {
-
-          // 2. Tuer le ScrollTrigger couronne (retire aussi le pin spacer)
+          // 2. Tuer le ScrollTrigger couronne
           if (crownTL.scrollTrigger) crownTL.scrollTrigger.kill(true);
           _renderActive = false;
 
-          // 3. Cacher la phase couronne et l'affiche
+          // 3. Cacher la phase couronne
           document.getElementById('crown-sequence').style.display = 'none';
           sceneAffiche.style.display = 'none';
           canvasContainer.style.display = 'none';
@@ -841,86 +921,42 @@
           document.getElementById('bgDark').style.display = 'none';
 
           // 4. Afficher la phase expo
-          var phaseExpo = document.getElementById('phase-expo');
-          phaseExpo.style.display = 'block';
+          document.getElementById('phase-expo').style.display = 'block';
 
-          // 5. Scroll immédiat au top
+          // 5. Scroll au top
           lenis.scrollTo(0, { immediate: true });
           window.scrollTo(0, 0);
 
-          // 6. Setup vidéo — même séquence exacte que la page de test qui marche
-          var video = document.getElementById('intro2-video');
+          // 6. Injecter la vidéo et lancer initScrollVideo
+          //    Séquence : modal visible → src injecté → requestAnimationFrame
+          //    → loadedmetadata → ScrollTrigger créé → refresh()
+          var video   = document.getElementById('intro2-video');
+          var section = document.getElementById('intro2-section');
 
-          function setupIntro2() {
-            var dur = video.duration;
-            console.log('setupIntro2 — duration=' + dur + 's');
-
-            // 500px/s de scroll pour la vidéo
-            var scrollH = Math.max(4000, Math.round(dur * 500));
-
-            // ★ FIX CRITIQUE ★
-            // Le scroll max d'une page = scrollHeight - innerHeight.
-            // Si spacer = scrollH px, le scroll max = scrollH - innerHeight
-            // → progress max = (scrollH - innerHeight) / scrollH < 1.0
-            // → la dernière frame n'est JAMAIS atteinte.
-            // Solution : spacer = scrollH + innerHeight, comme GSAP pin le fait.
-            // Ainsi : scroll max = (scrollH + innerHeight) - innerHeight = scrollH
-            // → progress max = scrollH / scrollH = 1.0 ✓
-            var spacer = document.getElementById('intro2-spacer');
-            spacer.style.height = (scrollH + window.innerHeight) + 'px';
-
-            ScrollTrigger.create({
-              trigger: spacer,
-              start: 'top top',
-              end: '+=' + scrollH,
-              scrub: true,          // sans lag → seeking immédiat (blob = rapide)
-              onUpdate: function(self) {
-                var t = self.progress >= 0.98
-                  ? dur - 0.001    // snap à la toute dernière frame
-                  : dur * self.progress;
-                if (Math.abs(video.currentTime - t) > 0.033) {
-                  video.currentTime = t;
-                }
-              }
+          function injectAndInit(src) {
+            video.src = src;
+            // rAF : on s'assure que le DOM de la section est bien rendu
+            requestAnimationFrame(function() {
+              setTimeout(function() {
+                initScrollVideo(video, section);
+              }, 100);
             });
-
-            ScrollTrigger.refresh();
           }
 
-          // Réplique la page de test :
-          // 1. Attendre que le blob soit prêt (poll toutes les 200ms max 15s)
-          // 2. Injecter src, load(), écouter loadedmetadata, puis setupIntro2()
-          function waitForBlobAndStart() {
-            var waited = 0;
-            function tryStart() {
-              if (intro2BlobUrl) {
-                // Blob (ou fallback raw) disponible — on injecte proprement
-                console.log('Source vidéo:', intro2BlobUrl.substr(0, 40));
-                video.src = intro2BlobUrl;
-                video.addEventListener('loadedmetadata', function() {
-                  console.log('loadedmetadata ✓ duration=' + video.duration);
-                  video.currentTime = 0;
-                  setupIntro2();
-                }, { once: true });
-                video.load();
-              } else if (waited < 15000) {
-                // Blob pas encore là — on attend 200ms de plus
-                waited += 200;
-                setTimeout(tryStart, 200);
-              } else {
-                // Timeout : fallback direct sur raw
-                console.warn('Timeout blob — fallback raw URL');
-                video.src = INTRO2_SRC;
-                video.addEventListener('loadedmetadata', function() {
-                  video.currentTime = 0;
-                  setupIntro2();
-                }, { once: true });
-                video.load();
-              }
+          // Attendre le blob (max 15s), puis injecter
+          var waited = 0;
+          function waitAndInject() {
+            if (intro2BlobUrl) {
+              injectAndInit(intro2BlobUrl);
+            } else if (waited < 15000) {
+              waited += 200;
+              setTimeout(waitAndInject, 200);
+            } else {
+              console.warn('Timeout blob — fallback raw');
+              injectAndInit(INTRO2_SRC);
             }
-            tryStart();
           }
-          waitForBlobAndStart();
+          waitAndInject();
 
         }, 650); // attend la fin du fade-out du poster (0.6s + marge)
       }
