@@ -841,14 +841,13 @@
       // ═══════════════════════════════════════════════════════
 
       var SCROLL_H = 5000;          // px de scroll total pour la vidéo
-      var _introLenisHandler = null; // référence pour cleanup
+      var _introRafId        = null; // rAF loop id
+      var _introLenisHandler = null; // Lenis backup handler
 
       function initScrollVideo(video) {
-        // Nettoyer un éventuel handler précédent
-        if (_introLenisHandler) {
-          lenis.off('scroll', _introLenisHandler);
-          _introLenisHandler = null;
-        }
+        // ── Cleanup boucle précédente ──
+        if (_introRafId) { cancelAnimationFrame(_introRafId); _introRafId = null; }
+        if (_introLenisHandler) { lenis.off('scroll', _introLenisHandler); _introLenisHandler = null; }
 
         // ── Propriétés vidéo requises ──
         video.muted       = true;
@@ -857,48 +856,49 @@
         video.pause();
 
         function setup() {
-          // lastFrameTime : jamais currentTime === duration
-          var lastFrameTime = Math.max(0, video.duration - 0.2);
-          console.log('[initScrollVideo] duration=' + video.duration.toFixed(3)
+          var dur = video.duration;
+          // lastFrameTime : 0.05s avant la fin (évite currentTime === duration)
+          var lastFrameTime = Math.max(0, dur - 0.05);
+          console.log('[initScrollVideo] duration=' + dur.toFixed(3)
                       + '  lastFrameTime=' + lastFrameTime.toFixed(3));
 
-          // ── Spacer : fixe la hauteur scrollable ──
-          // Règle mathématique :
-          //   scroll_max = document.scrollHeight - window.innerHeight
-          //   Pour que scroll_max = SCROLL_H :
-          //   spacer.height = SCROLL_H + window.innerHeight
+          // ── Spacer : scroll_max = spacer.height − window.innerHeight = SCROLL_H ──
           var spacer = document.getElementById('intro2-spacer');
           spacer.style.height = (SCROLL_H + window.innerHeight) + 'px';
 
           // Afficher la première frame immédiatement
-          video.currentTime = 0.001;
           video.pause();
+          video.currentTime = 0.001;
 
-          // ── Handler Lenis : lit e.scroll et pilote currentTime ──
-          _introLenisHandler = function(e) {
-            var scroll   = e.scroll;                              // position Lenis
+          // ── Fonction de scrub centrale ──
+          // Lit window.scrollY (position physique Lenis — Lenis appelle window.scrollTo())
+          // Snap à lastFrameTime dès 92% du scroll → garantit que la dernière frame
+          // est toujours atteinte, même si l'utilisateur stoppe à ~90%
+          function scrub() {
+            var scroll   = window.scrollY || window.pageYOffset || 0;
             var progress = Math.max(0, Math.min(1, scroll / SCROLL_H));
-            var t = progress >= 0.999 ? lastFrameTime : progress * lastFrameTime;
-
-            // Mise à jour uniquement si l'écart est perceptible (≥ 1 frame ~33ms)
-            if (Math.abs(video.currentTime - t) > 0.033) {
-              video.currentTime = t;
+            var target   = progress >= 0.92 ? lastFrameTime : progress * lastFrameTime;
+            // Mise à jour uniquement si l'écart dépasse 1ms (évite seeks redondants)
+            if (Math.abs(video.currentTime - target) > 0.001) {
+              video.currentTime = target;
             }
-            // Forcer dernière frame + pause à la fin
-            if (progress >= 0.999) {
-              video.pause();
-              video.currentTime = lastFrameTime;
-            }
-          };
+          }
 
+          // ── Boucle rAF — lit window.scrollY à 60fps (indépendant du ticker GSAP) ──
+          function tick() {
+            scrub();
+            _introRafId = requestAnimationFrame(tick);
+          }
+          _introRafId = requestAnimationFrame(tick);
+
+          // ── Fallback Lenis : déclenche scrub() aussi sur chaque event scroll ──
+          _introLenisHandler = function() { scrub(); };
           lenis.on('scroll', _introLenisHandler);
 
-          // Sécurité : si la vidéo joue accidentellement
+          // ── Sécurité : si la vidéo joue accidentellement ──
           video.addEventListener('ended', function() {
             video.pause();
-            if (Number.isFinite(video.duration)) {
-              video.currentTime = Math.max(0, video.duration - 0.2);
-            }
+            video.currentTime = lastFrameTime;
           }, { once: true });
         }
 
@@ -932,6 +932,11 @@
 
           // 4. Afficher la phase expo (vidéo fixed + spacer)
           document.getElementById('phase-expo').style.display = 'block';
+
+          // Pré-dimensionner le spacer AVANT le scroll (SCROLL_H connu dès maintenant)
+          // → évite un document trop court si l'utilisateur scrolle avant loadedmetadata
+          document.getElementById('intro2-spacer').style.height =
+            (SCROLL_H + window.innerHeight) + 'px';
 
           // 5. Scroll au top (Lenis + natif)
           lenis.scrollTo(0, { immediate: true });
