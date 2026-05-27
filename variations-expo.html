@@ -358,7 +358,6 @@
       position: fixed;
       inset: 0;
       z-index: 8;
-      /* Fond assorti à l'animation : bleu-gris froid, pas crème */
       background: var(--bg-light);
       pointer-events: none;
       display: flex;
@@ -368,30 +367,8 @@
       gap: 40px;
       opacity: 0;   /* départ invisible — GSAP scrub fait le fondu */
     }
-    #affiche-titre-img {
-      max-height: 78vh;
-      max-width: 56vw;
-      object-fit: contain;
-      display: block;
-      box-shadow: 0 32px 80px rgba(0,0,0,0.18), 0 8px 24px rgba(0,0,0,0.08);
-      /*
-       * Chromie douce — température froide uniquement, contrastes préservés.
-       * Pas de grayscale, pas de sepia : l'image garde sa matière.
-       * saturate(0.82) : retire légèrement les tons chauds
-       * brightness(1.01) + contrast(0.97) : préserve les noirs et les blancs
-       */
-      filter: saturate(0.82) brightness(1.01) contrast(0.97);
-    }
-    /* Voile froid très discret — teinte l'environnement, pas l'image */
-    #scene-affiche::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: rgba(195, 210, 222, 0.10);
-      mix-blend-mode: multiply;
-      pointer-events: none;
-      z-index: 9;
-    }
+    /* Pas de ::before — le filter sur l'image suffit, et ::before z-index
+       perturbe le hit-testing CSS :hover sur le wrapper */
     .affiche-titre-cta {
       text-align: center;
       opacity: 0;   /* apparaît après l'arrivée du poster via JS */
@@ -417,20 +394,6 @@
     @media (max-width: 640px) {
       #affiche-titre-img { max-height: 65vh; max-width: 88vw; }
       #btnEntrerExpo { font-size: 9px; padding: 13px 36px; letter-spacing: 0.25em; }
-    }
-
-    /* ─── Bouton : zoom typographique, toujours noir ─── */
-    @keyframes btnBreath {
-      0%, 100% { letter-spacing: 0.35em; font-size: 10px; }
-      50%       { letter-spacing: 0.48em; font-size: 10.5px; }
-    }
-    #btnEntrerExpo {
-      animation: btnBreath 3s ease-in-out infinite;
-      background: var(--ink) !important; /* toujours noir */
-    }
-    #btnEntrerExpo:hover {
-      animation: none;
-      letter-spacing: 0.48em;
     }
 
     /* ─── Texte latéral sur le poster ─── */
@@ -468,24 +431,26 @@
     }
 
     /* ─── Zoom poster au hover ─── */
+    /* display:inline-block : le wrapper se taille sur l'image naturellement */
     .affiche-img-wrap {
+      display: inline-block;
       overflow: hidden;
       cursor: pointer;
-      display: block;
-      /* reprend les tailles du parent */
+      box-shadow: 0 32px 80px rgba(0,0,0,0.18), 0 8px 24px rgba(0,0,0,0.08);
+      /* Évite que le wrapper dépasse l'écran */
       max-height: 78vh;
       max-width: 56vw;
-      box-shadow: 0 32px 80px rgba(0,0,0,0.18), 0 8px 24px rgba(0,0,0,0.08);
     }
+    /* Bloc unique pour l'image — chromie + transition zoom */
     #affiche-titre-img {
       max-height: 78vh;
       max-width: 56vw;
-      width: 100%;
-      height: 100%;
       object-fit: contain;
       display: block;
-      box-shadow: none; /* shadow portée au wrapper */
+      /* Chromie froide douce */
       filter: saturate(0.82) brightness(1.01) contrast(0.97);
+      /* Zoom hover — will-change force un layer GPU propre, pas de conflit z-index */
+      will-change: transform;
       transform: scale(1);
       transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
@@ -493,7 +458,7 @@
       transform: scale(1.045);
     }
     @media (max-width: 640px) {
-      .affiche-img-wrap { max-height: 65vh; max-width: 88vw; }
+      .affiche-img-wrap { max-width: 88vw; max-height: 65vh; }
       #affiche-titre-img { max-height: 65vh; max-width: 88vw; }
     }
 
@@ -925,10 +890,12 @@
               end: '+=' + scrollH,
               scrub: 0.3,
               onUpdate: function(self) {
-                // Snap vers la dernière frame quand on approche de la fin
-                // (compense le délai du scrub pour ne jamais manquer la fin)
-                if (self.progress >= 0.99) {
-                  video.currentTime = dur;
+                // Snap vers la dernière frame decodable dès 97% du scroll
+                // (dur-0.001 : certains browsers ignorent currentTime===duration)
+                if (self.progress >= 0.97) {
+                  if (video.currentTime < dur - 0.05) {
+                    video.currentTime = dur - 0.001;
+                  }
                   return;
                 }
                 var t = dur * self.progress;
