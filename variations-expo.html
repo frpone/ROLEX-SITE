@@ -353,7 +353,7 @@
       50%       { transform: translateY(5px); opacity: 1; }
     }
 
-    /* ===== AFFICHE TITRE (slide depuis le bas) ===== */
+    /* ===== AFFICHE TITRE (fondu croisé avec la couronne) ===== */
     #scene-affiche {
       position: fixed;
       inset: 0;
@@ -365,6 +365,7 @@
       justify-content: center;
       flex-direction: column;
       gap: 40px;
+      opacity: 0;   /* départ invisible — GSAP scrub fait le fondu */
     }
     #affiche-titre-img {
       max-height: 78vh;
@@ -372,6 +373,8 @@
       object-fit: contain;
       display: block;
       box-shadow: 0 32px 80px rgba(0,0,0,0.18), 0 8px 24px rgba(0,0,0,0.08);
+      /* Chromie assortie à l'animation couronne : bleu-gris froid, clinique */
+      filter: saturate(0.22) brightness(1.07) hue-rotate(188deg) contrast(1.04);
     }
     .affiche-titre-cta {
       text-align: center;
@@ -673,7 +676,7 @@
       // Affiche — définis avant la timeline (référencés dans onLeave/onEnterBack)
       var sceneAffiche = document.getElementById('scene-affiche');
       var afCta = sceneAffiche.querySelector('.affiche-titre-cta');
-      gsap.set(sceneAffiche, { y: '100vh' });   // cachée sous le bas de l'écran
+      // Pas de gsap.set y — l'affiche est déjà opacity:0 en CSS, le scrub fait le fondu
 
       var crownTL = gsap.timeline({
         scrollTrigger: {
@@ -684,7 +687,7 @@
           pin: true,
           anticipatePin: 1,
           invalidateOnRefresh: true,
-          markers: true,
+          // markers: true,  // désactivé en prod
           // Seuls les états non-animables (renderActive, pointerEvents) ici.
           // Les animations poster/bouton sont dans la timeline scrubbed ci-dessous
           // → elles se reversent automatiquement quand on scrolle en arrière.
@@ -719,13 +722,13 @@
         .to(crownGroup.scale,    { x: crownBaseScale * 4.5, y: crownBaseScale * 4.5, z: crownBaseScale * 4.5, duration: 8.5, ease: 'none' }, 7.5)
         .to(crownGroup.rotation, { y: 1.32 + Math.PI * 0.5, duration: 8.5, ease: 'none' }, 7.5);
 
-      // ── Fondu canvas + montée poster (simultanés à t=15.0) ──────────────────
-      // Le poster monte en même temps que la couronne disparaît dans le scrub.
-      // Quand l'utilisateur scrolle en arrière, le scrub reverse tout automatiquement
-      // → pas besoin de lenis.stop(), l'animation est pilotée par la position de scroll.
+      // ── Fondu canvas + fondu poster (crossfade synchronisé à t=15.0) ──────────
+      // La couronne disparaît et le poster apparaît en fondu au même instant.
+      // Aucun mouvement vertical — pure transition d'opacité.
+      // Le scrub reverse tout automatiquement quand on scrolle en arrière.
       crownTL.to(canvasContainer, { opacity: 0, duration: 2.0, ease: 'none' }, 15.0);
-      crownTL.to(sceneAffiche,   { y: 0,       duration: 2.0, ease: 'power2.out' }, 15.0);
-      // Bouton apparaît en fin de montée (t=16.5→17.0)
+      crownTL.to(sceneAffiche,   { opacity: 1, duration: 2.0, ease: 'none' }, 15.0);
+      // Bouton apparaît en fin de fondu (t=16.5→17.0)
       crownTL.to(afCta, { opacity: 1, duration: 0.5, ease: 'none' }, 16.5);
 
       window.addEventListener('resize', function() {
