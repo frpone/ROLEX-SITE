@@ -428,24 +428,28 @@
       #affiche-titre-img { max-height: 65vh; max-width: 88vw; }
     }
 
-    /* ─── Phase expo — section pinned par GSAP (pin:true gère le spacer) ─── */
+    /* ─── Phase expo ─── */
     #phase-expo { display: none; }
 
-    #intro2-section {
-      width: 100%;
-      height: 100vh;
-      position: relative;
+    /* Vidéo fixed — reste en place pendant le scroll du spacer */
+    #intro2-fixed {
+      position: fixed;
+      inset: 0;
+      z-index: 6;
       background: #000;
-      overflow: hidden;
     }
     #intro2-video {
-      position: absolute;
-      inset: 0;
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
+      /* Aucune transition CSS — le scrub doit être instantané */
       filter: saturate(0.80) brightness(1.02) contrast(0.96);
+    }
+    /* Spacer : fournit la hauteur scrollable (height définie en JS) */
+    #intro2-spacer {
+      position: relative;
+      z-index: 2;
     }
 
     /* Transition de sortie du poster */
@@ -520,12 +524,16 @@
 
     </div>
 
-    <!-- PHASE EXPO : section unique, pin:true GSAP gère le scroll spacer -->
+    <!-- PHASE EXPO : vidéo fixed + spacer scrollable -->
+    <!-- La vidéo reste immobile. C'est le spacer qui crée la hauteur de scroll. -->
+    <!-- Le scroll est lu directement via Lenis, sans ScrollTrigger (plus fiable). -->
     <div id="phase-expo">
-      <section id="intro2-section">
-        <!-- src injecté en JS après blob fetch — pas de src HTML -->
+      <div id="intro2-fixed">
+        <!-- src injecté en JS après blob fetch -->
         <video id="intro2-video" muted playsinline webkit-playsinline></video>
-      </section>
+      </div>
+      <!-- height = SCROLL_H + window.innerHeight, calculé en JS -->
+      <div id="intro2-spacer"></div>
     </div>
 
     <!-- AFFICHE TITRE — fondu après zoom couronne -->
@@ -821,78 +829,80 @@
       });
 
       // ═══════════════════════════════════════════════════════
-      //  initScrollVideo — pilote video.currentTime via scroll
-      //  Conforme au brief : pin:true, lastFrameTime, onLeave, ended
+      //  initScrollVideo — pilote video.currentTime via Lenis
+      //
+      //  Architecture : vidéo fixed + spacer scrollable.
+      //  Pas de ScrollTrigger pour la vidéo (évite les conflits
+      //  Lenis ↔ pin:true constatés en production).
+      //  Le scroll Lenis est lu directement → currentTime.
+      //
+      //  Diagnostic : A — vraie vidéo (intro2.mp4)
+      //  lastFrameTime = video.duration - 0.2 (jamais = duration exacte)
       // ═══════════════════════════════════════════════════════
-      var intro2Trigger = null;
 
-      function initScrollVideo(video, section) {
-        // Tuer un éventuel trigger précédent
-        if (intro2Trigger) { intro2Trigger.kill(); intro2Trigger = null; }
+      var SCROLL_H = 5000;          // px de scroll total pour la vidéo
+      var _introLenisHandler = null; // référence pour cleanup
 
-        // Propriétés requises
-        video.pause();
+      function initScrollVideo(video) {
+        // Nettoyer un éventuel handler précédent
+        if (_introLenisHandler) {
+          lenis.off('scroll', _introLenisHandler);
+          _introLenisHandler = null;
+        }
+
+        // ── Propriétés vidéo requises ──
         video.muted       = true;
         video.playsInline = true;
         video.preload     = 'auto';
+        video.pause();
 
         function setup() {
+          // lastFrameTime : jamais currentTime === duration
           var lastFrameTime = Math.max(0, video.duration - 0.2);
-          console.log('initScrollVideo — duration=' + video.duration + 's  lastFrameTime=' + lastFrameTime);
+          console.log('[initScrollVideo] duration=' + video.duration.toFixed(3)
+                      + '  lastFrameTime=' + lastFrameTime.toFixed(3));
 
-          // Première frame visible immédiatement
+          // ── Spacer : fixe la hauteur scrollable ──
+          // Règle mathématique :
+          //   scroll_max = document.scrollHeight - window.innerHeight
+          //   Pour que scroll_max = SCROLL_H :
+          //   spacer.height = SCROLL_H + window.innerHeight
+          var spacer = document.getElementById('intro2-spacer');
+          spacer.style.height = (SCROLL_H + window.innerHeight) + 'px';
+
+          // Afficher la première frame immédiatement
           video.currentTime = 0.001;
+          video.pause();
 
-          // pin:true = GSAP ajoute 5000px de spacer automatiquement
-          // → progress peut atteindre 1.0 sans calcul manuel de hauteur
-          intro2Trigger = ScrollTrigger.create({
-            trigger: section,
-            start: 'top top',
-            end: '+=5000',
-            scrub: true,
-            pin: true,
-            anticipatePin: 1,
-            invalidateOnRefresh: true,
+          // ── Handler Lenis : lit e.scroll et pilote currentTime ──
+          _introLenisHandler = function(e) {
+            var scroll   = e.scroll;                              // position Lenis
+            var progress = Math.max(0, Math.min(1, scroll / SCROLL_H));
+            var t = progress >= 0.999 ? lastFrameTime : progress * lastFrameTime;
 
-            onUpdate: function(self) {
-              var progress   = self.progress;
-              var targetTime = progress * lastFrameTime;
-              if (Number.isFinite(targetTime)) {
-                video.currentTime = targetTime;
-              }
-              // Forcer la dernière frame à la fin
-              if (progress >= 0.999) {
-                video.pause();
-                video.currentTime = lastFrameTime;
-              }
-            },
-
-            onLeave: function() {
-              // L'utilisateur est passé au-delà → figer sur dernière frame
+            // Mise à jour uniquement si l'écart est perceptible (≥ 1 frame ~33ms)
+            if (Math.abs(video.currentTime - t) > 0.033) {
+              video.currentTime = t;
+            }
+            // Forcer dernière frame + pause à la fin
+            if (progress >= 0.999) {
               video.pause();
               video.currentTime = lastFrameTime;
-            },
-
-            onEnterBack: function(self) {
-              var targetTime = self.progress * lastFrameTime;
-              if (Number.isFinite(targetTime)) {
-                video.currentTime = targetTime;
-              }
             }
-          });
+          };
 
-          ScrollTrigger.refresh();
+          lenis.on('scroll', _introLenisHandler);
+
+          // Sécurité : si la vidéo joue accidentellement
+          video.addEventListener('ended', function() {
+            video.pause();
+            if (Number.isFinite(video.duration)) {
+              video.currentTime = Math.max(0, video.duration - 0.2);
+            }
+          }, { once: true });
         }
 
-        // Évenement 'ended' — sécurité si la vidéo joue par erreur
-        video.addEventListener('ended', function() {
-          if (Number.isFinite(video.duration)) {
-            var lastFrameTime = Math.max(0, video.duration - 0.2);
-            video.pause();
-            video.currentTime = lastFrameTime;
-          }
-        });
-
+        // Attendre loadedmetadata si nécessaire
         if (video.readyState >= 1 && Number.isFinite(video.duration)) {
           setup();
         } else {
@@ -909,7 +919,7 @@
         sceneAffiche.classList.add('leaving');
 
         setTimeout(function() {
-          // 2. Tuer le ScrollTrigger couronne
+          // 2. Tuer le ScrollTrigger couronne (retire le pin spacer)
           if (crownTL.scrollTrigger) crownTL.scrollTrigger.kill(true);
           _renderActive = false;
 
@@ -920,45 +930,43 @@
           document.getElementById('bgLight').style.display = 'none';
           document.getElementById('bgDark').style.display = 'none';
 
-          // 4. Afficher la phase expo
+          // 4. Afficher la phase expo (vidéo fixed + spacer)
           document.getElementById('phase-expo').style.display = 'block';
 
-          // 5. Scroll au top
+          // 5. Scroll au top (Lenis + natif)
           lenis.scrollTo(0, { immediate: true });
           window.scrollTo(0, 0);
 
-          // 6. Injecter la vidéo et lancer initScrollVideo
-          //    Séquence : modal visible → src injecté → requestAnimationFrame
-          //    → loadedmetadata → ScrollTrigger créé → refresh()
-          var video   = document.getElementById('intro2-video');
-          var section = document.getElementById('intro2-section');
+          // 6. Séquence d'init :
+          //    blob prêt → video.src → video.load → loadedmetadata → setup
+          var video = document.getElementById('intro2-video');
 
-          function injectAndInit(src) {
+          function doInit(src) {
             video.src = src;
-            // rAF : on s'assure que le DOM de la section est bien rendu
+            // rAF : DOM de #phase-expo rendu, puis init
             requestAnimationFrame(function() {
               setTimeout(function() {
-                initScrollVideo(video, section);
+                initScrollVideo(video);
               }, 100);
             });
           }
 
-          // Attendre le blob (max 15s), puis injecter
+          // Poll blob (max 15s), fallback raw si timeout
           var waited = 0;
           function waitAndInject() {
             if (intro2BlobUrl) {
-              injectAndInit(intro2BlobUrl);
+              doInit(intro2BlobUrl);
             } else if (waited < 15000) {
               waited += 200;
               setTimeout(waitAndInject, 200);
             } else {
-              console.warn('Timeout blob — fallback raw');
-              injectAndInit(INTRO2_SRC);
+              console.warn('[enterExpo] Timeout blob — fallback raw URL');
+              doInit(INTRO2_SRC);
             }
           }
           waitAndInject();
 
-        }, 650); // attend la fin du fade-out du poster (0.6s + marge)
+        }, 650); // attend la fin du fade-out du poster (600ms + marge)
       }
 
       // Bouton + clic sur l'affiche déclenchent tous les deux enterExpo()
