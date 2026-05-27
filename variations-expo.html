@@ -384,50 +384,16 @@
       letter-spacing: 0.35em;
       text-transform: uppercase;
       cursor: pointer;
-      transition: background 0.3s, transform 0.2s;
+      transition: background 0.3s;
+      /* Aucune animation, aucun transform */
     }
     #btnEntrerExpo:hover {
       background: #2a2a2a;
-      transform: translateY(-2px);
     }
 
     @media (max-width: 640px) {
       #affiche-titre-img { max-height: 65vh; max-width: 88vw; }
       #btnEntrerExpo { font-size: 9px; padding: 13px 36px; letter-spacing: 0.25em; }
-    }
-
-    /* ─── Texte latéral sur le poster ─── */
-    .affiche-side-text {
-      position: absolute;
-      right: 7vw;
-      top: 50%;
-      transform: translateY(-50%);
-      max-width: 240px;
-      text-align: left;
-      pointer-events: none;
-    }
-    .affiche-side-label {
-      font-size: 13px;
-      font-weight: 600;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: var(--ink);
-      margin-bottom: 20px;
-      display: flex; align-items: center; gap: 12px;
-    }
-    .affiche-side-label::before {
-      content: ''; width: 24px; height: 1.5px; background: var(--ink);
-      flex-shrink: 0;
-    }
-    .affiche-side-body {
-      font-family: var(--ff-serif);
-      font-style: italic;
-      font-size: 18px;
-      line-height: 1.72;
-      color: var(--ink-soft);
-    }
-    @media (max-width: 980px) {
-      .affiche-side-text { display: none; }
     }
 
     /* ─── Zoom poster au hover ─── */
@@ -572,11 +538,6 @@
         <img id="affiche-titre-img"
           src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/AFFICHE%20TITRE%20.webp"
           alt="Rolex Crown Exhibition — François Peyranne" />
-      </div>
-      <!-- Texte atmosphérique latéral (anglais) -->
-      <div class="affiche-side-text">
-        <p class="affiche-side-label">The Exhibition</p>
-        <p class="affiche-side-body">One object.<br>A decade.<br>Twenty-four perspectives.<br><br>Design, typography,<br>sculpture, illustration —<br>as many free variations<br>on a single icon.</p>
       </div>
       <div class="affiche-titre-cta">
         <button id="btnEntrerExpo">Enter the exhibition &nbsp;→</button>
@@ -729,6 +690,27 @@
       var canvasContainer = document.getElementById('canvas-container');
       var _renderActive = true;
 
+      // ── Préchargement vidéo intro2 en blob dès le départ ────────────────────
+      // Démarre en arrière-plan pendant que l'utilisateur scrolle la couronne.
+      // Quand il clique "Enter the exhibition", la vidéo est déjà en mémoire
+      // → seeking frame-accurate même vers la fin (raw.githubusercontent.com
+      //   ne supporte pas les range requests suffisamment rapides pour le scrub).
+      var INTRO2_SRC = 'https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/VIDOES_export-def/intro2.mp4';
+      var intro2BlobUrl = null;
+      fetch(INTRO2_SRC)
+        .then(function(r) {
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          return r.blob();
+        })
+        .then(function(blob) {
+          intro2BlobUrl = URL.createObjectURL(blob);
+          // Met à jour le src de la balise video dès que le blob est prêt
+          var vid = document.getElementById('intro2-video');
+          if (vid) { vid.src = intro2BlobUrl; vid.load(); }
+          console.log('intro2 préchargée en blob ✓');
+        })
+        .catch(function(e) { console.warn('Préchargement intro2 échoué, fallback raw URL:', e); });
+
       // =============== TIMELINE UNIQUE — couronne 0%→100% du scroll ===============
       // UNE seule section pinned, UNE seule timeline.
       // Chaque état de la couronne est un % du scroll total (pas un déclencheur).
@@ -869,37 +851,37 @@
           lenis.scrollTo(0, { immediate: true });
           window.scrollTo(0, 0);
 
-          // 6. Setup vidéo scrub — architecture fixed + spacer (comme le canvas couronne)
+          // 6. Setup vidéo scrub — architecture fixed + spacer
           var video = document.getElementById('intro2-video');
           video.pause();
+
+          // Si le blob est prêt, l'utiliser (seeking fiable) ; sinon fallback raw URL
+          if (intro2BlobUrl && video.src !== intro2BlobUrl) {
+            video.src = intro2BlobUrl;
+            video.load();
+          }
           video.currentTime = 0;
 
           function setupIntro2() {
             var dur = video.duration || 10;
-            // 450px par seconde → ~4500px pour 10s, confortable pour scrubber
-            var scrollH = Math.max(4000, Math.round(dur * 450));
+            // 500px/s → scrubbing confortable, ~5s visible par page-height
+            var scrollH = Math.max(4000, Math.round(dur * 500));
 
-            // Le spacer fournit la hauteur de scroll (la vidéo est fixed, elle ne bouge pas)
             var spacer = document.getElementById('intro2-spacer');
             spacer.style.height = scrollH + 'px';
 
-            // ScrollTrigger sur le spacer — pilote video.currentTime
             ScrollTrigger.create({
               trigger: spacer,
               start: 'top top',
               end: '+=' + scrollH,
-              scrub: 0.3,
+              scrub: 0.5,
               onUpdate: function(self) {
-                // Snap vers la dernière frame decodable dès 97% du scroll
-                // (dur-0.001 : certains browsers ignorent currentTime===duration)
-                if (self.progress >= 0.97) {
-                  if (video.currentTime < dur - 0.05) {
-                    video.currentTime = dur - 0.001;
-                  }
-                  return;
-                }
                 var t = dur * self.progress;
-                if (Math.abs(video.currentTime - t) > 0.04) {
+                // Snap à la toute dernière frame decodable dès 95%
+                if (self.progress >= 0.95) {
+                  t = dur - 0.001;
+                }
+                if (Math.abs(video.currentTime - t) > 0.033) {
                   video.currentTime = t;
                 }
               }
@@ -912,7 +894,6 @@
             setupIntro2();
           } else {
             video.addEventListener('loadedmetadata', setupIntro2, { once: true });
-            video.load();
           }
 
         }, 650); // attend la fin du fade-out du poster (0.6s + marge)
