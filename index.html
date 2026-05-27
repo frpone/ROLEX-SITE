@@ -358,35 +358,47 @@
       position: fixed;
       inset: 0;
       z-index: 8;
-      overflow: hidden;
-      background: #f0ede7;
+      background: #f2f0ec;
       pointer-events: none;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-direction: column;
-      gap: 32px;
+      gap: 40px;
     }
     #affiche-titre-img {
-      max-height: 82vh;
-      max-width: 80vw;
+      max-height: 78vh;
+      max-width: 56vw;
       object-fit: contain;
       display: block;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.18), 0 8px 24px rgba(0,0,0,0.08);
     }
-    .affiche-titre-cta { text-align: center; }
+    .affiche-titre-cta {
+      text-align: center;
+      opacity: 0;   /* apparaît après l'arrivée du poster via JS */
+    }
     #btnEntrerExpo {
-      background: none;
-      border: 1px solid rgba(0,0,0,0.3);
-      color: var(--ink);
-      padding: 12px 36px;
+      background: var(--ink);
+      border: none;
+      color: #fff;
+      padding: 16px 52px;
       font-family: var(--ff-display);
       font-size: 10px;
-      letter-spacing: 0.3em;
+      font-weight: 500;
+      letter-spacing: 0.35em;
       text-transform: uppercase;
       cursor: pointer;
-      transition: border-color 0.25s, background 0.25s;
+      transition: background 0.3s, transform 0.2s;
     }
-    #btnEntrerExpo:hover { background: rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.6); }
+    #btnEntrerExpo:hover {
+      background: #2a2a2a;
+      transform: translateY(-2px);
+    }
+
+    @media (max-width: 640px) {
+      #affiche-titre-img { max-height: 65vh; max-width: 88vw; }
+      #btnEntrerExpo { font-size: 9px; padding: 13px 36px; letter-spacing: 0.25em; }
+    }
 
   </style>
 </head>
@@ -460,7 +472,7 @@
         src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/AFFICHE%20TITRE%20.webp"
         alt="Rolex Crown Exhibition — François Peyranne" />
       <div class="affiche-titre-cta">
-        <button id="btnEntrerExpo">Découvrir l'exposition &nbsp;↓</button>
+        <button id="btnEntrerExpo">Explorer l'exposition &nbsp;→</button>
       </div>
     </div>
 
@@ -707,19 +719,33 @@
 
       // =============== AFFICHE TITRE — slide-in + arrêt du scroll ===============
       var sceneAffiche = document.getElementById('scene-affiche');
+      var afCta = sceneAffiche.querySelector('.affiche-titre-cta');
       gsap.set(sceneAffiche, { y: '100vh' });
+
       ScrollTrigger.create({
         trigger: '#crown-sequence',
         start: 'top top',
-        end: '+=4500',
+        end: '+=7000',          // ← aligné sur la timeline principale
         onLeave: function() {
+          // 1. Arrêt du rendu 3D
           _renderActive = false;
-          gsap.to(sceneAffiche, { y: 0, duration: 0.7, ease: 'power3.out' });
+          // 2. Le poster monte depuis le bas
+          gsap.to(sceneAffiche, {
+            y: 0,
+            duration: 0.9,
+            ease: 'power3.out',
+            onComplete: function() {
+              // 3. Le bouton apparaît après l'arrivée du poster
+              gsap.to(afCta, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' });
+            }
+          });
           sceneAffiche.style.pointerEvents = 'auto';
-          lenis.stop(); // Scroll bloqué jusqu'au clic
+          lenis.stop();   // scroll bloqué sur le poster
         },
         onEnterBack: function() {
+          // Retour vers la couronne — poster redescend
           _renderActive = true;
+          gsap.to(afCta, { opacity: 0, duration: 0.2, ease: 'none' });
           gsap.to(sceneAffiche, { y: '100vh', duration: 0.5, ease: 'power2.in' });
           sceneAffiche.style.pointerEvents = 'none';
           lenis.start();
