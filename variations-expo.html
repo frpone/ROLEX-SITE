@@ -375,22 +375,20 @@
       display: block;
       box-shadow: 0 32px 80px rgba(0,0,0,0.18), 0 8px 24px rgba(0,0,0,0.08);
       /*
-       * Chromie bleu-gris froide — technique grayscale→sepia→hue-rotate :
-       *  1. grayscale(0.82) : désature les teintes chaudes de l'image
-       *  2. sepia(0.35)     : ajoute une base tonale (~35° jaune chaud)
-       *  3. hue-rotate(178°): fait pivoter 35°+178°=213° → zone bleu-cyan
-       *  4. saturate(0.8)   : contrôle l'intensité du bleu obtenu
-       *  5. brightness/contrast : compensation luminosité
+       * Chromie douce — température froide uniquement, contrastes préservés.
+       * Pas de grayscale, pas de sepia : l'image garde sa matière.
+       * saturate(0.82) : retire légèrement les tons chauds
+       * brightness(1.01) + contrast(0.97) : préserve les noirs et les blancs
        */
-      filter: grayscale(0.82) sepia(0.35) hue-rotate(178deg) saturate(0.8) brightness(1.08) contrast(1.04);
+      filter: saturate(0.82) brightness(1.01) contrast(0.97);
     }
-    /* Voile coloré par-dessus l'image — renforce la teinte froide */
+    /* Voile froid très discret — teinte l'environnement, pas l'image */
     #scene-affiche::before {
       content: '';
       position: absolute;
       inset: 0;
-      background: rgba(195, 210, 222, 0.18);
-      mix-blend-mode: color;
+      background: rgba(195, 210, 222, 0.10);
+      mix-blend-mode: multiply;
       pointer-events: none;
       z-index: 9;
     }
