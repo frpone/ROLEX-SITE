@@ -9,79 +9,140 @@
 
     :root {
       --ff-display: 'sweet-sans-pro', 'Helvetica Neue', Arial, sans-serif;
-      --ink: rgba(11, 17, 22, 0.80);
+      --ink: rgba(11, 17, 22, 0.78);
+      --ink-soft: rgba(11, 17, 22, 0.42);
+
+      /* URLs assets */
+      --url-poster:   'https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/AFFICHE%20TITRE%2Bcadre%20.webp';
+      --url-arrow-r:  'https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20GAUCHE-.png';
+      --url-arrow-l:  'https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20DROITE-.png';
     }
 
     html, body { width: 100%; height: 100%; overflow: hidden; }
 
-    /* ── Fond atmosphérique : CLICKTOENTER_.webp en cover ──────────────
-       Remplit le viewport sans blanc. Le centre (atmosphère + couronne)
-       reste toujours visible. */
+    /* ═══════════════════════════════════════════════════════
+       FOND — recréé en CSS pur, cool grey atmosphérique.
+       Gradient radial : centre plus clair, bords plus foncés.
+       Aucune image de fond → aucun problème de ratio.
+    ═══════════════════════════════════════════════════════ */
     .enter-screen {
       position: fixed;
       inset: 0;
       background:
-        url('https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CLICKTOENTER_.webp')
-        center / cover no-repeat;
+        radial-gradient(
+          ellipse 90% 80% at 50% 44%,
+          #f4f5f7 0%,
+          #e0e3e8 55%,
+          #cdd2d9 100%
+        );
       display: flex;
       flex-direction: row;
       align-items: center;
       justify-content: center;
-      gap: clamp(20px, 4vw, 64px);
-      padding: 24px clamp(16px, 4vw, 48px);
+      gap: clamp(20px, 4.5vw, 72px);
+      padding: 0 clamp(16px, 5vw, 56px);
+      overflow: hidden;
     }
 
-    /* ── Affiche seule : AFFICHE TITRE .webp ───────────────────────────
-       Portrait, taille pilotée par la hauteur du viewport sur desktop,
-       par la largeur sur mobile. */
-    .poster-wrapper {
-      position: relative;
+    /* ═══════════════════════════════════════════════════════
+       BLOC AFFICHE — regroupe poster + subtitle.
+       Subtitle est à l'intérieur → se déplace et scale
+       exactement avec l'affiche.
+    ═══════════════════════════════════════════════════════ */
+    .poster-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
       flex-shrink: 0;
-      overflow: hidden;
-      /* Zoom uniquement sur l'affiche au hover */
+      cursor: pointer;
+      /* Entrée depuis le bas */
+      animation: riseIn 1s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+    }
+
+    @keyframes riseIn {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* CTA mobile au-dessus — caché sur desktop */
+    .cta-above {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
       cursor: pointer;
     }
+
+    /* ── Wrapper poster : overflow:hidden pour que le zoom
+       ne dépasse pas les bords du cadre ── */
+    .poster-wrap {
+      overflow: hidden;
+      /* Ombre portée douce sous le cadre */
+      box-shadow:
+        0 12px 32px rgba(0, 0, 0, 0.12),
+        0 32px 72px rgba(0, 0, 0, 0.10);
+      flex-shrink: 0;
+    }
+
     .poster-img {
       display: block;
-      height: min(82vh, 55vw);   /* desktop : hauteur-driven */
+      /* Desktop : hauteur pilotée. Mobile override en media query. */
+      height: min(84vh, 54vw);
       width: auto;
-      user-select: none;
       pointer-events: none;
+      user-select: none;
       -webkit-user-drag: none;
+      /* Zoom uniquement sur l'affiche, pas sur le fond */
       transition: transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
       will-change: transform;
     }
-    .poster-wrapper:hover .poster-img {
-      transform: scale(1.028);
+    .poster-wrap:hover .poster-img {
+      transform: scale(1.030);
     }
 
-    /* ── CTAs latéraux (desktop) ────────────────────────────────────── */
+    /* Subtitle — locké dans le bloc, scale avec lui */
+    .poster-subtitle {
+      font-family: var(--ff-display);
+      font-size: clamp(7px, 0.58vw, 10px);
+      font-weight: 400;
+      letter-spacing: 0.40em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+      white-space: nowrap;
+      line-height: 1;
+      text-align: center;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       CTAs LATÉRAUX — desktop uniquement
+    ═══════════════════════════════════════════════════════ */
     .enter-zone {
       flex-shrink: 0;
       display: flex;
       align-items: center;
-      gap: clamp(14px, 2vw, 28px);
+      gap: clamp(12px, 1.8vw, 26px);
       border: 0;
       background: transparent;
       padding: 0;
       cursor: pointer;
     }
 
-    .enter-zone-left  { animation: slideInLeft  0.9s cubic-bezier(0.22,1,0.36,1) 0.25s both; }
-    .enter-zone-right { animation: slideInRight 0.9s cubic-bezier(0.22,1,0.36,1) 0.25s both; }
+    .enter-zone-left  { animation: slideInLeft  0.9s cubic-bezier(0.22,1,0.36,1) 0.4s both; }
+    .enter-zone-right { animation: slideInRight 0.9s cubic-bezier(0.22,1,0.36,1) 0.4s both; }
 
-    @keyframes slideInLeft  {
-      from { opacity:0; transform: translateX(-44px); }
-      to   { opacity:1; transform: translateX(0); }
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-44px); }
+      to   { opacity: 1; transform: translateX(0); }
     }
     @keyframes slideInRight {
-      from { opacity:0; transform: translateX(44px); }
-      to   { opacity:1; transform: translateX(0); }
+      from { opacity: 0; transform: translateX(44px); }
+      to   { opacity: 1; transform: translateX(0); }
     }
 
     .enter-label {
       font-family: var(--ff-display);
-      font-size: clamp(8px, 0.68vw, 12px);
+      font-size: clamp(8px, 0.65vw, 12px);
       font-weight: 500;
       letter-spacing: 0.46em;
       text-transform: uppercase;
@@ -90,10 +151,10 @@
       line-height: 1;
     }
 
-    /* Flèches PNG — pulse permanent vers le poster, aucun hover */
+    /* Flèches PNG — pulse permanent vers l'affiche, sans hover */
     .enter-arrow {
       display: block;
-      width: clamp(38px, 3.8vw, 68px);
+      width: clamp(36px, 3.6vw, 64px);
       height: auto;
       object-fit: contain;
       pointer-events: none;
@@ -101,62 +162,88 @@
       -webkit-user-drag: none;
       flex-shrink: 0;
     }
+
+    /* Gauche → flèche pointe vers l'affiche (droite) */
     .enter-zone-left  .enter-arrow { animation: pulseRight 2.2s ease-in-out infinite; }
+    /* Droite → flèche pointe vers l'affiche (gauche) */
     .enter-zone-right .enter-arrow { animation: pulseLeft  2.2s ease-in-out infinite; }
 
     @keyframes pulseRight {
-      0%,100% { transform: translateX(0);   opacity: 0.5; }
+      0%,100% { transform: translateX(0);   opacity: 0.50; }
       50%      { transform: translateX(8px); opacity: 1; }
     }
     @keyframes pulseLeft {
-      0%,100% { transform: translateX(0);    opacity: 0.5; }
+      0%,100% { transform: translateX(0);    opacity: 0.50; }
       50%      { transform: translateX(-8px); opacity: 1; }
     }
 
-    /* ── Responsive mobile < 640px ─────────────────────────────────────
-       Layout vertical : affiche large, CTA centré en dessous. */
+    /* ═══════════════════════════════════════════════════════
+       MOBILE ≤ 640px
+       Layout : CTA au-dessus (flèche vers le bas) + affiche
+    ═══════════════════════════════════════════════════════ */
     @media (max-width: 640px) {
+
       .enter-screen {
         flex-direction: column;
         justify-content: center;
         gap: 20px;
-        padding: 20px 16px;
-      }
-
-      /* Affiche : pilotée par la largeur */
-      .poster-img {
-        height: auto;
-        width: min(82vw, 340px);
+        padding: 16px;
       }
 
       /* CTAs latéraux cachés */
       .enter-zone-left,
       .enter-zone-right { display: none; }
 
-      /* CTA mobile centré */
-      .mobile-cta { display: flex; }
-    }
+      /* Affiche plus large sur mobile */
+      .poster-img {
+        height: auto;
+        width: min(78vw, 320px);
+      }
 
-    /* ── CTA mobile : caché sur desktop ───────────────────────────────  */
-    .mobile-cta {
-      display: none;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      cursor: pointer;
-      flex-shrink: 0;
+      /* Subtitle scale avec l'affiche */
+      .poster-subtitle {
+        font-size: clamp(7px, 2vw, 10px);
+      }
+
+      /* CTA au-dessus visible */
+      .cta-above {
+        display: flex;
+        animation: slideInTop 0.9s cubic-bezier(0.22,1,0.36,1) 0.35s both;
+      }
+
+      @keyframes slideInTop {
+        from { opacity: 0; transform: translateY(-28px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+
+      .cta-above .enter-label {
+        font-size: 9px;
+        letter-spacing: 0.42em;
+        color: var(--ink);
+      }
+
+      /* CROIX GAUCHE (→) rotée 90° = pointe vers le bas (↓) */
+      .cta-above .enter-arrow {
+        width: clamp(32px, 8vw, 48px);
+        animation: pulseDown 2.2s ease-in-out infinite;
+      }
+
+      @keyframes pulseDown {
+        /*
+          rotate(90deg) d'abord, puis translateX(8px) dans
+          le repère rotaté → 8px vers le bas en screen space.
+        */
+        0%,100% { transform: rotate(90deg) translateX(0);   opacity: 0.50; }
+        50%      { transform: rotate(90deg) translateX(8px); opacity: 1; }
+      }
     }
-    .mobile-cta .enter-label { font-size: 9px; letter-spacing: 0.44em; }
-    .mobile-cta .enter-arrow { width: 30px; }
-    .mobile-cta .arrow-l { animation: pulseRight 2.2s ease-in-out infinite; }
-    .mobile-cta .arrow-r { animation: pulseLeft  2.2s ease-in-out infinite; }
   </style>
 </head>
 <body>
 
 <section class="enter-screen">
 
-  <!-- CTA gauche : label → flèche (pointe vers l'affiche) -->
+  <!-- CTA gauche (desktop) -->
   <button class="enter-zone enter-zone-left" aria-label="Enter exhibition">
     <span class="enter-label">Click to Enter</span>
     <img class="enter-arrow"
@@ -164,14 +251,31 @@
       alt="" />
   </button>
 
-  <!-- Affiche seule — hover zoom uniquement ici -->
-  <div class="poster-wrapper">
-    <img class="poster-img"
-      src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/AFFICHE%20TITRE%20.webp"
-      alt="Rolex Crown Exhibition — François Peyranne" />
+  <!-- Bloc central : CTA mobile + poster + subtitle -->
+  <div class="poster-block">
+
+    <!-- CTA mobile au-dessus : arrow down + texte -->
+    <div class="cta-above">
+      <span class="enter-label">Click to Enter</span>
+      <!-- CROIX GAUCHE (→) → rotate(90deg) = ↓ -->
+      <img class="enter-arrow"
+        src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20GAUCHE-.png"
+        alt="" />
+    </div>
+
+    <!-- Affiche avec cadre — zoom uniquement ici -->
+    <div class="poster-wrap">
+      <img class="poster-img"
+        src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/AFFICHE%20TITRE%2Bcadre%20.webp"
+        alt="Rolex Crown Exhibition — François Peyranne" />
+    </div>
+
+    <!-- Subtitle locké dans le bloc, scale avec l'affiche -->
+    <p class="poster-subtitle">The Rolex Crown Exhibiton</p>
+
   </div>
 
-  <!-- CTA droite : flèche (pointe vers l'affiche) → label -->
+  <!-- CTA droite (desktop) -->
   <button class="enter-zone enter-zone-right" aria-label="Enter exhibition">
     <img class="enter-arrow"
       src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20DROITE-.png"
@@ -179,24 +283,13 @@
     <span class="enter-label">Click to Enter</span>
   </button>
 
-  <!-- CTA mobile : visible < 640px seulement -->
-  <div class="mobile-cta">
-    <img class="enter-arrow arrow-l"
-      src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20GAUCHE-.png"
-      alt="" />
-    <span class="enter-label">Click to Enter</span>
-    <img class="enter-arrow arrow-r"
-      src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20DROITE-.png"
-      alt="" />
-  </div>
-
 </section>
 
 <script>
   function enterExpo() { alert('→ enterExpo()'); }
 
   document.querySelectorAll(
-    '.enter-zone, .poster-wrapper, .mobile-cta'
+    '.enter-zone, .poster-wrap, .poster-block, .cta-above'
   ).forEach(function(el) {
     el.addEventListener('click', enterExpo);
   });
