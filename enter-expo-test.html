@@ -10,305 +10,194 @@
     :root {
       --ff-display: 'sweet-sans-pro', 'Helvetica Neue', Arial, sans-serif;
       --ink: rgba(11, 17, 22, 0.80);
-      --WEBP: url('https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CLICKTOENTER_.webp');
-      --ARROW-R: url('https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20GAUCHE-.png');
-      --ARROW-L: url('https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20DROITE-.png');
     }
 
-    html, body {
-      width: 100%; height: 100%;
-      overflow: hidden;
-    }
+    html, body { width: 100%; height: 100%; overflow: hidden; }
 
-    /* ═══════════════════════════════════════════════════
-       ÉCRAN — même image en background:cover comble
-       les bandes sans blur agressif ni bord blanc
-    ═══════════════════════════════════════════════════ */
+    /* ── Fond atmosphérique : CLICKTOENTER_.webp en cover ──────────────
+       Remplit le viewport sans blanc. Le centre (atmosphère + couronne)
+       reste toujours visible. */
     .enter-screen {
       position: fixed;
       inset: 0;
+      background:
+        url('https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CLICKTOENTER_.webp')
+        center / cover no-repeat;
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
-      /* Fond = même image, cover. Le centre est toujours visible.
-         Légèrement désaturé/lumineux pour ne pas concurrencer le frame. */
-      background: var(--WEBP) center / cover no-repeat;
-    }
-    /* Voile très léger par-dessus le fond pour dépasser le frame */
-    .enter-screen::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: rgba(240, 241, 243, 0.55);
-      backdrop-filter: blur(18px) saturate(0.7);
-      -webkit-backdrop-filter: blur(18px) saturate(0.7);
-      z-index: 0;
+      gap: clamp(20px, 4vw, 64px);
+      padding: 24px clamp(16px, 4vw, 48px);
     }
 
-    /* ═══════════════════════════════════════════════════
-       FRAME — repère géométrique ratio-locked 2048×1305
-    ═══════════════════════════════════════════════════ */
-    .enter-frame {
+    /* ── Affiche seule : AFFICHE TITRE .webp ───────────────────────────
+       Portrait, taille pilotée par la hauteur du viewport sur desktop,
+       par la largeur sur mobile. */
+    .poster-wrapper {
       position: relative;
-      z-index: 1;
-      width:  min(100vw, calc(100vh * 2048 / 1305));
-      height: min(100vh, calc(100vw * 1305 / 2048));
       flex-shrink: 0;
+      overflow: hidden;
+      /* Zoom uniquement sur l'affiche au hover */
+      cursor: pointer;
     }
-
-    /* Image fond — aucun crop, ratio respecté */
-    .enter-bg {
-      position: absolute;
-      inset: 0;
-      width: 100%; height: 100%;
-      object-fit: contain;
+    .poster-img {
       display: block;
+      height: min(82vh, 55vw);   /* desktop : hauteur-driven */
+      width: auto;
       user-select: none;
       pointer-events: none;
       -webkit-user-drag: none;
-    }
-
-    /* ═══════════════════════════════════════════════════
-       POSTER AREA — zone hover avec zoom
-    ═══════════════════════════════════════════════════ */
-    .poster-area {
-      position: absolute;
-      inset: 0;
-      /* Le zoom au hover s'applique uniquement à cette zone */
-    }
-    /* Zone cliquable sur le poster */
-    .poster-hotspot {
-      position: absolute;
-      left:   37.2%;
-      top:    13.5%;
-      width:  25.6%;
-      height: 73%;
-      z-index: 4;
-      border: 0;
-      background: transparent;
-      cursor: pointer;
-      /* Zoom discret au hover pour inviter à cliquer */
-      transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
-      transform-origin: center 50%;
-    }
-    /* Le zoom s'applique à toute l'image via le pseudo sibling trick :
-       on agrandit le enter-bg quand le hotspot est survolé. */
-    .poster-hotspot:hover {
-      transform: scale(1.0); /* hotspot lui-même ne scale pas */
-    }
-    /* Zoom sur l'image quand le hotspot (ou la frame) est survolé */
-    .enter-frame:has(.poster-hotspot:hover) .enter-bg,
-    .enter-frame:has(.enter-zone:hover) .enter-bg {
-      /* pas de zoom sur les zones CTA */
-    }
-    /* Zoom sur l'image via wrapper */
-    .poster-area {
-      overflow: hidden;
       transition: transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
       will-change: transform;
     }
-    .poster-area:hover {
+    .poster-wrapper:hover .poster-img {
       transform: scale(1.028);
     }
 
-    /* ═══════════════════════════════════════════════════
-       CTAs LATÉRAUX — desktop uniquement
-    ═══════════════════════════════════════════════════ */
+    /* ── CTAs latéraux (desktop) ────────────────────────────────────── */
     .enter-zone {
-      position: absolute;
+      flex-shrink: 0;
       display: flex;
       align-items: center;
+      gap: clamp(14px, 2vw, 28px);
       border: 0;
       background: transparent;
       padding: 0;
       cursor: pointer;
-      z-index: 5;
     }
 
-    .enter-zone-left {
-      left: 8.2%;
-      top: 48.8%;
-      transform: translateY(-50%);
-      gap: 24px;
-      animation: slideInLeft 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
-    }
-    .enter-zone-right {
-      right: 8.2%;
-      top: 48.8%;
-      transform: translateY(-50%);
-      gap: 24px;
-      animation: slideInRight 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
-    }
+    .enter-zone-left  { animation: slideInLeft  0.9s cubic-bezier(0.22,1,0.36,1) 0.25s both; }
+    .enter-zone-right { animation: slideInRight 0.9s cubic-bezier(0.22,1,0.36,1) 0.25s both; }
 
-    @keyframes slideInLeft {
-      from { opacity: 0; transform: translateY(-50%) translateX(-52px); }
-      to   { opacity: 1; transform: translateY(-50%) translateX(0); }
+    @keyframes slideInLeft  {
+      from { opacity:0; transform: translateX(-44px); }
+      to   { opacity:1; transform: translateX(0); }
     }
     @keyframes slideInRight {
-      from { opacity: 0; transform: translateY(-50%) translateX(52px); }
-      to   { opacity: 1; transform: translateY(-50%) translateX(0); }
+      from { opacity:0; transform: translateX(44px); }
+      to   { opacity:1; transform: translateX(0); }
     }
 
     .enter-label {
       font-family: var(--ff-display);
-      font-size: clamp(9px, 0.72vw, 13px);
+      font-size: clamp(8px, 0.68vw, 12px);
       font-weight: 500;
-      letter-spacing: 0.48em;
+      letter-spacing: 0.46em;
       text-transform: uppercase;
       color: var(--ink);
       white-space: nowrap;
       line-height: 1;
     }
 
-    /* Flèches — pas d'interaction hover, pulse permanent vers le poster */
+    /* Flèches PNG — pulse permanent vers le poster, aucun hover */
     .enter-arrow {
       display: block;
-      width: clamp(44px, 4.2vw, 76px);
+      width: clamp(38px, 3.8vw, 68px);
       height: auto;
       object-fit: contain;
-      user-select: none;
       pointer-events: none;
+      user-select: none;
       -webkit-user-drag: none;
       flex-shrink: 0;
     }
-
     .enter-zone-left  .enter-arrow { animation: pulseRight 2.2s ease-in-out infinite; }
     .enter-zone-right .enter-arrow { animation: pulseLeft  2.2s ease-in-out infinite; }
 
     @keyframes pulseRight {
-      0%, 100% { transform: translateX(0);   opacity: 0.5; }
-      50%       { transform: translateX(9px); opacity: 1; }
+      0%,100% { transform: translateX(0);   opacity: 0.5; }
+      50%      { transform: translateX(8px); opacity: 1; }
     }
     @keyframes pulseLeft {
-      0%, 100% { transform: translateX(0);    opacity: 0.5; }
-      50%       { transform: translateX(-9px); opacity: 1; }
+      0%,100% { transform: translateX(0);    opacity: 0.5; }
+      50%      { transform: translateX(-8px); opacity: 1; }
     }
 
-    /* ═══════════════════════════════════════════════════
-       CTA MOBILE — sous le frame, affiché < 680px
-    ═══════════════════════════════════════════════════ */
-    .mobile-cta {
-      display: none; /* caché sur desktop */
-      z-index: 2;
-      align-items: center;
-      justify-content: center;
-      gap: 20px;
-      margin-top: 22px;
-      cursor: pointer;
-      flex-shrink: 0;
-    }
-    .mobile-cta .enter-label {
-      font-size: 9px;
-      letter-spacing: 0.42em;
-    }
-    .mobile-cta .enter-arrow {
-      width: 32px;
-    }
-    /* Arrow gauche → pointe vers le texte (vers le centre) */
-    .mobile-cta .arrow-left  { animation: pulseRight 2.2s ease-in-out infinite; }
-    /* Arrow droite → pointe vers le texte (vers le centre) */
-    .mobile-cta .arrow-right { animation: pulseLeft  2.2s ease-in-out infinite; }
-
-    /* ═══════════════════════════════════════════════════
-       RESPONSIVE — < 680px : layout vertical
-    ═══════════════════════════════════════════════════ */
-    @media (max-width: 680px) {
+    /* ── Responsive mobile < 640px ─────────────────────────────────────
+       Layout vertical : affiche large, CTA centré en dessous. */
+    @media (max-width: 640px) {
       .enter-screen {
+        flex-direction: column;
         justify-content: center;
-        gap: 0;
+        gap: 20px;
+        padding: 20px 16px;
       }
 
-      /* Sur mobile, le frame prend toute la largeur dispo */
-      .enter-frame {
-        width: 94vw;
-        height: calc(94vw * 1305 / 2048);
+      /* Affiche : pilotée par la largeur */
+      .poster-img {
+        height: auto;
+        width: min(82vw, 340px);
       }
 
       /* CTAs latéraux cachés */
       .enter-zone-left,
-      .enter-zone-right {
-        display: none;
-      }
+      .enter-zone-right { display: none; }
 
-      /* CTA mobile visible */
-      .mobile-cta {
-        display: flex;
-      }
+      /* CTA mobile centré */
+      .mobile-cta { display: flex; }
     }
 
-    /* Très petit écran : frame encore plus compact */
-    @media (max-width: 400px) {
-      .enter-frame {
-        width: 98vw;
-        height: calc(98vw * 1305 / 2048);
-      }
-      .mobile-cta { margin-top: 14px; }
+    /* ── CTA mobile : caché sur desktop ───────────────────────────────  */
+    .mobile-cta {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      cursor: pointer;
+      flex-shrink: 0;
     }
+    .mobile-cta .enter-label { font-size: 9px; letter-spacing: 0.44em; }
+    .mobile-cta .enter-arrow { width: 30px; }
+    .mobile-cta .arrow-l { animation: pulseRight 2.2s ease-in-out infinite; }
+    .mobile-cta .arrow-r { animation: pulseLeft  2.2s ease-in-out infinite; }
   </style>
 </head>
 <body>
 
 <section class="enter-screen">
 
-  <div class="enter-frame">
+  <!-- CTA gauche : label → flèche (pointe vers l'affiche) -->
+  <button class="enter-zone enter-zone-left" aria-label="Enter exhibition">
+    <span class="enter-label">Click to Enter</span>
+    <img class="enter-arrow"
+      src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20GAUCHE-.png"
+      alt="" />
+  </button>
 
-    <!-- poster-area gère le hover zoom sur l'image -->
-    <div class="poster-area">
-      <img
-        class="enter-bg"
-        src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CLICKTOENTER_.webp"
-        alt="The Rolex Crown Exhibition"
-      />
-      <!-- Zone cliquable invisible sur le poster central -->
-      <button class="poster-hotspot" aria-label="Enter exhibition"></button>
-    </div>
-
-    <!-- CTA gauche : texte → flèche pointant vers le poster -->
-    <button class="enter-zone enter-zone-left" aria-label="Enter exhibition">
-      <span class="enter-label">Click to Enter</span>
-      <img
-        class="enter-arrow"
-        src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20GAUCHE-.png"
-        alt=""
-      />
-    </button>
-
-    <!-- CTA droite : flèche pointant vers le poster → texte -->
-    <button class="enter-zone enter-zone-right" aria-label="Enter exhibition">
-      <img
-        class="enter-arrow"
-        src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20DROITE-.png"
-        alt=""
-      />
-      <span class="enter-label">Click to Enter</span>
-    </button>
-
+  <!-- Affiche seule — hover zoom uniquement ici -->
+  <div class="poster-wrapper">
+    <img class="poster-img"
+      src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/AFFICHE%20TITRE%20.webp"
+      alt="Rolex Crown Exhibition — François Peyranne" />
   </div>
 
-  <!-- CTA mobile : sous le frame, visible uniquement < 680px -->
-  <div class="mobile-cta">
-    <img
-      class="enter-arrow arrow-left"
-      src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20GAUCHE-.png"
-      alt=""
-    />
-    <span class="enter-label">Click to Enter</span>
-    <img
-      class="enter-arrow arrow-right"
+  <!-- CTA droite : flèche (pointe vers l'affiche) → label -->
+  <button class="enter-zone enter-zone-right" aria-label="Enter exhibition">
+    <img class="enter-arrow"
       src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20DROITE-.png"
-      alt=""
-    />
+      alt="" />
+    <span class="enter-label">Click to Enter</span>
+  </button>
+
+  <!-- CTA mobile : visible < 640px seulement -->
+  <div class="mobile-cta">
+    <img class="enter-arrow arrow-l"
+      src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20GAUCHE-.png"
+      alt="" />
+    <span class="enter-label">Click to Enter</span>
+    <img class="enter-arrow arrow-r"
+      src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20DROITE-.png"
+      alt="" />
   </div>
 
 </section>
 
 <script>
-  function enterExpo() {
-    alert('→ enterExpo()');
-  }
-  document.querySelectorAll('.enter-zone, .poster-hotspot, .mobile-cta').forEach(function(el) {
+  function enterExpo() { alert('→ enterExpo()'); }
+
+  document.querySelectorAll(
+    '.enter-zone, .poster-wrapper, .mobile-cta'
+  ).forEach(function(el) {
     el.addEventListener('click', enterExpo);
   });
 </script>
