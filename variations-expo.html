@@ -359,50 +359,68 @@
       background: var(--bg-light);
       pointer-events: none;
       opacity: 0;
-    }
-
-    /* Image plein écran — ratio image (1.57) ≈ ratio viewport → object-fit:cover sans recadrage */
-    .affiche-img-wrap {
-      position: absolute; inset: 0;
-      overflow: hidden;
-      cursor: pointer;
-      pointer-events: auto;
-    }
-    #affiche-titre-img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-      object-position: center;
-      display: block;
-    }
-    .affiche-img-wrap:hover #affiche-titre-img {
-      transform: scale(1.02);
-      transition: transform 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    }
-
-    /* Overlay CTA — flex-row, centré verticalement, bords gauche/droite */
-    .affiche-titre-cta {
-      position: absolute; inset: 0;
       display: flex;
-      flex-direction: row;
+      flex-direction: column;
       align-items: center;
-      justify-content: space-between;
-      padding: 0 5%;
-      pointer-events: none;
+      justify-content: center;
+    }
+
+    .affiche-titre-cta {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       opacity: 0;
     }
 
-    .affiche-cta-side {
+    .poster-enter-layout {
+      display: grid;
+      grid-template-columns: minmax(260px, 1fr) auto minmax(260px, 1fr);
+      align-items: center;
+      justify-items: center;
+      width: 100%;
+    }
+
+    .affiche-img-wrap {
+      cursor: pointer;
+      pointer-events: auto;
+      overflow: hidden;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.15);
+    }
+    #affiche-titre-img {
+      height: 88vh;
+      width: auto;
+      max-width: 50vw;
+      display: block;
+      will-change: transform;
+      transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    .affiche-img-wrap:hover #affiche-titre-img {
+      transform: scale(1.025);
+    }
+
+    .side-enter-left {
       display: flex;
       align-items: center;
-      gap: 18px;
+      gap: 24px;
+      justify-self: end;
+      transform: translateX(-28px);
       cursor: pointer;
       pointer-events: auto;
       user-select: none;
     }
-    .affiche-cta-left  { flex-direction: row; }
-    .affiche-cta-right { flex-direction: row; }
+    .side-enter-right {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      justify-self: start;
+      transform: translateX(28px);
+      cursor: pointer;
+      pointer-events: auto;
+      user-select: none;
+    }
 
-    .cta-label {
+    .enter-label {
       font-family: var(--ff-display);
       font-size: 10px;
       font-weight: 500;
@@ -411,42 +429,41 @@
       color: var(--ink);
       white-space: nowrap;
     }
-    .cta-chevron {
-      font-size: 56px;
-      font-weight: 700;
-      color: var(--ink);
-      line-height: 1;
-      display: inline-block;
-    }
 
-    /* Chevrons : pulse latéral */
-    .affiche-cta-left  .cta-chevron { animation: chevronRight 2.4s ease-in-out infinite; }
-    .affiche-cta-right .cta-chevron { animation: chevronLeft  2.4s ease-in-out infinite; }
-    @keyframes chevronRight {
+    .enter-arrow {
+      flex-shrink: 0;
+      fill: none;
+      stroke: var(--ink);
+      stroke-width: 5.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      display: block;
+    }
+    .side-enter-left  .enter-arrow { animation: arrowPulseRight 2.4s ease-in-out infinite; }
+    .side-enter-right .enter-arrow { animation: arrowPulseLeft  2.4s ease-in-out infinite; }
+    @keyframes arrowPulseRight {
       0%, 100% { transform: translateX(0);    opacity: 0.5; }
       50%       { transform: translateX(10px); opacity: 1;   }
     }
-    @keyframes chevronLeft {
+    @keyframes arrowPulseLeft {
       0%, 100% { transform: translateX(0);     opacity: 0.5; }
       50%       { transform: translateX(-10px); opacity: 1;   }
     }
 
-    /* Sous-titre bas */
     .affiche-subtitle {
-      position: absolute;
-      bottom: 36px; left: 50%;
-      transform: translateX(-50%);
+      margin-top: 20px;
       font-family: var(--ff-display);
       font-size: 9px; font-weight: 400;
       letter-spacing: 0.38em; text-transform: uppercase;
-      color: var(--ink); white-space: nowrap;
-      mix-blend-mode: multiply;
+      color: var(--ink-soft); white-space: nowrap;
     }
 
     @media (max-width: 640px) {
-      .cta-label { display: none; }
-      .cta-chevron { font-size: 40px; }
-      .affiche-titre-cta { padding: 0 3%; }
+      .enter-label { display: none; }
+      .poster-enter-layout { grid-template-columns: 60px auto 60px; }
+      .side-enter-left  { transform: translateX(-8px); gap: 0; }
+      .side-enter-right { transform: translateX(8px);  gap: 0; }
+      #affiche-titre-img { height: 80vh; max-width: 80vw; }
     }
 
     /* ─── Phase expo ─── */
@@ -580,27 +597,28 @@
 
     <!-- AFFICHE TITRE — fondu après zoom couronne -->
     <div id="scene-affiche">
-      <!-- Image plein écran (3344×2132 paysage → object-fit:cover) -->
-      <div class="affiche-img-wrap" id="affiche-img-wrap">
-        <img id="affiche-titre-img"
-          src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CLICKTOENTER_.webp"
-          alt="Rolex Crown Exhibition — François Peyranne" />
-      </div>
-
-      <!-- Overlay CTAs flex-row (opacité GSAP via .affiche-titre-cta) -->
       <div class="affiche-titre-cta">
-        <div class="affiche-cta-side affiche-cta-left" id="btnEntrerExpo">
-          <span class="cta-label">Click &nbsp;to &nbsp;Enter</span>
-          <span class="cta-chevron">›</span>
+        <div class="poster-enter-layout">
+          <div class="side-enter-left" id="btnEntrerExpo">
+            <span class="enter-label">Click to Enter</span>
+            <svg class="enter-arrow" width="56" height="56" viewBox="0 0 56 56">
+              <polyline points="14,6 44,28 14,50"/>
+            </svg>
+          </div>
+          <div class="affiche-img-wrap" id="affiche-img-wrap">
+            <img id="affiche-titre-img"
+              src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CLICKTOENTER_.webp"
+              alt="Rolex Crown Exhibition — François Peyranne" />
+          </div>
+          <div class="side-enter-right" id="affiche-cta-right">
+            <svg class="enter-arrow" width="56" height="56" viewBox="0 0 56 56">
+              <polyline points="42,6 12,28 42,50"/>
+            </svg>
+            <span class="enter-label">Click to Enter</span>
+          </div>
         </div>
-        <div class="affiche-cta-side affiche-cta-right" id="affiche-cta-right">
-          <span class="cta-chevron">‹</span>
-          <span class="cta-label">Click &nbsp;to &nbsp;Enter</span>
-        </div>
+        <div class="affiche-subtitle">The Rolex Crown Exhibition</div>
       </div>
-
-      <!-- Sous-titre fixe bas -->
-      <div class="affiche-subtitle">The Rolex Crown Exhibition</div>
     </div>
 
   </main>
