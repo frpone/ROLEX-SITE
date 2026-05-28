@@ -262,8 +262,7 @@
       .seq-freeze-mark { font-size: 8px; bottom: 28px; }
 
       /* Affiche */
-      #affiche-titre-img { max-height: 75vh; max-width: 90vw; }
-      #btnEntrerExpo { font-size: 9px; padding: 10px 24px; }
+      .poster-img { height: auto; width: min(82vw, 340px); }
     }
 
     /* Tablette (641–980px) */
@@ -356,114 +355,177 @@
     /* ===== AFFICHE TITRE ===== */
     #scene-affiche {
       position: fixed; inset: 0; z-index: 8;
-      background: var(--bg-light);
       pointer-events: none;
       opacity: 0;
+      overflow: hidden;
+      /* Fond CSS pur — cool grey atmosphérique, aucun problème de ratio */
+      background: radial-gradient(
+        ellipse 90% 80% at 50% 44%,
+        #f4f5f7 0%,
+        #e0e3e8 55%,
+        #cdd2d9 100%
+      );
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
     }
 
+    /* Container principal — opacity animée par GSAP (0.94→1.00) */
     .affiche-titre-cta {
-      width: 100%;
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       align-items: center;
+      justify-content: center;
+      gap: clamp(20px, 4.5vw, 72px);
+      padding: 0 clamp(16px, 5vw, 56px);
+      width: 100%;
       opacity: 0;
     }
 
-    .poster-enter-layout {
-      display: grid;
-      grid-template-columns: minmax(260px, 1fr) auto minmax(260px, 1fr);
+    /* Bloc affiche : poster + subtitle lockés ensemble */
+    .poster-block {
+      display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-items: center;
-      width: 100%;
+      gap: 18px;
+      flex-shrink: 0;
+      cursor: pointer;
     }
 
-    .affiche-img-wrap {
+    /* CTA mobile au-dessus (caché par défaut) */
+    .cta-above {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
       cursor: pointer;
-      pointer-events: auto;
-      overflow: hidden;
-      box-shadow: 0 32px 80px rgba(0,0,0,0.15);
     }
-    #affiche-titre-img {
-      height: 88vh;
-      width: auto;
-      max-width: 50vw;
-      display: block;
+
+    /* Wrapper poster — le scale s'applique ici → cadre + image zooment ensemble */
+    .poster-wrap {
+      flex-shrink: 0;
+      box-shadow:
+        0 12px 32px rgba(0, 0, 0, 0.12),
+        0 32px 72px rgba(0, 0, 0, 0.10);
+      transition:
+        transform 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.85s cubic-bezier(0.22, 1, 0.36, 1);
       will-change: transform;
-      transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      transform-origin: center bottom;
     }
-    .affiche-img-wrap:hover #affiche-titre-img {
-      transform: scale(1.025);
+    .poster-wrap:hover {
+      transform: scale(1.032);
+      box-shadow:
+        0 18px 48px rgba(0, 0, 0, 0.14),
+        0 44px 96px rgba(0, 0, 0, 0.11);
     }
 
-    .side-enter-left {
-      display: flex;
-      align-items: center;
-      gap: 24px;
-      justify-self: end;
-      transform: translateX(-28px);
-      cursor: pointer;
-      pointer-events: auto;
+    .poster-img {
+      display: block;
+      height: min(84vh, 54vw);
+      width: auto;
+      pointer-events: none;
       user-select: none;
+      -webkit-user-drag: none;
     }
-    .side-enter-right {
+
+    /* Subtitle locké dans poster-block — scale avec l'affiche */
+    .poster-subtitle {
+      font-family: var(--ff-display);
+      font-size: clamp(7px, 0.58vw, 10px);
+      font-weight: 400;
+      letter-spacing: 0.40em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+      white-space: nowrap;
+      line-height: 1;
+      text-align: center;
+    }
+
+    /* CTAs latéraux */
+    .enter-zone {
+      flex-shrink: 0;
       display: flex;
       align-items: center;
-      gap: 24px;
-      justify-self: start;
-      transform: translateX(28px);
+      gap: clamp(12px, 1.8vw, 26px);
+      border: 0;
+      background: transparent;
+      padding: 0;
       cursor: pointer;
       pointer-events: auto;
-      user-select: none;
+    }
+    .enter-zone-left  { animation: slideInLeft  0.9s cubic-bezier(0.22,1,0.36,1) 0.4s both; }
+    .enter-zone-right { animation: slideInRight 0.9s cubic-bezier(0.22,1,0.36,1) 0.4s both; }
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-44px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(44px); }
+      to   { opacity: 1; transform: translateX(0); }
     }
 
     .enter-label {
       font-family: var(--ff-display);
-      font-size: 10px;
+      font-size: clamp(8px, 0.65vw, 12px);
       font-weight: 500;
-      letter-spacing: 0.3em;
+      letter-spacing: 0.46em;
       text-transform: uppercase;
       color: var(--ink);
       white-space: nowrap;
+      line-height: 1;
     }
 
+    /* Flèches PNG — pulse permanent vers l'affiche */
     .enter-arrow {
-      flex-shrink: 0;
-      fill: none;
-      stroke: var(--ink);
-      stroke-width: 5.5;
-      stroke-linecap: round;
-      stroke-linejoin: round;
       display: block;
+      width: clamp(54px, 5.4vw, 96px);
+      height: auto;
+      object-fit: contain;
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-drag: none;
+      flex-shrink: 0;
     }
-    .side-enter-left  .enter-arrow { animation: arrowPulseRight 2.4s ease-in-out infinite; }
-    .side-enter-right .enter-arrow { animation: arrowPulseLeft  2.4s ease-in-out infinite; }
-    @keyframes arrowPulseRight {
-      0%, 100% { transform: translateX(0);    opacity: 0.5; }
-      50%       { transform: translateX(10px); opacity: 1;   }
+    .enter-zone-left  .enter-arrow { animation: pulseRight 2.2s ease-in-out infinite; }
+    .enter-zone-right .enter-arrow { animation: pulseLeft  2.2s ease-in-out infinite; }
+    @keyframes pulseRight {
+      0%,100% { transform: translateX(0);   opacity: 0.50; }
+      50%      { transform: translateX(8px); opacity: 1; }
     }
-    @keyframes arrowPulseLeft {
-      0%, 100% { transform: translateX(0);     opacity: 0.5; }
-      50%       { transform: translateX(-10px); opacity: 1;   }
+    @keyframes pulseLeft {
+      0%,100% { transform: translateX(0);    opacity: 0.50; }
+      50%      { transform: translateX(-8px); opacity: 1; }
     }
 
-    .affiche-subtitle {
-      margin-top: 20px;
-      font-family: var(--ff-display);
-      font-size: 9px; font-weight: 400;
-      letter-spacing: 0.38em; text-transform: uppercase;
-      color: var(--ink-soft); white-space: nowrap;
-    }
-
+    /* ── Mobile ≤ 640px ── */
     @media (max-width: 640px) {
-      .enter-label { display: none; }
-      .poster-enter-layout { grid-template-columns: 60px auto 60px; }
-      .side-enter-left  { transform: translateX(-8px); gap: 0; }
-      .side-enter-right { transform: translateX(8px);  gap: 0; }
-      #affiche-titre-img { height: 80vh; max-width: 80vw; }
+      .affiche-titre-cta {
+        flex-direction: column;
+        justify-content: center;
+        gap: 20px;
+        padding: 16px;
+      }
+      .enter-zone-left, .enter-zone-right { display: none; }
+      .poster-img { height: auto; width: min(78vw, 320px); }
+      .poster-subtitle { font-size: clamp(7px, 2vw, 10px); }
+      .cta-above {
+        display: flex;
+        animation: slideInTop 0.9s cubic-bezier(0.22,1,0.36,1) 0.35s both;
+      }
+      @keyframes slideInTop {
+        from { opacity: 0; transform: translateY(-28px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      .cta-above .enter-label { font-size: 9px; letter-spacing: 0.42em; }
+      .cta-above .enter-arrow {
+        width: clamp(32px, 8vw, 48px);
+        animation: pulseDown 2.2s ease-in-out infinite;
+      }
+      @keyframes pulseDown {
+        0%,100% { transform: rotate(90deg) translateX(0);   opacity: 0.50; }
+        50%      { transform: rotate(90deg) translateX(8px); opacity: 1; }
+      }
     }
 
     /* ─── Phase expo ─── */
@@ -598,26 +660,39 @@
     <!-- AFFICHE TITRE — fondu après zoom couronne -->
     <div id="scene-affiche">
       <div class="affiche-titre-cta">
-        <div class="poster-enter-layout">
-          <div class="side-enter-left" id="btnEntrerExpo">
+
+        <!-- CTA gauche (desktop) -->
+        <button class="enter-zone enter-zone-left" id="btnEntrerExpo" aria-label="Enter exhibition">
+          <span class="enter-label">Click to Enter</span>
+          <img class="enter-arrow"
+            src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20GAUCHE-.png"
+            alt="" />
+        </button>
+
+        <!-- Bloc affiche : poster + subtitle + CTA mobile -->
+        <div class="poster-block" id="affiche-img-wrap">
+          <div class="cta-above">
             <span class="enter-label">Click to Enter</span>
-            <svg class="enter-arrow" width="56" height="56" viewBox="0 0 56 56">
-              <polyline points="14,6 44,28 14,50"/>
-            </svg>
+            <img class="enter-arrow"
+              src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20GAUCHE-.png"
+              alt="" />
           </div>
-          <div class="affiche-img-wrap" id="affiche-img-wrap">
-            <img id="affiche-titre-img"
-              src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CLICKTOENTER_.webp"
+          <div class="poster-wrap">
+            <img class="poster-img"
+              src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/AFFICHE%20TITRE%2Bcadre%20.webp"
               alt="Rolex Crown Exhibition — François Peyranne" />
           </div>
-          <div class="side-enter-right" id="affiche-cta-right">
-            <svg class="enter-arrow" width="56" height="56" viewBox="0 0 56 56">
-              <polyline points="42,6 12,28 42,50"/>
-            </svg>
-            <span class="enter-label">Click to Enter</span>
-          </div>
+          <p class="poster-subtitle">The Rolex Crown Exhibiton</p>
         </div>
-        <div class="affiche-subtitle">The Rolex Crown Exhibition</div>
+
+        <!-- CTA droite (desktop) -->
+        <button class="enter-zone enter-zone-right" id="affiche-cta-right" aria-label="Enter exhibition">
+          <img class="enter-arrow"
+            src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20DROITE-.png"
+            alt="" />
+          <span class="enter-label">Click to Enter</span>
+        </button>
+
       </div>
     </div>
 
