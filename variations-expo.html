@@ -355,119 +355,98 @@
 
     /* ===== AFFICHE TITRE ===== */
     #scene-affiche {
-      position: fixed;
-      inset: 0;
-      z-index: 8;
+      position: fixed; inset: 0; z-index: 8;
       background: var(--bg-light);
       pointer-events: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       opacity: 0;
     }
 
-    /* Poster — plein pot, centré */
+    /* Image plein écran — ratio image (1.57) ≈ ratio viewport → object-fit:cover sans recadrage */
     .affiche-img-wrap {
-      display: inline-block;
+      position: absolute; inset: 0;
       overflow: hidden;
       cursor: pointer;
       pointer-events: auto;
-      box-shadow: 0 40px 100px rgba(0,0,0,0.16), 0 8px 24px rgba(0,0,0,0.07);
-      max-height: 88vh;
-      max-width: 44vw;
     }
     #affiche-titre-img {
-      max-height: 88vh;
-      max-width: 44vw;
-      object-fit: contain;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      object-position: center;
       display: block;
-      filter: saturate(0.82) brightness(1.01) contrast(0.97);
-      will-change: transform;
-      transform: scale(1);
-      transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
-    .affiche-img-wrap:hover #affiche-titre-img { transform: scale(1.03); }
+    .affiche-img-wrap:hover #affiche-titre-img {
+      transform: scale(1.02);
+      transition: transform 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
 
-    /* Overlay CTA — couvre tout #scene-affiche, visible via GSAP */
+    /* Overlay CTA — flex-row, centré verticalement, bords gauche/droite */
     .affiche-titre-cta {
-      position: absolute;
-      inset: 0;
+      position: absolute; inset: 0;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 5%;
       pointer-events: none;
       opacity: 0;
     }
 
-    /* Blocs latéraux "CLICK TO ENTER" */
     .affiche-cta-side {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
       display: flex;
       align-items: center;
       gap: 18px;
       cursor: pointer;
       pointer-events: auto;
       user-select: none;
-      text-decoration: none;
     }
-    .affiche-cta-left  { left: 6%; flex-direction: row; }
-    .affiche-cta-right { right: 6%; flex-direction: row; }
+    .affiche-cta-left  { flex-direction: row; }
+    .affiche-cta-right { flex-direction: row; }
 
     .cta-label {
       font-family: var(--ff-display);
       font-size: 10px;
       font-weight: 500;
-      letter-spacing: 0.28em;
+      letter-spacing: 0.3em;
       text-transform: uppercase;
       color: var(--ink);
+      white-space: nowrap;
     }
     .cta-chevron {
-      font-size: 32px;
+      font-size: 56px;
       font-weight: 700;
       color: var(--ink);
       line-height: 1;
       display: inline-block;
     }
 
-    /* Chevron droit pulse vers la droite */
-    .affiche-cta-left .cta-chevron {
-      animation: chevronRight 2.4s ease-in-out infinite;
-    }
-    /* Chevron gauche pulse vers la gauche */
-    .affiche-cta-right .cta-chevron {
-      animation: chevronLeft 2.4s ease-in-out infinite;
-    }
+    /* Chevrons : pulse latéral */
+    .affiche-cta-left  .cta-chevron { animation: chevronRight 2.4s ease-in-out infinite; }
+    .affiche-cta-right .cta-chevron { animation: chevronLeft  2.4s ease-in-out infinite; }
     @keyframes chevronRight {
-      0%, 100% { transform: translateX(0);   opacity: 0.55; }
-      50%       { transform: translateX(8px); opacity: 1; }
+      0%, 100% { transform: translateX(0);    opacity: 0.5; }
+      50%       { transform: translateX(10px); opacity: 1;   }
     }
     @keyframes chevronLeft {
-      0%, 100% { transform: translateX(0);    opacity: 0.55; }
-      50%       { transform: translateX(-8px); opacity: 1; }
+      0%, 100% { transform: translateX(0);     opacity: 0.5; }
+      50%       { transform: translateX(-10px); opacity: 1;   }
     }
 
     /* Sous-titre bas */
     .affiche-subtitle {
       position: absolute;
-      bottom: 36px;
-      left: 50%;
+      bottom: 36px; left: 50%;
       transform: translateX(-50%);
       font-family: var(--ff-display);
-      font-size: 9px;
-      font-weight: 400;
-      letter-spacing: 0.38em;
-      text-transform: uppercase;
-      color: var(--ink-soft);
-      white-space: nowrap;
+      font-size: 9px; font-weight: 400;
+      letter-spacing: 0.38em; text-transform: uppercase;
+      color: var(--ink); white-space: nowrap;
+      mix-blend-mode: multiply;
     }
 
-    @media (max-width: 900px) {
-      .affiche-img-wrap, #affiche-titre-img { max-width: 70vw; max-height: 72vh; }
-      .affiche-cta-left  { left: 2%; }
-      .affiche-cta-right { right: 2%; }
-      .cta-label { display: none; }
-    }
     @media (max-width: 640px) {
-      .affiche-img-wrap, #affiche-titre-img { max-width: 88vw; max-height: 65vh; }
+      .cta-label { display: none; }
+      .cta-chevron { font-size: 40px; }
+      .affiche-titre-cta { padding: 0 3%; }
     }
 
     /* ─── Phase expo ─── */
@@ -601,28 +580,27 @@
 
     <!-- AFFICHE TITRE — fondu après zoom couronne -->
     <div id="scene-affiche">
-      <!-- Poster central — zoom au hover, clic = enterExpo -->
+      <!-- Image plein écran (3344×2132 paysage → object-fit:cover) -->
       <div class="affiche-img-wrap" id="affiche-img-wrap">
         <img id="affiche-titre-img"
           src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CLICKTOENTER_.webp"
           alt="Rolex Crown Exhibition — François Peyranne" />
       </div>
 
-      <!-- Overlay CTAs — opacité gérée par GSAP (.affiche-titre-cta) -->
+      <!-- Overlay CTAs flex-row (opacité GSAP via .affiche-titre-cta) -->
       <div class="affiche-titre-cta">
-        <!-- CTA gauche -->
         <div class="affiche-cta-side affiche-cta-left" id="btnEntrerExpo">
           <span class="cta-label">Click &nbsp;to &nbsp;Enter</span>
           <span class="cta-chevron">›</span>
         </div>
-        <!-- CTA droite -->
         <div class="affiche-cta-side affiche-cta-right" id="affiche-cta-right">
           <span class="cta-chevron">‹</span>
           <span class="cta-label">Click &nbsp;to &nbsp;Enter</span>
         </div>
-        <!-- Sous-titre -->
-        <div class="affiche-subtitle">The Rolex Crown Exhibition</div>
       </div>
+
+      <!-- Sous-titre fixe bas -->
+      <div class="affiche-subtitle">The Rolex Crown Exhibition</div>
     </div>
 
   </main>
