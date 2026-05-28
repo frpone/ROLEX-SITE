@@ -814,12 +814,12 @@
     ══════════════════════════════════════════════════════════════════════════════════ -->
     <div id="frame-overlay">
 
-      <!-- Affiche A — gauche -->
+      <!-- Affiche gauche — TRYPTIQUE_003_HD_C_ -->
       <div class="poster-zone" id="zone-a"
-        data-title="The Rolex Crown"
+        data-title="Triptych III — C"
         data-specs="40 cm × 60 cm"
         data-desc="Edition limitée — Tirage numéroté et signé par l'artiste."
-        data-src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/uniptique%20_000_HD.webp"
+        data-src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/TRYPTIQUE_003_HD_C_.webp"
         style="left:11%;top:17%;width:22%;height:56%">
         <div class="poster-zone-inner"></div>
         <div class="poster-zone-arrow-wrap">
@@ -827,12 +827,12 @@
         </div>
       </div>
 
-      <!-- Affiche B — centre -->
+      <!-- Affiche centre — TRYPTIQUE_003_HD_B_ -->
       <div class="poster-zone" id="zone-b"
-        data-title="Perpetual"
+        data-title="Triptych III — B"
         data-specs="40 cm × 60 cm"
         data-desc="Edition limitée — Tirage numéroté et signé par l'artiste."
-        data-src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/DYPTIQUE_002_HD_A.webp"
+        data-src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/TRYPTIQUE_003_HD_B_.webp"
         style="left:39%;top:17%;width:22%;height:56%">
         <div class="poster-zone-inner"></div>
         <div class="poster-zone-arrow-wrap">
@@ -840,12 +840,12 @@
         </div>
       </div>
 
-      <!-- Affiche C — droite -->
+      <!-- Affiche droite — TRYPTIQUE_003_HD_A_ -->
       <div class="poster-zone" id="zone-c"
-        data-title="Variations"
+        data-title="Triptych III — A"
         data-specs="40 cm × 60 cm"
         data-desc="Edition limitée — Tirage numéroté et signé par l'artiste."
-        data-src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/DYPTIQUE_001_HD_A.webp"
+        data-src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/TRYPTIQUE_003_HD_A_.webp"
         style="left:67%;top:17%;width:22%;height:56%">
         <div class="poster-zone-inner"></div>
         <div class="poster-zone-arrow-wrap">
@@ -1275,6 +1275,9 @@
           if (progress >= 0.92 && !_scrollStopped) {
             _scrollStopped = true;
             lenis.stop();
+            // Verrou natif en plus — bloque toute tentative de scroll natif
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
             var overlay = document.getElementById('frame-overlay');
             if (overlay) overlay.classList.add('visible');
           }
@@ -1377,6 +1380,22 @@
         ScrollTrigger.refresh();
         document.getElementById('loader').classList.add('done');
       }, 300);
+
+      // DEBUG — touche D : force l'affichage de l'overlay (sans attendre de scroller)
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'd' || e.key === 'D') {
+          var overlay = document.getElementById('frame-overlay');
+          var lb = document.getElementById('poster-lightbox');
+          if (overlay && !overlay.classList.contains('visible')) {
+            overlay.classList.add('visible');
+            console.log('[DEBUG] frame-overlay forcé visible');
+          } else if (overlay) {
+            overlay.classList.remove('visible');
+            if (lb) lb.classList.remove('open');
+            console.log('[DEBUG] frame-overlay masqué');
+          }
+        }
+      });
     }
   </script>
 </body>
