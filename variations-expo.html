@@ -570,107 +570,71 @@
       z-index: 2;
     }
 
-    /* ─── Galerie exposition ─────────────────────────────────────── */
-    #expo-gallery {
-      position: relative;
-      z-index: 7;           /* couvre le canvas fixe derrière */
-      background:
-        radial-gradient(ellipse 100% 60% at 50% 0%, #f0f1f2 0%, #d8dadd 100%);
-      min-height: 100vh;
-      padding: 80px 48px 120px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0;
+    /* ─── Overlay affiches — zone interactive sur la dernière frame ─── */
+    #frame-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 7;
+      display: none;
+      pointer-events: none;
     }
-
-    .gallery-eyebrow {
-      font-family: var(--ff-display);
-      font-size: 9px; font-weight: 400;
-      letter-spacing: 0.44em; text-transform: uppercase;
-      color: var(--ink-soft);
-      margin-bottom: 12px;
-    }
-    .gallery-title {
-      font-family: var(--ff-display);
-      font-size: clamp(18px, 2.4vw, 36px);
-      font-weight: 500;
-      letter-spacing: 0.06em;
-      color: var(--ink);
-      text-align: center;
-      margin-bottom: 64px;
-    }
-
-    /* Featured : 3 affiches en rang */
-    .gallery-featured {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 32px;
-      width: 100%;
-      max-width: 1100px;
-    }
-
-    .gallery-card {
-      cursor: pointer;
-      position: relative;
-    }
-
-    .gallery-card-inner {
-      overflow: hidden;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.10), 0 24px 56px rgba(0,0,0,0.08);
-      transition: transform 0.75s cubic-bezier(0.22,1,0.36,1),
-                  box-shadow 0.75s cubic-bezier(0.22,1,0.36,1);
-      will-change: transform;
-    }
-    .gallery-card:hover .gallery-card-inner {
-      transform: scale(1.038);
-      box-shadow: 0 16px 40px rgba(0,0,0,0.14), 0 36px 80px rgba(0,0,0,0.11);
-    }
-    .gallery-card-inner img {
+    #frame-overlay.visible {
       display: block;
+      pointer-events: auto;
+    }
+
+    /* Zone invisible cliquable au-dessus de chaque affiche dans la frame */
+    .poster-zone {
+      position: absolute;
+      cursor: pointer;
+      /* Pas de background : la frame vidéo reste visible en dessous */
+    }
+
+    /* Wrapper inner — le scale se fait ici */
+    .poster-zone-inner {
       width: 100%;
+      height: 100%;
+      transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+      transform-origin: center center;
+    }
+    .poster-zone:hover .poster-zone-inner {
+      transform: scale(1.05);
+    }
+
+    /* Flèche positionnée en dessous de la zone, pointe vers le haut */
+    .poster-zone-arrow-wrap {
+      position: absolute;
+      bottom: -44px;
+      left: 50%;
+      transform: translateX(-50%);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+    .poster-zone:hover .poster-zone-arrow-wrap {
+      opacity: 1;
+      animation: arrowBounceUp 1.8s ease-in-out infinite;
+    }
+    .poster-zone-arrow-wrap img {
+      display: block;
+      width: clamp(24px, 2.4vw, 40px);
       height: auto;
+      /* CROIX GAUCHE (→) rotate -90deg = ↑ */
+      transform: rotate(-90deg);
       pointer-events: none;
       user-select: none;
     }
-
-    /* Indicateur flèche — glisse sous les 3 affiches vedette */
-    .gallery-indicator {
-      position: relative;
-      width: 100%;
-      max-width: 1100px;
-      height: 52px;
-      margin-bottom: 72px;
-    }
-    #gallery-arrow {
-      position: absolute;
-      top: 10px;
-      left: 50%;           /* position initiale : affiche centrale */
-      width: clamp(28px, 2.8vw, 44px);
-      height: auto;
-      transform: translateX(-50%) rotate(-90deg);
-      /* seul left transite */
-      transition: left 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-                  opacity 0.3s ease;
-      pointer-events: none;
-      opacity: 0.55;
+    @keyframes arrowBounceUp {
+      0%, 100% { transform: translateX(-50%) translateY(0);    opacity: 0.70; }
+      50%       { transform: translateX(-50%) translateY(-6px); opacity: 1.00; }
     }
 
-    /* Grille supplémentaire — affiches restantes */
-    .gallery-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 32px;
-      width: 100%;
-      max-width: 1100px;
-    }
-
-    /* ── Lightbox ───────────────────────────────────────────────── */
-    #gallery-lightbox {
+    /* ── Lightbox poster ───────────────────────────────────────────── */
+    #poster-lightbox {
       position: fixed;
       inset: 0;
       z-index: 30;
-      background: rgba(0,0,0,0.92);
+      background: rgba(0, 0, 0, 0.94);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -678,45 +642,81 @@
       pointer-events: none;
       transition: opacity 0.4s ease;
     }
-    #gallery-lightbox.open {
+    #poster-lightbox.open {
       opacity: 1;
       pointer-events: auto;
     }
-    #lightbox-img {
-      max-height: 90vh;
-      max-width: 88vw;
-      width: auto;
-      height: auto;
-      display: block;
-      box-shadow: 0 32px 96px rgba(0,0,0,0.6);
-      animation: lbIn 0.4s cubic-bezier(0.22,1,0.36,1) both;
-    }
-    @keyframes lbIn {
-      from { transform: scale(0.92); opacity: 0; }
-      to   { transform: scale(1);    opacity: 1; }
-    }
-    #lightbox-close {
+    #poster-lb-close {
       position: absolute;
       top: 24px; right: 32px;
       font-size: 32px; line-height: 1;
       background: transparent;
-      border: 0; color: rgba(255,255,255,0.7);
+      border: 0; color: rgba(255,255,255,0.6);
       cursor: pointer;
       font-family: var(--ff-display);
       transition: color 0.2s;
     }
-    #lightbox-close:hover { color: #fff; }
-
-    /* ── Responsive galerie ── */
-    @media (max-width: 768px) {
-      #expo-gallery { padding: 48px 20px 80px; }
-      .gallery-featured,
-      .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
-      .gallery-indicator { display: none; }
+    #poster-lb-close:hover { color: #fff; }
+    #poster-lb-inner {
+      display: flex;
+      align-items: center;
+      gap: 64px;
+      padding: 48px 64px;
+      max-width: 1200px;
+      width: 100%;
+      animation: lbIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
     }
-    @media (max-width: 480px) {
-      .gallery-featured,
-      .gallery-grid { grid-template-columns: 1fr; }
+    @keyframes lbIn {
+      from { transform: scale(0.94); opacity: 0; }
+      to   { transform: scale(1);    opacity: 1; }
+    }
+    #poster-lb-img-wrap { flex-shrink: 0; }
+    #poster-lb-img {
+      display: block;
+      max-height: 80vh;
+      max-width: 48vw;
+      width: auto; height: auto;
+      box-shadow: 0 32px 96px rgba(0, 0, 0, 0.7);
+    }
+    #poster-lb-meta { flex: 1; }
+    #poster-lb-eyebrow {
+      font-family: var(--ff-display);
+      font-size: 9px; font-weight: 400;
+      letter-spacing: 0.44em; text-transform: uppercase;
+      color: rgba(255,255,255,0.40);
+      margin-bottom: 20px;
+    }
+    #poster-lb-title {
+      font-family: var(--ff-display);
+      font-size: clamp(18px, 2vw, 28px);
+      font-weight: 500;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.92);
+      margin-bottom: 12px;
+    }
+    #poster-lb-specs {
+      font-family: var(--ff-display);
+      font-size: 10px; font-weight: 400;
+      letter-spacing: 0.30em; text-transform: uppercase;
+      color: rgba(255,255,255,0.42);
+      margin-bottom: 32px;
+    }
+    #poster-lb-desc {
+      font-family: var(--ff-display);
+      font-size: clamp(13px, 1.2vw, 16px); font-weight: 300;
+      line-height: 1.85;
+      color: rgba(255,255,255,0.62);
+    }
+    @media (max-width: 768px) {
+      #poster-lb-inner {
+        flex-direction: column;
+        gap: 32px;
+        padding: 32px 24px;
+        overflow-y: auto;
+        max-height: 90vh;
+      }
+      #poster-lb-img { max-width: 78vw; max-height: 50vh; }
     }
 
     /* Transition de sortie du poster */
@@ -805,112 +805,70 @@
       <!-- height = SCROLL_H + window.innerHeight, calculé en JS -->
       <div id="intro2-spacer"></div>
 
-      <!-- ══ GALERIE ══════════════════════════════════════════════════
-           Apparaît naturellement après le spacer (z-index:7 > canvas z-index:6).
-           Les images sont les vraies affiches de l'exposition.
-      ════════════════════════════════════════════════════════════════ -->
-      <div id="expo-gallery">
+    </div>
 
-        <p class="gallery-eyebrow">François Peyranne × Rolex</p>
-        <h2 class="gallery-title">Variations on a Crown</h2>
+    <!-- ══ OVERLAY affiches — visible dès que le scroll s'arrête sur la dernière frame ══
+         Position fixe, z-index 7 (au-dessus du canvas z-index 6).
+         3 zones invisibles positionnées sur les affiches de la galerie.
+         Les % left/top/width/height sont à ajuster selon la composition de frame_069.
+    ══════════════════════════════════════════════════════════════════════════════════ -->
+    <div id="frame-overlay">
 
-        <!-- 3 affiches vedette -->
-        <div class="gallery-featured" id="gallery-featured">
-
-          <div class="gallery-card" data-idx="0"
-            data-src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/DYPTIQUE_001_HD_A.webp">
-            <div class="gallery-card-inner">
-              <img src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/DYPTIQUE_001_HD_A.webp"
-                alt="Variation 01" loading="lazy" />
-            </div>
-          </div>
-
-          <div class="gallery-card" data-idx="1"
-            data-src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/DYPTIQUE_002_HD_A.webp">
-            <div class="gallery-card-inner">
-              <img src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/DYPTIQUE_002_HD_A.webp"
-                alt="Variation 02" loading="lazy" />
-            </div>
-          </div>
-
-          <div class="gallery-card" data-idx="2"
-            data-src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/DYPTIQUE_004_HD_A.webp">
-            <div class="gallery-card-inner">
-              <img src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/DYPTIQUE_004_HD_A.webp"
-                alt="Variation 04" loading="lazy" />
-            </div>
-          </div>
-
-        </div><!-- /gallery-featured -->
-
-        <!-- Flèche indicatrice : pointe vers l'affiche survolée -->
-        <div class="gallery-indicator">
-          <img id="gallery-arrow"
-            src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20GAUCHE-.png"
-            alt="" />
+      <!-- Affiche A — gauche -->
+      <div class="poster-zone" id="zone-a"
+        data-title="The Rolex Crown"
+        data-specs="40 cm × 60 cm"
+        data-desc="Edition limitée — Tirage numéroté et signé par l'artiste."
+        data-src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/uniptique%20_000_HD.webp"
+        style="left:11%;top:17%;width:22%;height:56%">
+        <div class="poster-zone-inner"></div>
+        <div class="poster-zone-arrow-wrap">
+          <img src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20GAUCHE-.png" alt="" />
         </div>
-
-        <!-- Grille secondaire -->
-        <div class="gallery-grid">
-
-          <div class="gallery-card"
-            data-src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/DYPTIQUE_005_HD_A.webp">
-            <div class="gallery-card-inner">
-              <img src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/DYPTIQUE_005_HD_A.webp"
-                alt="Variation 05" loading="lazy" />
-            </div>
-          </div>
-
-          <div class="gallery-card"
-            data-src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/DYPTIQUE_007_HD_A.webp">
-            <div class="gallery-card-inner">
-              <img src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/DYPTIQUE_007_HD_A.webp"
-                alt="Variation 07" loading="lazy" />
-            </div>
-          </div>
-
-          <div class="gallery-card"
-            data-src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/DYPTIQUE_008_HD_A.webp">
-            <div class="gallery-card-inner">
-              <img src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/DYPTIQUE_008_HD_A.webp"
-                alt="Variation 08" loading="lazy" />
-            </div>
-          </div>
-
-          <div class="gallery-card"
-            data-src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/DYPTIQUE_010_HD_A.webp">
-            <div class="gallery-card-inner">
-              <img src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/DYPTIQUE_010_HD_A.webp"
-                alt="Variation 10" loading="lazy" />
-            </div>
-          </div>
-
-          <div class="gallery-card"
-            data-src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/DYPTIQUE_011_HD_A.webp">
-            <div class="gallery-card-inner">
-              <img src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/DYPTIQUE_011_HD_A.webp"
-                alt="Variation 11" loading="lazy" />
-            </div>
-          </div>
-
-          <div class="gallery-card"
-            data-src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/TRYPTIQUE_002_HD_A_.webp">
-            <div class="gallery-card-inner">
-              <img src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/TRYPTIQUE_002_HD_A_.webp"
-                alt="Variation 12" loading="lazy" />
-            </div>
-          </div>
-
-        </div><!-- /gallery-grid -->
-
-      </div><!-- /expo-gallery -->
-
-      <!-- Lightbox plein écran -->
-      <div id="gallery-lightbox">
-        <button id="lightbox-close" aria-label="Fermer">×</button>
-        <img id="lightbox-img" src="" alt="" />
       </div>
 
+      <!-- Affiche B — centre -->
+      <div class="poster-zone" id="zone-b"
+        data-title="Perpetual"
+        data-specs="40 cm × 60 cm"
+        data-desc="Edition limitée — Tirage numéroté et signé par l'artiste."
+        data-src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/DYPTIQUE_002_HD_A.webp"
+        style="left:39%;top:17%;width:22%;height:56%">
+        <div class="poster-zone-inner"></div>
+        <div class="poster-zone-arrow-wrap">
+          <img src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20GAUCHE-.png" alt="" />
+        </div>
+      </div>
+
+      <!-- Affiche C — droite -->
+      <div class="poster-zone" id="zone-c"
+        data-title="Variations"
+        data-specs="40 cm × 60 cm"
+        data-desc="Edition limitée — Tirage numéroté et signé par l'artiste."
+        data-src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/DYPTIQUE_001_HD_A.webp"
+        style="left:67%;top:17%;width:22%;height:56%">
+        <div class="poster-zone-inner"></div>
+        <div class="poster-zone-arrow-wrap">
+          <img src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20GAUCHE-.png" alt="" />
+        </div>
+      </div>
+
+    </div><!-- /frame-overlay -->
+
+    <!-- Lightbox affiche — poster image + panneau méta à droite -->
+    <div id="poster-lightbox">
+      <button id="poster-lb-close" aria-label="Fermer">×</button>
+      <div id="poster-lb-inner">
+        <div id="poster-lb-img-wrap">
+          <img id="poster-lb-img" src="" alt="" />
+        </div>
+        <div id="poster-lb-meta">
+          <p id="poster-lb-eyebrow">François Peyranne × Rolex</p>
+          <p id="poster-lb-title"></p>
+          <p id="poster-lb-specs"></p>
+          <p id="poster-lb-desc"></p>
+        </div>
+      </div>
     </div>
 
     <!-- AFFICHE TITRE — fondu après zoom couronne -->
@@ -1272,6 +1230,7 @@
         var bar     = document.getElementById('intro2-loader-bar');
         var spacer  = document.getElementById('intro2-spacer');
         var lastIdx = -1;
+        var _scrollStopped = false;
 
         // Taille canvas = taille viewport (pixel perfect)
         function resizeCanvas() {
@@ -1312,6 +1271,13 @@
             ? FRAMES_COUNT - 1
             : Math.min(FRAMES_COUNT - 1, Math.floor(progress * FRAMES_COUNT));
           if (idx !== lastIdx) drawIdx(idx);
+          // Arrêt du scroll + affichage overlay quand on atteint la dernière frame
+          if (progress >= 0.92 && !_scrollStopped) {
+            _scrollStopped = true;
+            lenis.stop();
+            var overlay = document.getElementById('frame-overlay');
+            if (overlay) overlay.classList.add('visible');
+          }
           _introRafId = requestAnimationFrame(tick);
         }
 
@@ -1372,51 +1338,27 @@
       document.getElementById('affiche-img-wrap').addEventListener('click', enterExpo);
 
       // ═══════════════════════════════════════════════════════════
-      //  GALERIE — flèche indicatrice + lightbox
+      //  OVERLAY affiches + lightbox
       // ═══════════════════════════════════════════════════════════
-      (function initGallery() {
-        var arrow      = document.getElementById('gallery-arrow');
-        var lightbox   = document.getElementById('gallery-lightbox');
-        var lbImg      = document.getElementById('lightbox-img');
-        var lbClose    = document.getElementById('lightbox-close');
+      (function initFrameOverlay() {
+        var lightbox = document.getElementById('poster-lightbox');
+        var lbImg    = document.getElementById('poster-lb-img');
+        var lbTitle  = document.getElementById('poster-lb-title');
+        var lbSpecs  = document.getElementById('poster-lb-specs');
+        var lbDesc   = document.getElementById('poster-lb-desc');
+        var lbClose  = document.getElementById('poster-lb-close');
 
-        // Positions horizontales de l'indicateur (% de .gallery-indicator)
-        // 3 colonnes égales → centres à 1/6, 3/6, 5/6 de la largeur
-        var arrowPos = ['16.67%', '50%', '83.33%'];
-
-        // Arrow : position initiale sur l'affiche du centre
-        if (arrow) arrow.style.left = arrowPos[1];
-
-        // Featured cards : hover → déplace la flèche + zoom (CSS gère le zoom)
-        var featuredCards = document.querySelectorAll('#gallery-featured .gallery-card');
-        featuredCards.forEach(function(card) {
-          var idx = parseInt(card.getAttribute('data-idx'), 10);
-          card.addEventListener('mouseenter', function() {
-            if (arrow) {
-              arrow.style.left    = arrowPos[idx];
-              arrow.style.opacity = '1';
-            }
-          });
-          card.addEventListener('mouseleave', function() {
-            if (arrow) {
-              arrow.style.left    = arrowPos[1]; // revient au centre
-              arrow.style.opacity = '0.55';
-            }
-          });
-        });
-
-        // Toutes les cards → clic ouvre la lightbox
-        document.querySelectorAll('.gallery-card').forEach(function(card) {
-          card.addEventListener('click', function() {
-            var src = card.getAttribute('data-src') ||
-                      card.querySelector('img').src;
-            if (!src) return;
-            lbImg.src = src;
+        // Chaque zone cliquable ouvre la lightbox avec ses données
+        document.querySelectorAll('.poster-zone').forEach(function(zone) {
+          zone.addEventListener('click', function() {
+            lbImg.src    = zone.getAttribute('data-src')   || '';
+            lbTitle.textContent = zone.getAttribute('data-title') || '';
+            lbSpecs.textContent = zone.getAttribute('data-specs') || '';
+            lbDesc.textContent  = zone.getAttribute('data-desc')  || '';
             lightbox.classList.add('open');
           });
         });
 
-        // Fermer la lightbox
         function closeLightbox() {
           lightbox.classList.remove('open');
           setTimeout(function() { lbImg.src = ''; }, 400);
