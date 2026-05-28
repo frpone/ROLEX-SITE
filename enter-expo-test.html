@@ -4,30 +4,23 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Enter Expo — Test</title>
-  <link rel="stylesheet" href="https://use.typekit.net/xxxxxxx.css" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
       --ff-display: 'sweet-sans-pro', 'Helvetica Neue', Arial, sans-serif;
-      --ink: rgba(11, 17, 22, 0.86);
-      --bg: #f4f6f8;
+      --ink: rgba(11, 17, 22, 0.82);
     }
 
     html, body {
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
       overflow: hidden;
-      background: var(--bg);
     }
 
-    /* ── Écran plein viewport, centré ── */
+    /* ── Écran plein viewport ── */
     .enter-screen {
       position: fixed;
       inset: 0;
-      width: 100vw;
-      height: 100vh;
-      background: var(--bg);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -35,41 +28,55 @@
     }
 
     /*
-      Ratio source : 2048 × 1305
-      Le frame adopte la taille maximale qui tient dans le viewport
-      en respectant ce ratio — sans déformation.
+      Fond flou : la même image agrandie + blur remplit
+      les bandes latérales/hautes quand le ratio viewport ≠ 2048/1305.
+      Aucune image supplémentaire requise.
+    */
+    .enter-screen::before {
+      content: '';
+      position: absolute;
+      inset: -15%;
+      background:
+        url('https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CLICKTOENTER_.webp')
+        center / cover no-repeat;
+      filter: blur(32px) brightness(1.04) saturate(0.9);
+      transform: scale(1.08);
+      z-index: 0;
+    }
+
+    /*
+      Frame ratio-locked 2048 × 1305.
+      C'est le repère géométrique de tous les éléments.
     */
     .enter-frame {
       position: relative;
+      z-index: 1;
       width:  min(100vw, calc(100vh * 2048 / 1305));
       height: min(100vh, calc(100vw * 1305 / 2048));
 
-      /* Hover : zoom très subtil sur l'ensemble */
       transition:
         transform 0.85s cubic-bezier(0.22, 1, 0.36, 1),
         filter    0.85s cubic-bezier(0.22, 1, 0.36, 1);
       will-change: transform, filter;
     }
     .enter-frame:hover {
-      transform: scale(1.018);
-      filter: contrast(1.015) brightness(1.01);
+      transform: scale(1.016);
+      filter: contrast(1.012) brightness(1.01);
     }
 
-    /* Image de fond — remplit exactement le frame, sans crop */
+    /* Image fond — aucun crop, ratio respecté */
     .enter-bg {
       position: absolute;
       inset: 0;
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
       object-fit: contain;
       display: block;
       user-select: none;
       pointer-events: none;
-      /* Désactive le drag natif sur les images */
       -webkit-user-drag: none;
     }
 
-    /* ── Zones CTA (boutons absolus dans le frame) ── */
+    /* ── Zones CTA ── */
     .enter-zone {
       position: absolute;
       display: flex;
@@ -79,57 +86,95 @@
       padding: 0;
       cursor: pointer;
       z-index: 5;
-      transition:
-        opacity 0.35s ease,
-        transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
-    /*
-      Positionnement en % du frame 2048×1305
-      left/right + top sont des coordonnées relatives à l'image source.
-      top: 48.8% ≈ centre vertical de la zone poster dans l'image.
-    */
     .enter-zone-left {
-      left: 8.7%;
+      left: 8.2%;
       top: 48.8%;
       transform: translateY(-50%);
-      gap: 28px;
+      gap: 24px;
+      /* Entrée depuis la gauche */
+      animation: slideInLeft 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
     }
     .enter-zone-right {
-      right: 8.7%;
+      right: 8.2%;
       top: 48.8%;
       transform: translateY(-50%);
-      gap: 28px;
+      gap: 24px;
+      /* Entrée depuis la droite */
+      animation: slideInRight 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
     }
 
-    /* Hover lateral */
-    .enter-zone-left:hover  { transform: translateY(-50%) translateX( 8px); }
-    .enter-zone-right:hover { transform: translateY(-50%) translateX(-8px); }
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateY(-50%) translateX(-48px); }
+      to   { opacity: 1; transform: translateY(-50%) translateX(0); }
+    }
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateY(-50%) translateX(48px); }
+      to   { opacity: 1; transform: translateY(-50%) translateX(0); }
+    }
 
-    /* Label typographique */
+    /* Hover latéral */
+    .enter-zone-left:hover  {
+      transform: translateY(-50%) translateX( 8px);
+      transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .enter-zone-right:hover {
+      transform: translateY(-50%) translateX(-8px);
+      transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* Label */
     .enter-label {
       font-family: var(--ff-display);
-      font-size: clamp(9px, 0.75vw, 13px);
+      font-size: clamp(9px, 0.72vw, 13px);
       font-weight: 500;
-      letter-spacing: 0.46em;
+      letter-spacing: 0.48em;
       text-transform: uppercase;
       color: var(--ink);
       white-space: nowrap;
       line-height: 1;
     }
 
-    /* Flèche PNG */
+    /* Flèche PNG — taille légèrement augmentée */
     .enter-arrow {
       display: block;
-      width: clamp(40px, 3.8vw, 68px);
+      width: clamp(44px, 4.2vw, 76px);
       height: auto;
       object-fit: contain;
       user-select: none;
       pointer-events: none;
       -webkit-user-drag: none;
-      transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
     }
-    .enter-zone:hover .enter-arrow { transform: scale(1.07); }
+
+    /*
+      Animation idle des flèches — pulse vers le poster.
+      Gauche : arrow-droite pulse vers la droite (→ poster).
+      Droite : arrow-gauche pulse vers la gauche (← poster).
+    */
+    .enter-zone-left  .enter-arrow {
+      animation: pulseRight 2.2s ease-in-out infinite;
+    }
+    .enter-zone-right .enter-arrow {
+      animation: pulseLeft  2.2s ease-in-out infinite;
+    }
+
+    @keyframes pulseRight {
+      0%, 100% { transform: translateX(0);    opacity: 0.55; }
+      50%       { transform: translateX(9px);  opacity: 1; }
+    }
+    @keyframes pulseLeft {
+      0%, 100% { transform: translateX(0);    opacity: 0.55; }
+      50%       { transform: translateX(-9px); opacity: 1; }
+    }
+
+    /* Hover : stoppe le pulse, grossit légèrement */
+    .enter-zone:hover .enter-arrow {
+      animation: none;
+      transform: scale(1.08);
+      opacity: 1;
+      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease;
+    }
 
     /* Zone cliquable invisible sur le poster central */
     .poster-hotspot {
@@ -144,8 +189,8 @@
       cursor: pointer;
     }
 
-    /* Feedback visuel debug — retirer en prod */
-    /* .poster-hotspot { background: rgba(255,0,0,0.1); } */
+    /* Debug : décommenter pour visualiser le hotspot */
+    /* .poster-hotspot { background: rgba(255,0,0,0.12); } */
   </style>
 </head>
 <body>
@@ -153,45 +198,42 @@
 <section class="enter-screen">
   <div class="enter-frame">
 
-    <!-- Image de fond : CLICKTOENTER_.webp remplit le frame exactement -->
     <img
       class="enter-bg"
       src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CLICKTOENTER_.webp"
       alt="The Rolex Crown Exhibition"
     />
 
-    <!-- CTA gauche : label → flèche droite -->
-    <button class="enter-zone enter-zone-left" aria-label="Enter exhibition" onclick="enterExpo()">
+    <!-- Gauche : texte → flèche droite (pointe vers le poster) -->
+    <button class="enter-zone enter-zone-left" aria-label="Enter exhibition">
       <span class="enter-label">Click to Enter</span>
-      <img
-        class="enter-arrow"
-        src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20DROITE-.png"
-        alt=""
-      />
-    </button>
-
-    <!-- CTA droite : flèche gauche → label -->
-    <button class="enter-zone enter-zone-right" aria-label="Enter exhibition" onclick="enterExpo()">
       <img
         class="enter-arrow"
         src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20GAUCHE-.png"
         alt=""
       />
+    </button>
+
+    <!-- Droite : flèche gauche (pointe vers le poster) → texte -->
+    <button class="enter-zone enter-zone-right" aria-label="Enter exhibition">
+      <img
+        class="enter-arrow"
+        src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20DROITE-.png"
+        alt=""
+      />
       <span class="enter-label">Click to Enter</span>
     </button>
 
-    <!-- Zone cliquable sur le poster central -->
-    <button class="poster-hotspot" aria-label="Enter exhibition" onclick="enterExpo()"></button>
+    <!-- Zone cliquable sur le poster -->
+    <button class="poster-hotspot" aria-label="Enter exhibition"></button>
 
   </div>
 </section>
 
 <script>
   function enterExpo() {
-    alert('→ enterExpo() appelé');
+    alert('→ enterExpo()');
   }
-
-  // Wireup générique (pour intégration future)
   document.querySelectorAll('.enter-zone, .poster-hotspot').forEach(function(el) {
     el.addEventListener('click', enterExpo);
   });
