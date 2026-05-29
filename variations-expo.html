@@ -611,17 +611,17 @@
     }
     #frame-single-arrow img {
       display: block;
-      width: clamp(28px, 2.8vw, 44px);
+      width: clamp(14px, 1.3vw, 20px);
       height: auto;
-      transform: rotate(-90deg); /* CROIX GAUCHE (→) → ↑ */
-      margin-left: calc(clamp(28px, 2.8vw, 44px) / -2); /* centrage */
+      transform: rotate(-90deg);
+      margin-left: calc(clamp(14px, 1.3vw, 20px) / -2);
       pointer-events: none;
       user-select: none;
       animation: arrowBounceUp 2.2s ease-in-out infinite;
     }
     @keyframes arrowBounceUp {
-      0%, 100% { transform: rotate(-90deg) translateX(0);   opacity: 0.55; }
-      50%       { transform: rotate(-90deg) translateX(-8px); opacity: 1.00; }
+      0%, 100% { transform: rotate(-90deg) translateX(0);    opacity: 0.55; }
+      50%       { transform: rotate(-90deg) translateX(-6px); opacity: 1.00; }
     }
 
     /* ── Lightbox poster ───────────────────────────────────────────── */
@@ -652,99 +652,95 @@
       transition: color 0.2s;
     }
     #poster-lb-close:hover { color: #fff; }
+    /* Inner : centré dans la lightbox */
     #poster-lb-inner {
+      position: relative;
+      width: 100%; height: 100%;
       display: flex;
       align-items: center;
-      gap: 64px;
-      padding: 48px 64px;
-      max-width: 1200px;
-      width: 100%;
+      justify-content: center;
       animation: lbIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
     }
     @keyframes lbIn {
-      from { transform: scale(0.94); opacity: 0; }
-      to   { transform: scale(1);    opacity: 1; }
+      from { opacity: 0; transform: scale(0.96); }
+      to   { opacity: 1; transform: scale(1); }
     }
-    #poster-lb-img-wrap {
-      flex-shrink: 0;
-      position: relative;
-    }
+
+    /* Image — centrée, prend tout l'espace disponible */
+    #poster-lb-img-wrap { position: relative; flex-shrink: 0; }
     #poster-lb-img-scroll {
       position: relative;
       overflow: hidden;
       cursor: zoom-in;
-      max-height: 80vh;
-      max-width: 48vw;
-      box-shadow: 0 32px 96px rgba(0, 0, 0, 0.7);
       user-select: none;
+      z-index: 1;
     }
-    #poster-lb-img-scroll.zoomed { cursor: grab; }
+    #poster-lb-img-scroll.zoomed   { cursor: grab;     overflow: visible; }
     #poster-lb-img-scroll.grabbing { cursor: grabbing; }
     #poster-lb-img {
       display: block;
-      max-height: 80vh;
-      max-width: 48vw;
+      max-height: 88vh;
+      max-width: 72vw;
       width: auto; height: auto;
+      box-shadow: 0 32px 96px rgba(0,0,0,0.7);
       transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
       transform-origin: center center;
       pointer-events: none;
       -webkit-user-drag: none;
     }
-    /* Rond pulsant centré — indique que l'image est zoomable */
+
+    /* Rond pulsant — clic pour zoomer */
     #poster-lb-zoom-hint {
       position: absolute;
       top: 50%; left: 50%;
-      width: 42px; height: 42px;
+      width: 40px; height: 40px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.10);
-      border: 1px solid rgba(255,255,255,0.22);
+      background: rgba(255,255,255,0.09);
+      border: 1px solid rgba(255,255,255,0.20);
       pointer-events: none;
       animation: hintPulse 2.6s ease-in-out infinite;
     }
     #poster-lb-img-scroll.zoomed #poster-lb-zoom-hint { display: none; }
     @keyframes hintPulse {
-      0%, 100% { transform: translate(-50%,-50%) scale(1);    opacity: 0.35; }
-      50%       { transform: translate(-50%,-50%) scale(1.18); opacity: 0.75; }
+      0%, 100% { transform: translate(-50%,-50%) scale(1);    opacity: 0.30; }
+      50%       { transform: translate(-50%,-50%) scale(1.18); opacity: 0.70; }
     }
-    #poster-lb-meta { flex: 1; }
+
+    /* Meta — petit overlay en haut à droite, z-index au-dessus de l'image */
+    #poster-lb-meta {
+      position: absolute;
+      top: 68px; right: 32px;
+      text-align: right;
+      max-width: 180px;
+      z-index: 5;
+      pointer-events: none;
+    }
     #poster-lb-eyebrow {
       font-family: var(--ff-display);
-      font-size: 9px; font-weight: 400;
-      letter-spacing: 0.44em; text-transform: uppercase;
-      color: rgba(255,255,255,0.40);
-      margin-bottom: 20px;
+      font-size: 7px; font-weight: 400;
+      letter-spacing: 0.40em; text-transform: uppercase;
+      color: rgba(255,255,255,0.28);
+      margin-bottom: 8px;
     }
     #poster-lb-title {
       font-family: var(--ff-display);
-      font-size: clamp(18px, 2vw, 28px);
-      font-weight: 500;
-      letter-spacing: 0.10em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.92);
-      margin-bottom: 12px;
+      font-size: 10px; font-weight: 500;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: rgba(255,255,255,0.72);
+      margin-bottom: 5px;
     }
     #poster-lb-specs {
       font-family: var(--ff-display);
-      font-size: 10px; font-weight: 400;
-      letter-spacing: 0.30em; text-transform: uppercase;
-      color: rgba(255,255,255,0.42);
-      margin-bottom: 32px;
+      font-size: 8px; font-weight: 400;
+      letter-spacing: 0.28em; text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 10px;
     }
     #poster-lb-desc {
       font-family: var(--ff-display);
-      font-size: clamp(13px, 1.2vw, 16px); font-weight: 300;
-      line-height: 1.85;
-      color: rgba(255,255,255,0.62);
-    }
-    @media (max-width: 768px) {
-      #poster-lb-inner {
-        flex-direction: column;
-        gap: 32px;
-        padding: 32px 24px;
-        overflow-y: auto;
-        max-height: 90vh;
-      }
-      #poster-lb-img { max-width: 78vw; max-height: 50vh; }
+      font-size: 9px; font-weight: 300;
+      line-height: 1.75;
+      color: rgba(255,255,255,0.42);
     }
 
     /* Transition de sortie du poster */
@@ -1404,39 +1400,43 @@
           });
         });
 
-        // ── Zoom + drag-to-pan sur l'image ──────────────────────────
+        // ── Zoom ×2 sur toute l'image + drag sur toute la lightbox ──
+        var ZOOM = 2;
         var _zoomed = false;
         var _panX = 0, _panY = 0;
-        var _dragging = false;
+        var _didDrag = false;
         var _dragX0, _dragY0, _panX0, _panY0;
 
         function applyTransform() {
           if (_zoomed) {
-            lbImg.style.transform = 'scale(2.8) translate(' + (_panX / 2.8) + 'px,' + (_panY / 2.8) + 'px)';
+            // translate en espace pré-scale
+            lbImg.style.transform = 'scale(' + ZOOM + ') translate(' + (_panX / ZOOM) + 'px,' + (_panY / ZOOM) + 'px)';
           } else {
-            lbImg.style.transform = 'scale(1) translate(0,0)';
+            lbImg.style.transform = '';
           }
         }
 
         function resetZoom() {
-          _zoomed = false; _panX = 0; _panY = 0; _dragging = false;
+          _zoomed = false; _panX = 0; _panY = 0; _didDrag = false;
           lbScroll.classList.remove('zoomed', 'grabbing');
           applyTransform();
         }
 
-        // Clic sur l'image : zoom in / zoom out
-        lbScroll.addEventListener('click', function(e) {
-          if (_dragging) return;
+        // Clic sur l'image → zoom in / zoom out
+        lbScroll.addEventListener('click', function() {
+          if (_didDrag) return;
           _zoomed = !_zoomed;
           _panX = 0; _panY = 0;
           lbScroll.classList.toggle('zoomed', _zoomed);
+          if (!_zoomed) lbScroll.classList.remove('grabbing');
           applyTransform();
         });
 
-        // Drag-to-pan quand zoomé
-        lbScroll.addEventListener('mousedown', function(e) {
+        // Drag sur TOUTE la lightbox quand zoomé (image peut dépasser le cadre)
+        lightbox.addEventListener('mousedown', function(e) {
           if (!_zoomed) return;
-          _dragging = false;
+          if (e.target === lbClose) return;
+          _didDrag = false;
           _dragX0 = e.clientX; _dragY0 = e.clientY;
           _panX0 = _panX;      _panY0 = _panY;
           lbScroll.classList.add('grabbing');
@@ -1445,15 +1445,16 @@
         document.addEventListener('mousemove', function(e) {
           if (!_zoomed || _dragX0 === undefined) return;
           var dx = e.clientX - _dragX0, dy = e.clientY - _dragY0;
-          if (Math.abs(dx) > 4 || Math.abs(dy) > 4) _dragging = true;
-          if (_dragging) { _panX = _panX0 + dx; _panY = _panY0 + dy; applyTransform(); }
+          if (Math.abs(dx) > 3 || Math.abs(dy) > 3) _didDrag = true;
+          if (_didDrag) { _panX = _panX0 + dx; _panY = _panY0 + dy; applyTransform(); }
         });
         document.addEventListener('mouseup', function() {
           lbScroll.classList.remove('grabbing');
-          setTimeout(function() { _dragging = false; _dragX0 = undefined; }, 0);
+          _dragX0 = undefined;
+          setTimeout(function() { _didDrag = false; }, 30);
         });
 
-        // Fermeture
+        // Fermeture — clic hors image ou × ou Echap
         function closeLightbox() {
           resetZoom();
           lightbox.classList.remove('open');
@@ -1461,7 +1462,10 @@
         }
         lbClose.addEventListener('click', closeLightbox);
         lightbox.addEventListener('click', function(e) {
-          if (e.target === lightbox) closeLightbox();
+          // Ferme uniquement si clic sur le fond noir (pas sur l'image ni drag)
+          if (!_didDrag && (e.target === lightbox || e.target === document.getElementById('poster-lb-inner'))) {
+            closeLightbox();
+          }
         });
         document.addEventListener('keydown', function(e) {
           if (e.key === 'Escape') closeLightbox();
