@@ -629,7 +629,7 @@
       position: fixed;
       inset: 0;
       z-index: 30;
-      background: rgba(0, 0, 0, 0.94);
+      background: #f4f5f7;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -646,12 +646,12 @@
       top: 24px; right: 32px;
       font-size: 32px; line-height: 1;
       background: transparent;
-      border: 0; color: rgba(255,255,255,0.6);
+      border: 0; color: rgba(11,17,22,0.5);
       cursor: pointer;
       font-family: var(--ff-display);
       transition: color 0.2s;
     }
-    #poster-lb-close:hover { color: #fff; }
+    #poster-lb-close:hover { color: #000; }
     /* Inner : centré dans la lightbox */
     #poster-lb-inner {
       position: relative;
@@ -682,29 +682,13 @@
       max-height: 88vh;
       max-width: 72vw;
       width: auto; height: auto;
-      box-shadow: 0 32px 96px rgba(0,0,0,0.7);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.14), 0 28px 72px rgba(0,0,0,0.10);
       transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
       transform-origin: center center;
       pointer-events: none;
       -webkit-user-drag: none;
     }
 
-    /* Rond pulsant — clic pour zoomer */
-    #poster-lb-zoom-hint {
-      position: absolute;
-      top: 50%; left: 50%;
-      width: 40px; height: 40px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.09);
-      border: 1px solid rgba(255,255,255,0.20);
-      pointer-events: none;
-      animation: hintPulse 2.6s ease-in-out infinite;
-    }
-    #poster-lb-img-scroll.zoomed #poster-lb-zoom-hint { display: none; }
-    @keyframes hintPulse {
-      0%, 100% { transform: translate(-50%,-50%) scale(1);    opacity: 0.30; }
-      50%       { transform: translate(-50%,-50%) scale(1.18); opacity: 0.70; }
-    }
 
     /* Meta — petit overlay en haut à droite, z-index au-dessus de l'image */
     #poster-lb-meta {
@@ -719,28 +703,28 @@
       font-family: var(--ff-display);
       font-size: 7px; font-weight: 400;
       letter-spacing: 0.40em; text-transform: uppercase;
-      color: rgba(255,255,255,0.28);
+      color: rgba(11,17,22,0.32);
       margin-bottom: 8px;
     }
     #poster-lb-title {
       font-family: var(--ff-display);
       font-size: 10px; font-weight: 500;
       letter-spacing: 0.18em; text-transform: uppercase;
-      color: rgba(255,255,255,0.72);
+      color: rgba(11,17,22,0.82);
       margin-bottom: 5px;
     }
     #poster-lb-specs {
       font-family: var(--ff-display);
       font-size: 8px; font-weight: 400;
       letter-spacing: 0.28em; text-transform: uppercase;
-      color: rgba(255,255,255,0.35);
+      color: rgba(11,17,22,0.40);
       margin-bottom: 10px;
     }
     #poster-lb-desc {
       font-family: var(--ff-display);
       font-size: 9px; font-weight: 300;
       line-height: 1.75;
-      color: rgba(255,255,255,0.42);
+      color: rgba(11,17,22,0.50);
     }
 
     /* Transition de sortie du poster */
@@ -885,8 +869,6 @@
         <div id="poster-lb-img-wrap">
           <div id="poster-lb-img-scroll">
             <img id="poster-lb-img" src="" alt="" />
-            <!-- Rond pulsant — indique que l'image est zoomable par clic -->
-            <div id="poster-lb-zoom-hint"></div>
           </div>
         </div>
         <div id="poster-lb-meta">
