@@ -537,17 +537,6 @@
       inset: 0;
       z-index: 6;
       background: #000;
-      isolation: isolate; /* groupe de fusion pour mix-blend-mode des enfants */
-    }
-    /* Overlay multiply — même opération que Photoshop : blanc chaud → gris bleu froid */
-    /* multiply(blanc, #d4dcea) = #d4dcea  |  multiply(noir, x) = noir (posters intacts) */
-    #cool-overlay {
-      position: absolute; inset: 0;
-      background: rgb(208, 218, 236);
-      mix-blend-mode: multiply;
-      opacity: 0.72;
-      pointer-events: none;
-      z-index: 1;
     }
     #intro2-canvas {
       width: 100%;
@@ -884,8 +873,6 @@
     <div id="phase-expo">
       <div id="intro2-fixed">
         <canvas id="intro2-canvas"></canvas>
-        <!-- overlay multiply : cool blue-grey sur les blancs chauds de la galerie -->
-        <div id="cool-overlay"></div>
         <div id="intro2-loader">
           <div id="intro2-loader-bar-wrap">
             <div id="intro2-loader-bar"></div>
@@ -1361,8 +1348,8 @@
           lastIdx = idx;
         }
 
-        // Légère désaturation résiduelle — le cool-overlay multiply gère la température
-        canvas.style.filter = 'saturate(0.88) brightness(0.99)';
+        // Frames étalonnées à la source — aucun filtre CSS supplémentaire
+        canvas.style.filter = '';
 
         // Boucle scrub : progress → index frame
         var _scrollHint = document.getElementById('scroll-hint');
