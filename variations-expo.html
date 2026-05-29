@@ -601,19 +601,13 @@
       transform: scale(1.05);
     }
 
-    /* Flèche positionnée en dessous de la zone, pointe vers le haut */
+    /* Flèche positionnée en dessous de la zone — toujours visible, pulse en permanence */
     .poster-zone-arrow-wrap {
       position: absolute;
       bottom: -44px;
       left: 50%;
-      transform: translateX(-50%);
       pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.25s ease;
-    }
-    .poster-zone:hover .poster-zone-arrow-wrap {
-      opacity: 1;
-      animation: arrowBounceUp 1.8s ease-in-out infinite;
+      animation: arrowBounceUp 2.2s ease-in-out infinite;
     }
     .poster-zone-arrow-wrap img {
       display: block;
@@ -625,8 +619,8 @@
       user-select: none;
     }
     @keyframes arrowBounceUp {
-      0%, 100% { transform: translateX(-50%) translateY(0);    opacity: 0.70; }
-      50%       { transform: translateX(-50%) translateY(-6px); opacity: 1.00; }
+      0%, 100% { transform: translateX(-50%) translateY(0);    opacity: 0.50; }
+      50%       { transform: translateX(-50%) translateY(-7px); opacity: 1.00; }
     }
 
     /* ── Lightbox poster ───────────────────────────────────────────── */
@@ -670,13 +664,60 @@
       from { transform: scale(0.94); opacity: 0; }
       to   { transform: scale(1);    opacity: 1; }
     }
-    #poster-lb-img-wrap { flex-shrink: 0; }
+    #poster-lb-img-wrap {
+      flex-shrink: 0;
+      position: relative;
+    }
+    /* Conteneur scrollable quand zoomé */
+    #poster-lb-img-scroll {
+      overflow: hidden;
+      cursor: zoom-in;
+      max-height: 80vh;
+      max-width: 48vw;
+      box-shadow: 0 32px 96px rgba(0, 0, 0, 0.7);
+    }
+    #poster-lb-img-scroll.zoomed {
+      overflow: auto;
+      cursor: zoom-out;
+    }
     #poster-lb-img {
       display: block;
       max-height: 80vh;
       max-width: 48vw;
       width: auto; height: auto;
-      box-shadow: 0 32px 96px rgba(0, 0, 0, 0.7);
+      transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+      transform-origin: top left;
+    }
+    #poster-lb-img-scroll.zoomed #poster-lb-img {
+      transform: scale(2.8);
+      max-height: none;
+      max-width: none;
+      cursor: zoom-out;
+    }
+    /* Bouton cercle zoom — positionné en haut à droite de l'image */
+    #poster-lb-zoom {
+      position: absolute;
+      top: 12px; right: 12px;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.35);
+      backdrop-filter: blur(6px);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+      z-index: 2;
+    }
+    #poster-lb-zoom:hover {
+      background: rgba(255,255,255,0.28);
+      transform: scale(1.08);
+    }
+    #poster-lb-zoom svg {
+      width: 16px; height: 16px;
+      stroke: rgba(255,255,255,0.85);
+      fill: none;
+      stroke-width: 1.5;
+      stroke-linecap: round;
     }
     #poster-lb-meta { flex: 1; }
     #poster-lb-eyebrow {
@@ -860,7 +901,18 @@
       <button id="poster-lb-close" aria-label="Fermer">×</button>
       <div id="poster-lb-inner">
         <div id="poster-lb-img-wrap">
-          <img id="poster-lb-img" src="" alt="" />
+          <!-- Bouton zoom cercle -->
+          <button id="poster-lb-zoom" aria-label="Zoom">
+            <svg viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="7"/>
+              <line x1="16.5" y1="16.5" x2="22" y2="22"/>
+              <line x1="11" y1="8" x2="11" y2="14"/>
+              <line x1="8" y1="11" x2="14" y2="11"/>
+            </svg>
+          </button>
+          <div id="poster-lb-img-scroll">
+            <img id="poster-lb-img" src="" alt="" />
+          </div>
         </div>
         <div id="poster-lb-meta">
           <p id="poster-lb-eyebrow">François Peyranne × Rolex</p>
@@ -1362,7 +1414,34 @@
           });
         });
 
+        // Zoom toggle
+        var lbScroll = document.getElementById('poster-lb-img-scroll');
+        var lbZoomBtn = document.getElementById('poster-lb-zoom');
+        var _zoomed = false;
+
+        function setZoom(on) {
+          _zoomed = on;
+          if (on) {
+            lbScroll.classList.add('zoomed');
+            // icône — changer + en -
+            lbZoomBtn.querySelector('line:last-child').style.display = 'none';
+          } else {
+            lbScroll.classList.remove('zoomed');
+            lbScroll.scrollTop = 0; lbScroll.scrollLeft = 0;
+            lbZoomBtn.querySelector('line:last-child').style.display = '';
+          }
+        }
+
+        lbZoomBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          setZoom(!_zoomed);
+        });
+        lbScroll.addEventListener('click', function() {
+          if (_zoomed) setZoom(false);
+        });
+
         function closeLightbox() {
+          setZoom(false);
           lightbox.classList.remove('open');
           setTimeout(function() { lbImg.src = ''; }, 400);
         }
