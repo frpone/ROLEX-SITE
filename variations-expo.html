@@ -537,6 +537,17 @@
       inset: 0;
       z-index: 6;
       background: #000;
+      isolation: isolate; /* groupe de fusion pour mix-blend-mode des enfants */
+    }
+    /* Overlay multiply — même opération que Photoshop : blanc chaud → gris bleu froid */
+    /* multiply(blanc, #d4dcea) = #d4dcea  |  multiply(noir, x) = noir (posters intacts) */
+    #cool-overlay {
+      position: absolute; inset: 0;
+      background: rgb(208, 218, 236);
+      mix-blend-mode: multiply;
+      opacity: 0.72;
+      pointer-events: none;
+      z-index: 1;
     }
     #intro2-canvas {
       width: 100%;
@@ -868,28 +879,13 @@
 
     </div>
 
-    <!-- SVG filter : correction colorimétrique Camera Raw approx. Temperature -5, Saturation -2 -->
-    <!-- feColorMatrix mélange canaux RVB (impossible avec CSS filter seul) -->
-    <svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
-      <defs>
-        <filter id="cool-grade" color-interpolation-filters="sRGB">
-          <!-- Température -5 : réduit R de 4%, booste B de 6%, légère contribution croisée -->
-          <feColorMatrix type="matrix" values="
-            0.96  0.00  0.00  0  0
-            0.00  0.99  0.01  0  0
-            0.02  0.00  1.06  0  0
-            0     0     0     1  0"/>
-          <!-- Saturation -2 : désaturation de 2% -->
-          <feColorMatrix type="saturate" values="0.98"/>
-        </filter>
-      </defs>
-    </svg>
-
     <!-- PHASE EXPO : séquence d'images sur canvas + spacer scrollable -->
     <!-- Le canvas reste fixe. Le spacer crée la hauteur de scroll. -->
     <div id="phase-expo">
       <div id="intro2-fixed">
         <canvas id="intro2-canvas"></canvas>
+        <!-- overlay multiply : cool blue-grey sur les blancs chauds de la galerie -->
+        <div id="cool-overlay"></div>
         <div id="intro2-loader">
           <div id="intro2-loader-bar-wrap">
             <div id="intro2-loader-bar"></div>
@@ -1365,9 +1361,8 @@
           lastIdx = idx;
         }
 
-        // Correction Camera Raw approx. : feColorMatrix SVG (Temperature -5, Saturation -2)
-        // CSS saturate() seul ne peut pas faire un mélange de canaux R/B
-        canvas.style.filter = 'url(#cool-grade) brightness(0.98) contrast(0.94)';
+        // Légère désaturation résiduelle — le cool-overlay multiply gère la température
+        canvas.style.filter = 'saturate(0.88) brightness(0.99)';
 
         // Boucle scrub : progress → index frame
         var _scrollHint = document.getElementById('scroll-hint');
