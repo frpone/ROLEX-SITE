@@ -538,6 +538,14 @@
       z-index: 6;
       background: #000;
     }
+    /* Thin cool tint overlay — harmonise la chromie video avec la section affiche */
+    #intro2-fixed::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: rgba(182, 198, 220, 0.07);
+      pointer-events: none;
+      z-index: 1;
+    }
     #intro2-canvas {
       width: 100%;
       height: 100%;
@@ -564,6 +572,44 @@
       background: rgba(255,255,255,0.7);
       transition: width 0.1s linear;
     }
+    /* Scroll hint — flèche + texte au bas du canvas, disparaît au premier scroll */
+    #scroll-hint {
+      position: absolute;
+      bottom: 7%;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      opacity: 1;
+      transition: opacity 0.8s ease;
+      pointer-events: none;
+      z-index: 3;
+    }
+    #scroll-hint.hidden { opacity: 0; }
+    #scroll-hint span {
+      font-family: var(--ff-display);
+      font-size: 8px;
+      letter-spacing: 0.42em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.50);
+      text-shadow: 0 1px 6px rgba(0,0,0,0.35);
+    }
+    #scroll-hint img {
+      width: clamp(12px, 1.1vw, 18px);
+      height: auto;
+      transform: rotate(90deg);
+      margin-left: calc(clamp(12px, 1.1vw, 18px) / -2 * 0);
+      filter: drop-shadow(0 1px 4px rgba(0,0,0,0.4));
+      animation: scrollHintBounce 2.4s ease-in-out infinite;
+      opacity: 0.5;
+    }
+    @keyframes scrollHintBounce {
+      0%, 100% { transform: rotate(90deg) translateX(0);    opacity: 0.45; }
+      50%       { transform: rotate(90deg) translateX(5px);  opacity: 0.90; }
+    }
+
     /* Spacer : fournit la hauteur scrollable (height définie en JS) */
     #intro2-spacer {
       position: relative;
@@ -845,6 +891,10 @@
           <div id="intro2-loader-bar-wrap">
             <div id="intro2-loader-bar"></div>
           </div>
+        </div>
+        <div id="scroll-hint">
+          <img src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20GAUCHE-.png" alt="" />
+          <span>Scroll</span>
         </div>
       </div>
       <!-- height = SCROLL_H + window.innerHeight, calculé en JS -->
@@ -1310,10 +1360,11 @@
           lastIdx = idx;
         }
 
-        // Filtres couleur identiques à l'ancienne vidéo (saturate 0.80 etc.)
-        canvas.style.filter = 'saturate(0.80) brightness(1.02) contrast(0.96)';
+        // Filtre harmonisé avec la section affiche (palette cool grey)
+        canvas.style.filter = 'saturate(0.68) brightness(1.00) contrast(0.95)';
 
         // Boucle scrub : progress → index frame
+        var _scrollHint = document.getElementById('scroll-hint');
         function tick() {
           var scroll   = window.scrollY || window.pageYOffset || 0;
           var progress = Math.max(0, Math.min(1, scroll / SCROLL_H));
@@ -1322,6 +1373,11 @@
             ? FRAMES_COUNT - 1
             : Math.min(FRAMES_COUNT - 1, Math.floor(progress * FRAMES_COUNT));
           if (idx !== lastIdx) drawIdx(idx);
+          // Scroll hint disparaît dès les premiers pixels de scroll
+          if (_scrollHint) {
+            if (progress > 0.03) _scrollHint.classList.add('hidden');
+            else                 _scrollHint.classList.remove('hidden');
+          }
           // Arrêt du scroll + affichage overlay quand on atteint la dernière frame
           if (progress >= 0.92 && !_scrollStopped) {
             _scrollStopped = true;
