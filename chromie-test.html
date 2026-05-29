@@ -6,14 +6,14 @@
 <title>Chromie Test — Affiche vs Canvas</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Helvetica Neue', sans-serif; background: #1a1a1a; color: #fff; }
+  body { font-family: 'Helvetica Neue', sans-serif; background: #111; color: #fff; }
 
-  h1 { font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; padding: 16px 24px; opacity: 0.5; font-weight: 400; }
+  h1 { font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; padding: 14px 20px; opacity: 0.4; font-weight: 400; }
 
   .panels {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    height: calc(100vh - 48px);
+    grid-template-columns: 1fr 1fr 1fr;
+    height: calc(100vh - 100px);
     gap: 2px;
   }
 
@@ -24,84 +24,113 @@
   }
 
   .label {
-    position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
-    font-size: 9px; letter-spacing: 0.35em; text-transform: uppercase;
-    background: rgba(0,0,0,0.55); color: #fff; padding: 5px 12px; border-radius: 2px;
+    position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+    font-size: 8px; letter-spacing: 0.3em; text-transform: uppercase;
+    background: rgba(0,0,0,0.6); color: #fff; padding: 4px 10px; border-radius: 2px;
     white-space: nowrap; z-index: 10; pointer-events: none;
   }
 
-  /* ── Panel gauche : section affiche (cool grey CSS) ── */
+  /* Panel 1 : affiche CSS */
   #panel-affiche {
-    background: radial-gradient(
-      ellipse 90% 80% at 50% 44%,
-      #f4f5f7 0%,
-      #e0e3e8 55%,
-      #cdd2d9 100%
-    );
+    background: radial-gradient(ellipse 90% 80% at 50% 44%, #f4f5f7 0%, #e0e3e8 55%, #cdd2d9 100%);
   }
-  #affiche-img {
-    max-height: 75%; max-width: 55%;
-    object-fit: contain;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.18);
-  }
+  #affiche-img { max-height: 75%; max-width: 60%; object-fit: contain; box-shadow: 0 12px 40px rgba(0,0,0,0.18); }
 
-  /* ── Panel droit : canvas frame_069 ── */
-  #panel-canvas { background: #000; }
-  #test-canvas { width: 100%; height: 100%; object-fit: cover; display: block; }
+  /* Panel 2 : canvas filtre CSS (sliders) */
+  #panel-css { background: #000; }
 
-  /* ── Contrôles en bas ── */
+  /* Panel 3 : canvas filtre SVG feColorMatrix (Camera Raw approx.) */
+  #panel-svg { background: #000; }
+
+  canvas { width: 100%; height: 100%; display: block; }
+
+  /* Contrôles */
   .controls {
     position: fixed; bottom: 0; left: 0; right: 0;
-    background: rgba(15,15,15,0.95);
-    border-top: 1px solid rgba(255,255,255,0.08);
-    padding: 14px 24px;
-    display: flex; align-items: center; gap: 32px; flex-wrap: wrap;
+    background: rgba(10,10,10,0.96);
+    border-top: 1px solid rgba(255,255,255,0.07);
+    padding: 10px 20px;
+    display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
   }
-  .ctrl-group {
-    display: flex; align-items: center; gap: 10px;
-  }
-  .ctrl-group label {
-    font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; opacity: 0.55; width: 80px;
-  }
-  .ctrl-group input[type=range] {
-    width: 140px; accent-color: #aaa;
-  }
-  .ctrl-group .val {
-    font-size: 10px; font-family: monospace; opacity: 0.8; width: 36px;
-  }
-  #filter-display {
-    font-size: 9px; font-family: monospace; color: #7af;
-    margin-left: auto; opacity: 0.8;
-  }
+  .ctrl-group { display: flex; align-items: center; gap: 8px; }
+  .ctrl-group label { font-size: 8px; letter-spacing: 0.28em; text-transform: uppercase; opacity: 0.5; width: 72px; }
+  .ctrl-group input[type=range] { width: 120px; accent-color: #aaa; }
+  .ctrl-group .val { font-size: 10px; font-family: monospace; opacity: 0.7; width: 34px; }
+  .divider { width: 1px; height: 28px; background: rgba(255,255,255,0.12); margin: 0 4px; }
+  #filter-display { font-size: 9px; font-family: monospace; color: #7cf; margin-left: auto; opacity: 0.85; }
   button.preset {
-    font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase;
-    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
-    color: #fff; padding: 5px 12px; cursor: pointer; border-radius: 2px;
+    font-size: 8px; letter-spacing: 0.22em; text-transform: uppercase;
+    background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.14);
+    color: #fff; padding: 4px 10px; cursor: pointer; border-radius: 2px; white-space: nowrap;
   }
   button.preset:hover { background: rgba(255,255,255,0.15); }
+  button.preset.active { background: rgba(120,200,255,0.18); border-color: rgba(120,200,255,0.4); }
+
+  /* SVG filter matrix inputs */
+  .matrix-section { display: flex; align-items: center; gap: 12px; }
+  .matrix-section label { font-size: 8px; letter-spacing: 0.25em; text-transform: uppercase; opacity: 0.5; }
+  .matrix-inputs { display: grid; grid-template-columns: repeat(4, 52px); gap: 4px; }
+  .matrix-inputs input[type=number] {
+    width: 52px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+    color: #fff; font-family: monospace; font-size: 9px; padding: 3px 5px; text-align: center;
+    border-radius: 2px;
+  }
+  .matrix-row-label { font-size: 8px; color: rgba(255,120,120,0.8); width: 10px; text-align: center; }
 </style>
 </head>
 <body>
 
-<h1>Chromie Test — Affiche (gauche) vs Canvas frame 069 (droite)</h1>
+<!-- SVG filters inline -->
+<svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+  <defs>
+    <!-- Filtre CSS slider (saturate + brightness + contrast via feComponentTransfer) -->
+    <filter id="css-filter" color-interpolation-filters="sRGB">
+      <feColorMatrix id="fm-sat" type="saturate" values="0.45"/>
+      <feComponentTransfer>
+        <feFuncR id="fc-r" type="linear" slope="0.93" intercept="0.035"/>
+        <feFuncG id="fc-g" type="linear" slope="0.93" intercept="0.035"/>
+        <feFuncB id="fc-b" type="linear" slope="0.93" intercept="0.035"/>
+      </feComponentTransfer>
+    </filter>
+
+    <!-- Filtre SVG feColorMatrix (Camera Raw Temperature -5 + Saturation -2) -->
+    <filter id="svg-grade" color-interpolation-filters="sRGB">
+      <feColorMatrix id="fm-matrix" type="matrix" values="
+        0.96  0.00  0.00  0  0
+        0.00  0.99  0.01  0  0
+        0.02  0.00  1.06  0  0
+        0     0     0     1  0"/>
+      <feColorMatrix type="saturate" values="0.98"/>
+    </filter>
+  </defs>
+</svg>
+
+<h1>Chromie Test — Affiche (1) · CSS filter (2) · SVG feColorMatrix Camera Raw approx. (3)</h1>
 
 <div class="panels">
-  <!-- Gauche : section affiche telle quelle dans le site -->
+  <!-- 1 — Affiche CSS telle quelle -->
   <div class="panel" id="panel-affiche">
-    <div class="label">Section affiche — CSS tel quel</div>
+    <div class="label">1 · Affiche — CSS</div>
     <img id="affiche-img"
       src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/TRYPTIQUE_003_HD_B_.webp"
       alt="Affiche B" />
   </div>
 
-  <!-- Droite : frame_069 avec filtre CSS ajustable -->
-  <div class="panel" id="panel-canvas">
-    <div class="label" id="canvas-label">Canvas frame 069 — filtre live</div>
-    <canvas id="test-canvas"></canvas>
+  <!-- 2 — Canvas avec filtre CSS sliders -->
+  <div class="panel" id="panel-css">
+    <div class="label">2 · Canvas — CSS filter sliders</div>
+    <canvas id="canvas-css"></canvas>
+  </div>
+
+  <!-- 3 — Canvas avec SVG feColorMatrix -->
+  <div class="panel" id="panel-svg">
+    <div class="label">3 · Canvas — SVG feColorMatrix (Temp −5, Sat −2)</div>
+    <canvas id="canvas-svg"></canvas>
   </div>
 </div>
 
 <div class="controls">
+  <!-- Colonne CSS sliders (panel 2) -->
   <div class="ctrl-group">
     <label>Saturate</label>
     <input type="range" id="sl-sat" min="0" max="1" step="0.01" value="0.45">
@@ -123,87 +152,120 @@
     <span class="val" id="v-hue">0°</span>
   </div>
 
-  <button class="preset" onclick="setPreset(0.80,1.02,0.96,0)">Original</button>
-  <button class="preset" onclick="setPreset(0.45,0.98,0.93,0)">Actuel site</button>
-  <button class="preset" onclick="setPreset(0.55,0.99,0.94,0)">Intermédiaire</button>
+  <div class="divider"></div>
+
+  <button class="preset" onclick="setPreset(0.80,1.00,1.00,0)">Original</button>
+  <button class="preset" onclick="setPreset(0.45,0.98,0.93,0)">Actuel</button>
+  <button class="preset" onclick="setPreset(0.60,0.99,0.95,0)">−</button>
   <button class="preset" onclick="setPreset(0.30,0.96,0.90,5)">Très froid</button>
 
-  <span id="filter-display">filter: ...</span>
+  <div class="divider"></div>
+
+  <!-- SVG matrix sliders pour panel 3 -->
+  <div class="ctrl-group">
+    <label style="width:52px;color:rgba(255,180,100,0.8)">R→R</label>
+    <input type="range" id="m-rr" min="0.7" max="1.3" step="0.01" value="0.96">
+    <span class="val" id="vm-rr">0.96</span>
+  </div>
+  <div class="ctrl-group">
+    <label style="width:52px;color:rgba(100,200,255,0.8)">R→B</label>
+    <input type="range" id="m-rb" min="-0.1" max="0.2" step="0.005" value="0.02">
+    <span class="val" id="vm-rb">0.02</span>
+  </div>
+  <div class="ctrl-group">
+    <label style="width:52px;color:rgba(100,200,255,0.8)">B→B</label>
+    <input type="range" id="m-bb" min="0.7" max="1.3" step="0.01" value="1.06">
+    <span class="val" id="vm-bb">1.06</span>
+  </div>
+
+  <span id="filter-display">filter panel 2: ...</span>
 </div>
 
 <script>
-  var canvas = document.getElementById('test-canvas');
-  var ctx = canvas.getContext('2d');
+  // ── Charge frame_069 ──
   var img = new Image();
   img.crossOrigin = 'anonymous';
 
-  // Resize canvas to match its CSS display size
-  function resizeCanvas() {
-    var panel = document.getElementById('panel-canvas');
-    canvas.width  = panel.clientWidth;
-    canvas.height = panel.clientHeight;
-    if (img.naturalWidth) drawFrame();
-  }
-  window.addEventListener('resize', resizeCanvas);
+  var canvasCSS = document.getElementById('canvas-css');
+  var ctxCSS    = canvasCSS.getContext('2d');
+  var canvasSVG = document.getElementById('canvas-svg');
+  var ctxSVG    = canvasSVG.getContext('2d');
 
-  function drawFrame() {
+  function resizeAll() {
+    var pCSS = document.getElementById('panel-css');
+    var pSVG = document.getElementById('panel-svg');
+    canvasCSS.width  = pCSS.clientWidth;  canvasCSS.height = pCSS.clientHeight;
+    canvasSVG.width  = pSVG.clientWidth;  canvasSVG.height = pSVG.clientHeight;
+    if (img.naturalWidth) { drawCSS(); drawSVG(); }
+  }
+  window.addEventListener('resize', resizeAll);
+
+  function drawOnCtx(ctx, canvas) {
     var cw = canvas.width, ch = canvas.height;
     var iw = img.naturalWidth, ih = img.naturalHeight;
     if (!iw) return;
     var scale = Math.max(cw / iw, ch / ih);
     var dw = iw * scale, dh = ih * scale;
-    var dx = (cw - dw) / 2, dy = (ch - dh) / 2;
     ctx.clearRect(0, 0, cw, ch);
-    ctx.drawImage(img, dx, dy, dw, dh);
+    ctx.drawImage(img, (cw - dw) / 2, (ch - dh) / 2, dw, dh);
   }
 
-  img.onload = function() {
-    resizeCanvas();
-    drawFrame();
-    applyFilter();
-  };
-  // Charge frame_069
+  function drawCSS() { drawOnCtx(ctxCSS, canvasCSS); }
+  function drawSVG() { drawOnCtx(ctxSVG, canvasSVG); }
+
+  img.onload = function() { resizeAll(); applyCSSFilter(); applySVGMatrix(); };
   img.src = './FRAMES_INTRO2/frame_069.jpg';
 
-  // Sliders
-  var sliders = [
-    { id: 'sl-sat', valId: 'v-sat', suffix: '',  prop: 'sat' },
-    { id: 'sl-bri', valId: 'v-bri', suffix: '',  prop: 'bri' },
-    { id: 'sl-con', valId: 'v-con', suffix: '',  prop: 'con' },
-    { id: 'sl-hue', valId: 'v-hue', suffix: '°', prop: 'hue' },
-  ];
-  sliders.forEach(function(s) {
-    document.getElementById(s.id).addEventListener('input', function() {
-      document.getElementById(s.valId).textContent = this.value + s.suffix;
-      applyFilter();
+  // ── CSS filter (panel 2) ──
+  function getVal(id) { return parseFloat(document.getElementById(id).value); }
+
+  function applyCSSFilter() {
+    var sat = getVal('sl-sat'), bri = getVal('sl-bri');
+    var con = getVal('sl-con'), hue = getVal('sl-hue');
+    var f = 'saturate(' + sat + ') brightness(' + bri + ') contrast(' + con + ')' + (hue !== 0 ? ' hue-rotate(' + hue + 'deg)' : '');
+    canvasCSS.style.filter = f;
+    document.getElementById('filter-display').textContent = 'panel 2: ' + f;
+  }
+
+  [['sl-sat','v-sat',''],['sl-bri','v-bri',''],['sl-con','v-con',''],['sl-hue','v-hue','°']].forEach(function(s) {
+    document.getElementById(s[0]).addEventListener('input', function() {
+      document.getElementById(s[1]).textContent = this.value + s[2];
+      applyCSSFilter();
     });
   });
 
-  function getVal(id) { return parseFloat(document.getElementById(id).value); }
-
-  function applyFilter() {
-    var sat = getVal('sl-sat');
-    var bri = getVal('sl-bri');
-    var con = getVal('sl-con');
-    var hue = getVal('sl-hue');
-    var f = 'saturate(' + sat + ') brightness(' + bri + ') contrast(' + con + ')' + (hue !== 0 ? ' hue-rotate(' + hue + 'deg)' : '');
-    canvas.style.filter = f;
-    document.getElementById('filter-display').textContent = 'filter: ' + f;
-  }
-
   function setPreset(sat, bri, con, hue) {
-    document.getElementById('sl-sat').value = sat;
-    document.getElementById('sl-bri').value = bri;
-    document.getElementById('sl-con').value = con;
-    document.getElementById('sl-hue').value = hue;
-    document.getElementById('v-sat').textContent = sat;
-    document.getElementById('v-bri').textContent = bri;
-    document.getElementById('v-con').textContent = con;
-    document.getElementById('v-hue').textContent = hue + '°';
-    applyFilter();
+    document.getElementById('sl-sat').value = sat; document.getElementById('v-sat').textContent = sat;
+    document.getElementById('sl-bri').value = bri; document.getElementById('v-bri').textContent = bri;
+    document.getElementById('sl-con').value = con; document.getElementById('v-con').textContent = con;
+    document.getElementById('sl-hue').value = hue; document.getElementById('v-hue').textContent = hue + '°';
+    applyCSSFilter();
   }
 
-  applyFilter();
+  // ── SVG feColorMatrix (panel 3) ──
+  function applySVGMatrix() {
+    var rr = getVal('m-rr');
+    var rb = parseFloat(document.getElementById('m-rb').value);
+    var bb = getVal('m-bb');
+
+    // Reconstruit la matrice dans le filtre SVG inline
+    var mat = rr + ' 0.00 0.00 0 0  0.00 0.99 0.01 0 0  ' + rb + ' 0.00 ' + bb + ' 0 0  0 0 0 1 0';
+    document.getElementById('fm-matrix').setAttribute('values', mat);
+
+    // Applique le filtre SVG au canvas
+    canvasSVG.style.filter = 'url(#svg-grade) brightness(0.98) contrast(0.94)';
+
+    document.getElementById('vm-rr').textContent = rr;
+    document.getElementById('vm-rb').textContent = parseFloat(rb).toFixed(3);
+    document.getElementById('vm-bb').textContent = bb;
+  }
+
+  ['m-rr','m-rb','m-bb'].forEach(function(id) {
+    document.getElementById(id).addEventListener('input', applySVGMatrix);
+  });
+
+  applyCSSFilter();
+  applySVGMatrix();
 </script>
 </body>
 </html>
