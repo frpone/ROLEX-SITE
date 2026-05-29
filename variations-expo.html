@@ -652,7 +652,43 @@
       transition: color 0.2s;
       z-index: 10;
     }
-    #poster-lb-close:hover { color: #000; }
+    #poster-lb-close:hover { color: rgba(255,255,255,0.9); }
+
+    /* Flèches prev/next — navigation entre affiches (mobile + desktop) */
+    #lb-prev, #lb-next {
+      position: absolute;
+      top: 50%; transform: translateY(-50%);
+      background: transparent; border: none;
+      color: rgba(255,255,255,0.35);
+      font-size: 56px; line-height: 1;
+      cursor: pointer; z-index: 10;
+      padding: 24px 20px;
+      transition: color 0.2s;
+      font-family: var(--ff-display);
+    }
+    #lb-prev { left: 12px; }
+    #lb-next { right: 12px; }
+    #lb-prev:hover, #lb-next:hover { color: rgba(255,255,255,0.85); }
+
+    /* Sur desktop large, les flèches nav sont discrètes mais présentes */
+    @media (min-width: 769px) {
+      #lb-prev, #lb-next { font-size: 48px; color: rgba(255,255,255,0.20); }
+    }
+
+    /* ── Responsive mobile : overlay affiches ── */
+    @media (max-width: 768px) {
+      /* On mobile, seule l'affiche centrale est visible dans le canvas (cover centré)
+         Zones A et C sont hors écran, on les masque */
+      #zone-a, #zone-c { display: none !important; }
+      /* Zone B repositionnée pour couvrir la zone centrale visible ~7%-92% de l'écran */
+      #zone-b {
+        left: 5% !important;
+        width: 90% !important;
+      }
+      /* Flèche centrée en mobile */
+      #frame-single-arrow { left: 50% !important; }
+    }
+
     /* Inner : centré dans la lightbox */
     #poster-lb-inner {
       position: relative;
@@ -823,13 +859,14 @@
     ══════════════════════════════════════════════════════════════════════════════════ -->
     <div id="frame-overlay">
 
-      <!-- Affiche gauche — TRYPTIQUE_003_HD_C_ -->
+      <!-- Affiche gauche — TRYPTIQUE_003_HD_A_ -->
       <div class="poster-zone" id="zone-a"
-        data-title="Triptych III — C"
+        data-title="Triptych III — A"
         data-specs="40 cm × 60 cm"
         data-desc="Edition limitée — Tirage numéroté et signé par l'artiste."
-        data-src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/TRYPTIQUE_003_HD_C_.webp"
+        data-src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/TRYPTIQUE_003_HD_A_.webp"
         data-arrow="22%"
+        data-index="0"
         style="left:11%;top:17%;width:22%;height:56%">
         <div class="poster-zone-inner"></div>
       </div>
@@ -841,17 +878,19 @@
         data-desc="Edition limitée — Tirage numéroté et signé par l'artiste."
         data-src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/TRYPTIQUE_003_HD_B_.webp"
         data-arrow="50%"
+        data-index="1"
         style="left:39%;top:17%;width:22%;height:56%">
         <div class="poster-zone-inner"></div>
       </div>
 
-      <!-- Affiche droite — TRYPTIQUE_003_HD_A_ -->
+      <!-- Affiche droite — TRYPTIQUE_003_HD_C_ -->
       <div class="poster-zone" id="zone-c"
-        data-title="Triptych III — A"
+        data-title="Triptych III — C"
         data-specs="40 cm × 60 cm"
         data-desc="Edition limitée — Tirage numéroté et signé par l'artiste."
-        data-src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/TRYPTIQUE_003_HD_A_.webp"
+        data-src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/TRYPTIQUE_003_HD_C_.webp"
         data-arrow="78%"
+        data-index="2"
         style="left:67%;top:17%;width:22%;height:56%">
         <div class="poster-zone-inner"></div>
       </div>
@@ -866,6 +905,8 @@
     <!-- Lightbox affiche — poster image + panneau méta à droite -->
     <div id="poster-lightbox">
       <button id="poster-lb-close" aria-label="Fermer">×</button>
+      <button id="lb-prev" aria-label="Affiche précédente">&#8249;</button>
+      <button id="lb-next" aria-label="Affiche suivante">&#8250;</button>
       <div id="poster-lb-inner">
         <div id="poster-lb-img-wrap">
           <div id="poster-lb-img-scroll">
@@ -1362,25 +1403,45 @@
         var lbClose   = document.getElementById('poster-lb-close');
         var lbScroll  = document.getElementById('poster-lb-img-scroll');
         var singleArrow = document.getElementById('frame-single-arrow');
+        var lbPrev    = document.getElementById('lb-prev');
+        var lbNext    = document.getElementById('lb-next');
+
+        var zones = Array.from(document.querySelectorAll('.poster-zone'));
+        var currentZoneIdx = 0;
 
         // Flèche unique — se déplace sous l'affiche survolée
-        document.querySelectorAll('.poster-zone').forEach(function(zone) {
+        zones.forEach(function(zone) {
           zone.addEventListener('mouseenter', function() {
             var pos = zone.getAttribute('data-arrow') || '50%';
             singleArrow.style.left = pos;
           });
         });
 
+        // Ouvre la lightbox pour un index donné
+        function openLightbox(idx) {
+          var zone = zones[idx];
+          currentZoneIdx = idx;
+          lbImg.src = zone.getAttribute('data-src') || '';
+          lbTitle.textContent = zone.getAttribute('data-title') || '';
+          lbSpecs.textContent = zone.getAttribute('data-specs') || '';
+          lbDesc.textContent  = zone.getAttribute('data-desc')  || '';
+          resetZoom();
+          lightbox.classList.add('open');
+        }
+
         // Clic zone → ouvre lightbox
-        document.querySelectorAll('.poster-zone').forEach(function(zone) {
-          zone.addEventListener('click', function() {
-            lbImg.src = zone.getAttribute('data-src') || '';
-            lbTitle.textContent = zone.getAttribute('data-title') || '';
-            lbSpecs.textContent = zone.getAttribute('data-specs') || '';
-            lbDesc.textContent  = zone.getAttribute('data-desc')  || '';
-            resetZoom();
-            lightbox.classList.add('open');
-          });
+        zones.forEach(function(zone, idx) {
+          zone.addEventListener('click', function() { openLightbox(idx); });
+        });
+
+        // Navigation prev / next
+        lbPrev.addEventListener('click', function(e) {
+          e.stopPropagation();
+          openLightbox((currentZoneIdx - 1 + zones.length) % zones.length);
+        });
+        lbNext.addEventListener('click', function(e) {
+          e.stopPropagation();
+          openLightbox((currentZoneIdx + 1) % zones.length);
         });
 
         // ── Zoom ×2 sur toute l'image + drag sur toute la lightbox ──
@@ -1445,11 +1506,24 @@
         }
         lbClose.addEventListener('click', closeLightbox);
         lightbox.addEventListener('click', function(e) {
-          // Ferme uniquement si clic sur le fond noir (pas sur l'image ni drag)
           if (!_didDrag && (e.target === lightbox || e.target === document.getElementById('poster-lb-inner'))) {
             closeLightbox();
           }
         });
+        // Swipe tactile — gauche/droite pour naviguer
+        var _touchX0 = null;
+        lightbox.addEventListener('touchstart', function(e) {
+          _touchX0 = e.touches[0].clientX;
+        }, { passive: true });
+        lightbox.addEventListener('touchend', function(e) {
+          if (_touchX0 === null) return;
+          var dx = e.changedTouches[0].clientX - _touchX0;
+          _touchX0 = null;
+          if (Math.abs(dx) > 50) {
+            if (dx < 0) openLightbox((currentZoneIdx + 1) % zones.length);
+            else         openLightbox((currentZoneIdx - 1 + zones.length) % zones.length);
+          }
+        }, { passive: true });
         document.addEventListener('keydown', function(e) {
           if (e.key === 'Escape') closeLightbox();
         });
