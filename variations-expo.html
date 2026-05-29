@@ -601,26 +601,27 @@
       transform: scale(1.05);
     }
 
-    /* Flèche positionnée en dessous de la zone — toujours visible, pulse en permanence */
-    .poster-zone-arrow-wrap {
+    /* Flèche unique — se déplace horizontalement selon l'affiche survolée */
+    #frame-single-arrow {
       position: absolute;
-      bottom: -44px;
-      left: 50%;
+      bottom: 21%;          /* juste sous les zones (top:17% + height:56% = 73%) */
+      left: 50%;            /* position par défaut : affiche centrale */
       pointer-events: none;
-      animation: arrowBounceUp 2.2s ease-in-out infinite;
+      transition: left 0.45s cubic-bezier(0.22, 1, 0.36, 1);
     }
-    .poster-zone-arrow-wrap img {
+    #frame-single-arrow img {
       display: block;
-      width: clamp(24px, 2.4vw, 40px);
+      width: clamp(28px, 2.8vw, 44px);
       height: auto;
-      /* CROIX GAUCHE (→) rotate -90deg = ↑ */
-      transform: rotate(-90deg);
+      transform: rotate(-90deg); /* CROIX GAUCHE (→) → ↑ */
+      margin-left: calc(clamp(28px, 2.8vw, 44px) / -2); /* centrage */
       pointer-events: none;
       user-select: none;
+      animation: arrowBounceUp 2.2s ease-in-out infinite;
     }
     @keyframes arrowBounceUp {
-      0%, 100% { transform: translateX(-50%) translateY(0);    opacity: 0.50; }
-      50%       { transform: translateX(-50%) translateY(-7px); opacity: 1.00; }
+      0%, 100% { transform: rotate(-90deg) translateX(0);   opacity: 0.55; }
+      50%       { transform: rotate(-90deg) translateX(-8px); opacity: 1.00; }
     }
 
     /* ── Lightbox poster ───────────────────────────────────────────── */
@@ -668,56 +669,42 @@
       flex-shrink: 0;
       position: relative;
     }
-    /* Conteneur scrollable quand zoomé */
     #poster-lb-img-scroll {
+      position: relative;
       overflow: hidden;
       cursor: zoom-in;
       max-height: 80vh;
       max-width: 48vw;
       box-shadow: 0 32px 96px rgba(0, 0, 0, 0.7);
+      user-select: none;
     }
-    #poster-lb-img-scroll.zoomed {
-      overflow: auto;
-      cursor: zoom-out;
-    }
+    #poster-lb-img-scroll.zoomed { cursor: grab; }
+    #poster-lb-img-scroll.grabbing { cursor: grabbing; }
     #poster-lb-img {
       display: block;
       max-height: 80vh;
       max-width: 48vw;
       width: auto; height: auto;
-      transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-      transform-origin: top left;
+      transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+      transform-origin: center center;
+      pointer-events: none;
+      -webkit-user-drag: none;
     }
-    #poster-lb-img-scroll.zoomed #poster-lb-img {
-      transform: scale(2.8);
-      max-height: none;
-      max-width: none;
-      cursor: zoom-out;
-    }
-    /* Bouton cercle zoom — positionné en haut à droite de l'image */
-    #poster-lb-zoom {
+    /* Rond pulsant centré — indique que l'image est zoomable */
+    #poster-lb-zoom-hint {
       position: absolute;
-      top: 12px; right: 12px;
-      width: 36px; height: 36px;
+      top: 50%; left: 50%;
+      width: 42px; height: 42px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.15);
-      border: 1px solid rgba(255,255,255,0.35);
-      backdrop-filter: blur(6px);
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.2s;
-      z-index: 2;
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.22);
+      pointer-events: none;
+      animation: hintPulse 2.6s ease-in-out infinite;
     }
-    #poster-lb-zoom:hover {
-      background: rgba(255,255,255,0.28);
-      transform: scale(1.08);
-    }
-    #poster-lb-zoom svg {
-      width: 16px; height: 16px;
-      stroke: rgba(255,255,255,0.85);
-      fill: none;
-      stroke-width: 1.5;
-      stroke-linecap: round;
+    #poster-lb-img-scroll.zoomed #poster-lb-zoom-hint { display: none; }
+    @keyframes hintPulse {
+      0%, 100% { transform: translate(-50%,-50%) scale(1);    opacity: 0.35; }
+      50%       { transform: translate(-50%,-50%) scale(1.18); opacity: 0.75; }
     }
     #poster-lb-meta { flex: 1; }
     #poster-lb-eyebrow {
@@ -861,11 +848,9 @@
         data-specs="40 cm × 60 cm"
         data-desc="Edition limitée — Tirage numéroté et signé par l'artiste."
         data-src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/TRYPTIQUE_003_HD_C_.webp"
+        data-arrow="22%"
         style="left:11%;top:17%;width:22%;height:56%">
         <div class="poster-zone-inner"></div>
-        <div class="poster-zone-arrow-wrap">
-          <img src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20GAUCHE-.png" alt="" />
-        </div>
       </div>
 
       <!-- Affiche centre — TRYPTIQUE_003_HD_B_ -->
@@ -874,11 +859,9 @@
         data-specs="40 cm × 60 cm"
         data-desc="Edition limitée — Tirage numéroté et signé par l'artiste."
         data-src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/TRYPTIQUE_003_HD_B_.webp"
+        data-arrow="50%"
         style="left:39%;top:17%;width:22%;height:56%">
         <div class="poster-zone-inner"></div>
-        <div class="poster-zone-arrow-wrap">
-          <img src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20GAUCHE-.png" alt="" />
-        </div>
       </div>
 
       <!-- Affiche droite — TRYPTIQUE_003_HD_A_ -->
@@ -887,11 +870,14 @@
         data-specs="40 cm × 60 cm"
         data-desc="Edition limitée — Tirage numéroté et signé par l'artiste."
         data-src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/TRYPTIQUE_003_HD_A_.webp"
+        data-arrow="78%"
         style="left:67%;top:17%;width:22%;height:56%">
         <div class="poster-zone-inner"></div>
-        <div class="poster-zone-arrow-wrap">
-          <img src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20GAUCHE-.png" alt="" />
-        </div>
+      </div>
+
+      <!-- Flèche unique — glisse sous l'affiche survolée -->
+      <div id="frame-single-arrow">
+        <img src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20GAUCHE-.png" alt="" />
       </div>
 
     </div><!-- /frame-overlay -->
@@ -901,17 +887,10 @@
       <button id="poster-lb-close" aria-label="Fermer">×</button>
       <div id="poster-lb-inner">
         <div id="poster-lb-img-wrap">
-          <!-- Bouton zoom cercle -->
-          <button id="poster-lb-zoom" aria-label="Zoom">
-            <svg viewBox="0 0 24 24">
-              <circle cx="11" cy="11" r="7"/>
-              <line x1="16.5" y1="16.5" x2="22" y2="22"/>
-              <line x1="11" y1="8" x2="11" y2="14"/>
-              <line x1="8" y1="11" x2="14" y2="11"/>
-            </svg>
-          </button>
           <div id="poster-lb-img-scroll">
             <img id="poster-lb-img" src="" alt="" />
+            <!-- Rond pulsant — indique que l'image est zoomable par clic -->
+            <div id="poster-lb-zoom-hint"></div>
           </div>
         </div>
         <div id="poster-lb-meta">
@@ -1396,52 +1375,87 @@
       //  OVERLAY affiches + lightbox
       // ═══════════════════════════════════════════════════════════
       (function initFrameOverlay() {
-        var lightbox = document.getElementById('poster-lightbox');
-        var lbImg    = document.getElementById('poster-lb-img');
-        var lbTitle  = document.getElementById('poster-lb-title');
-        var lbSpecs  = document.getElementById('poster-lb-specs');
-        var lbDesc   = document.getElementById('poster-lb-desc');
-        var lbClose  = document.getElementById('poster-lb-close');
+        var lightbox  = document.getElementById('poster-lightbox');
+        var lbImg     = document.getElementById('poster-lb-img');
+        var lbTitle   = document.getElementById('poster-lb-title');
+        var lbSpecs   = document.getElementById('poster-lb-specs');
+        var lbDesc    = document.getElementById('poster-lb-desc');
+        var lbClose   = document.getElementById('poster-lb-close');
+        var lbScroll  = document.getElementById('poster-lb-img-scroll');
+        var singleArrow = document.getElementById('frame-single-arrow');
 
-        // Chaque zone cliquable ouvre la lightbox avec ses données
+        // Flèche unique — se déplace sous l'affiche survolée
+        document.querySelectorAll('.poster-zone').forEach(function(zone) {
+          zone.addEventListener('mouseenter', function() {
+            var pos = zone.getAttribute('data-arrow') || '50%';
+            singleArrow.style.left = pos;
+          });
+        });
+
+        // Clic zone → ouvre lightbox
         document.querySelectorAll('.poster-zone').forEach(function(zone) {
           zone.addEventListener('click', function() {
-            lbImg.src    = zone.getAttribute('data-src')   || '';
+            lbImg.src = zone.getAttribute('data-src') || '';
             lbTitle.textContent = zone.getAttribute('data-title') || '';
             lbSpecs.textContent = zone.getAttribute('data-specs') || '';
             lbDesc.textContent  = zone.getAttribute('data-desc')  || '';
+            resetZoom();
             lightbox.classList.add('open');
           });
         });
 
-        // Zoom toggle
-        var lbScroll = document.getElementById('poster-lb-img-scroll');
-        var lbZoomBtn = document.getElementById('poster-lb-zoom');
+        // ── Zoom + drag-to-pan sur l'image ──────────────────────────
         var _zoomed = false;
+        var _panX = 0, _panY = 0;
+        var _dragging = false;
+        var _dragX0, _dragY0, _panX0, _panY0;
 
-        function setZoom(on) {
-          _zoomed = on;
-          if (on) {
-            lbScroll.classList.add('zoomed');
-            // icône — changer + en -
-            lbZoomBtn.querySelector('line:last-child').style.display = 'none';
+        function applyTransform() {
+          if (_zoomed) {
+            lbImg.style.transform = 'scale(2.8) translate(' + (_panX / 2.8) + 'px,' + (_panY / 2.8) + 'px)';
           } else {
-            lbScroll.classList.remove('zoomed');
-            lbScroll.scrollTop = 0; lbScroll.scrollLeft = 0;
-            lbZoomBtn.querySelector('line:last-child').style.display = '';
+            lbImg.style.transform = 'scale(1) translate(0,0)';
           }
         }
 
-        lbZoomBtn.addEventListener('click', function(e) {
-          e.stopPropagation();
-          setZoom(!_zoomed);
-        });
-        lbScroll.addEventListener('click', function() {
-          if (_zoomed) setZoom(false);
+        function resetZoom() {
+          _zoomed = false; _panX = 0; _panY = 0; _dragging = false;
+          lbScroll.classList.remove('zoomed', 'grabbing');
+          applyTransform();
+        }
+
+        // Clic sur l'image : zoom in / zoom out
+        lbScroll.addEventListener('click', function(e) {
+          if (_dragging) return;
+          _zoomed = !_zoomed;
+          _panX = 0; _panY = 0;
+          lbScroll.classList.toggle('zoomed', _zoomed);
+          applyTransform();
         });
 
+        // Drag-to-pan quand zoomé
+        lbScroll.addEventListener('mousedown', function(e) {
+          if (!_zoomed) return;
+          _dragging = false;
+          _dragX0 = e.clientX; _dragY0 = e.clientY;
+          _panX0 = _panX;      _panY0 = _panY;
+          lbScroll.classList.add('grabbing');
+          e.preventDefault();
+        });
+        document.addEventListener('mousemove', function(e) {
+          if (!_zoomed || _dragX0 === undefined) return;
+          var dx = e.clientX - _dragX0, dy = e.clientY - _dragY0;
+          if (Math.abs(dx) > 4 || Math.abs(dy) > 4) _dragging = true;
+          if (_dragging) { _panX = _panX0 + dx; _panY = _panY0 + dy; applyTransform(); }
+        });
+        document.addEventListener('mouseup', function() {
+          lbScroll.classList.remove('grabbing');
+          setTimeout(function() { _dragging = false; _dragX0 = undefined; }, 0);
+        });
+
+        // Fermeture
         function closeLightbox() {
-          setZoom(false);
+          resetZoom();
           lightbox.classList.remove('open');
           setTimeout(function() { lbImg.src = ''; }, 400);
         }
