@@ -567,7 +567,7 @@
     /* Scroll hint — chevron + texte au bas du canvas, disparaît au premier scroll */
     #scroll-hint {
       position: absolute;
-      bottom: 7%;
+      bottom: 20%;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
@@ -576,19 +576,21 @@
       gap: 9px;
       opacity: 1;
       transition: opacity 0.8s ease;
-      pointer-events: none;
+      pointer-events: auto;
+      cursor: pointer;
       z-index: 3;
     }
-    #scroll-hint.hidden { opacity: 0; }
+    #scroll-hint.hidden { opacity: 0; pointer-events: none; }
     #scroll-hint span {
       font-family: var(--ff-display);
-      font-size: 8px;
+      font-size: 12px;
       letter-spacing: 0.40em;
       text-transform: uppercase;
-      color: rgba(40, 44, 52, 0.55);
+      color: rgba(40, 44, 52, 0.75);
       white-space: nowrap;
     }
     #scroll-hint svg {
+      width: 22px;
       animation: scrollHintBounce 2.4s ease-in-out infinite;
     }
     @keyframes scrollHintBounce {
@@ -607,11 +609,12 @@
       position: fixed;
       inset: 0;
       z-index: 7;
-      display: none;
+      opacity: 0;
       pointer-events: none;
+      transition: opacity 0.4s ease;
     }
     #frame-overlay.visible {
-      display: block;
+      opacity: 1;
       pointer-events: auto;
     }
 
@@ -1307,7 +1310,7 @@
       //  drawImage() = 0ms de latence, scroll 100% fluide.
       // ═══════════════════════════════════════════════════════
 
-      var SCROLL_H   = 8000;  // px de scroll total (143 frames × ~56px/frame)
+      var SCROLL_H   = 4000;  // px de scroll total
       var _introRafId = null;
 
       function initImageSequence() {
@@ -1323,6 +1326,7 @@
 
         // Taille canvas = taille viewport (pixel perfect)
         function resizeCanvas() {
+          if (_scrollStopped) return; // ne pas redimensionner après arrêt (évite le saut scrollbar)
           var dpr = window.devicePixelRatio || 1;
           // Bitmap en pixels physiques — évite le flou sur les écrans Retina (DPR=2)
           canvas.width  = window.innerWidth  * dpr;
@@ -1372,9 +1376,6 @@
           if (progress >= 0.99 && !_scrollStopped) {
             _scrollStopped = true;
             lenis.stop();
-            // Lenis gère déjà overflow:hidden via .lenis-stopped — on ne touche pas html
-            // pour éviter le saut de layout (disparition scrollbar)
-            document.body.style.overflow = 'hidden';
             var overlay = document.getElementById('frame-overlay');
             if (overlay) overlay.classList.add('visible');
           }
@@ -1396,6 +1397,48 @@
           }
         }
         tryStart();
+
+        // ── Clic sur le canvas → auto-scroll jusqu'à la fin ──
+        canvas.addEventListener('click', function() {
+          if (!_scrollStopped) {
+            lenis.scrollTo(SCROLL_H, { duration: 2.0 });
+          }
+        });
+
+        // ── Clic sur scroll-hint → auto-scroll aussi ──
+        if (_scrollHint) {
+          _scrollHint.addEventListener('click', function() {
+            if (!_scrollStopped) {
+              lenis.scrollTo(SCROLL_H, { duration: 2.0 });
+            }
+          });
+        }
+
+        // ── Scroll arrière (molette vers le haut) depuis la dernière frame ──
+        window.addEventListener('wheel', function(e) {
+          if (_scrollStopped && e.deltaY < 0) {
+            _scrollStopped = false;
+            var overlay = document.getElementById('frame-overlay');
+            if (overlay) overlay.classList.remove('visible');
+            lenis.scrollTo(SCROLL_H * 0.97, { duration: 0 });
+            lenis.start();
+          }
+        }, { passive: true });
+
+        // ── Touch scroll arrière depuis la dernière frame ──
+        var _touchStartY = 0;
+        window.addEventListener('touchstart', function(e) {
+          _touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+        window.addEventListener('touchend', function(e) {
+          if (_scrollStopped && (e.changedTouches[0].clientY - _touchStartY) > 30) {
+            _scrollStopped = false;
+            var overlay = document.getElementById('frame-overlay');
+            if (overlay) overlay.classList.remove('visible');
+            lenis.scrollTo(SCROLL_H * 0.97, { duration: 0 });
+            lenis.start();
+          }
+        }, { passive: true });
       }
 
       // ═══════════════════════════════════════════════════════
