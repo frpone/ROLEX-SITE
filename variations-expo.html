@@ -1358,8 +1358,8 @@
         function tick() {
           var scroll   = window.scrollY || window.pageYOffset || 0;
           var progress = Math.max(0, Math.min(1, scroll / SCROLL_H));
-          // Snap à la dernière frame dès 92% du scroll
-          var idx = progress >= 0.92
+          // Snap à la dernière frame uniquement dans le dernier 1% — évite le saut visuel
+          var idx = progress >= 0.99
             ? FRAMES_COUNT - 1
             : Math.min(FRAMES_COUNT - 1, Math.floor(progress * FRAMES_COUNT));
           if (idx !== lastIdx) drawIdx(idx);
@@ -1369,12 +1369,12 @@
             else                 _scrollHint.classList.remove('hidden');
           }
           // Arrêt du scroll + affichage overlay quand on atteint la dernière frame
-          if (progress >= 0.92 && !_scrollStopped) {
+          if (progress >= 0.99 && !_scrollStopped) {
             _scrollStopped = true;
             lenis.stop();
-            // Verrou natif en plus — bloque toute tentative de scroll natif
+            // Lenis gère déjà overflow:hidden via .lenis-stopped — on ne touche pas html
+            // pour éviter le saut de layout (disparition scrollbar)
             document.body.style.overflow = 'hidden';
-            document.documentElement.style.overflow = 'hidden';
             var overlay = document.getElementById('frame-overlay');
             if (overlay) overlay.classList.add('visible');
           }
