@@ -1323,8 +1323,10 @@
 
         // Taille canvas = taille viewport (pixel perfect)
         function resizeCanvas() {
-          canvas.width  = window.innerWidth;
-          canvas.height = window.innerHeight;
+          var dpr = window.devicePixelRatio || 1;
+          // Bitmap en pixels physiques — évite le flou sur les écrans Retina (DPR=2)
+          canvas.width  = window.innerWidth  * dpr;
+          canvas.height = window.innerHeight * dpr;
           if (lastIdx >= 0 && _frames[lastIdx] && _frames[lastIdx].complete) {
             drawIdx(lastIdx);
           }
