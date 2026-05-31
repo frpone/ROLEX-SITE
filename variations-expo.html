@@ -1149,7 +1149,7 @@
       // Architecture Apple-style : chaque frame = un <img> en mémoire RAM.
       // Seek = 0ms (drawImage instantané), aucune décompression vidéo.
       var FRAMES_BASE  = './FRAMES_INTRO2/frame_';
-      var FRAMES_COUNT = 69;
+      var FRAMES_COUNT = 143;
       var _frames      = new Array(FRAMES_COUNT); // Image objects pré-chargées
       var _framesReady = 0;                        // nb de frames chargées
 
@@ -1307,7 +1307,7 @@
       //  drawImage() = 0ms de latence, scroll 100% fluide.
       // ═══════════════════════════════════════════════════════
 
-      var SCROLL_H   = 5000;  // px de scroll total
+      var SCROLL_H   = 8000;  // px de scroll total (143 frames × ~56px/frame)
       var _introRafId = null;
 
       function initImageSequence() {
