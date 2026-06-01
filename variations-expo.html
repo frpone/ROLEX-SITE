@@ -567,13 +567,13 @@
     /* Scroll hint — chevron + texte au bas du canvas, disparaît au premier scroll */
     #scroll-hint {
       position: absolute;
-      bottom: 18%;
+      bottom: 22%;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       opacity: 1;
       transition: opacity 0.8s ease;
       pointer-events: auto;
@@ -583,20 +583,21 @@
     #scroll-hint.hidden { opacity: 0; pointer-events: none; }
     #scroll-hint span {
       font-family: var(--ff-display);
-      font-size: 13px;
-      font-weight: 600;
-      letter-spacing: 0.38em;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.35em;
       text-transform: uppercase;
-      color: rgba(30, 33, 40, 1);
+      color: rgba(20, 22, 28, 0.95);
       white-space: nowrap;
+      text-shadow: 0 1px 12px rgba(255,255,255,0.6);
     }
     #scroll-hint svg {
-      width: 24px;
-      animation: scrollHintBounce 2.4s ease-in-out infinite;
+      width: 28px;
+      animation: scrollHintBounce 2s ease-in-out infinite;
     }
     @keyframes scrollHintBounce {
-      0%, 100% { transform: translateY(0);   opacity: 0.70; }
-      50%       { transform: translateY(5px); opacity: 0.90; }
+      0%, 100% { transform: translateY(0);   opacity: 0.80; }
+      50%       { transform: translateY(6px); opacity: 1.00; }
     }
 
     /* Spacer : fournit la hauteur scrollable (height définie en JS) */
@@ -885,7 +886,7 @@
         <div id="scroll-hint">
           <span>Scroll to enter</span>
           <svg width="20" height="14" viewBox="0 0 20 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M1 1.5L10 12L19 1.5" stroke="rgba(30,33,40,0.90)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M1 2L10 12L19 2" stroke="rgba(20,22,28,0.95)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </div>
       </div>
@@ -1376,6 +1377,11 @@
           // Arrêt du scroll + affichage overlay quand on atteint la dernière frame
           if (progress >= 0.99 && !_scrollStopped) {
             _scrollStopped = true;
+            // Verrouille la taille CSS AVANT lenis.stop() — overflow:hidden sur <html>
+            // peut faire recalculer les dimensions des éléments position:fixed,
+            // ce qui décalerait visuellement le canvas même si ses pixels ne changent pas.
+            canvas.style.width  = window.innerWidth  + 'px';
+            canvas.style.height = window.innerHeight + 'px';
             lenis.stop();
             var overlay = document.getElementById('frame-overlay');
             if (overlay) overlay.classList.add('visible');
@@ -1406,6 +1412,9 @@
           _scrollStopped = false;
           var overlay = document.getElementById('frame-overlay');
           if (overlay) overlay.classList.remove('visible');
+          // Déverrouille la taille CSS du canvas (revenue à 100%/100%)
+          canvas.style.width  = '';
+          canvas.style.height = '';
           lenis.start();
           // window.scrollTo() natif = synchrone, garantit que le prochain tick()
           // voit progress < 0.99 avant que lenis ne redonne la main.
