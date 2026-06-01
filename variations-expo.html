@@ -577,14 +577,14 @@
     #scroll-hint {
       position: fixed;
       left: 50%;
-      bottom: clamp(28px, 4.2vh, 48px);
-      transform: translateX(calc(-50% + 15px));
+      bottom: clamp(22px, 3.2vh, 42px);
+      transform: translateX(-50%);
       z-index: 15;
       text-align: center;
       font-family: var(--ff-display, 'sweet-sans-pro', 'Helvetica Neue', Arial, sans-serif);
       font-size: clamp(11px, 0.95vw, 15px);
-      font-weight: 700;
-      letter-spacing: 0.12em;
+      font-weight: 760;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
       color: rgba(10, 14, 18, 0.82);
       white-space: nowrap;
@@ -1322,119 +1322,122 @@
       var _introRafId = null;
 
       function initImageSequence(onFirstFrameReady) {
-        if (_introRafId) { cancelAnimationFrame(_introRafId); _introRafId = null; }
+        if (_introRafId) {
+          cancelAnimationFrame(_introRafId);
+          _introRafId = null;
+        }
 
-        var canvas  = document.getElementById('intro2-canvas');
-        var ctx     = canvas.getContext('2d');
-        var loader  = document.getElementById('intro2-loader');
-        var bar     = document.getElementById('intro2-loader-bar');
-        var spacer  = document.getElementById('intro2-spacer');
+        var canvas    = document.getElementById('intro2-canvas');
+        var ctx       = canvas.getContext('2d');
+        var loader    = document.getElementById('intro2-loader');
+        var bar       = document.getElementById('intro2-loader-bar');
+        var spacer    = document.getElementById('intro2-spacer');
+        var overlay   = document.getElementById('frame-overlay');
+        var scrollHint = document.getElementById('scroll-hint');
 
-        // ── Viewport figé une seule fois — ne change jamais pendant la séquence ──
-        var vp = {
-          width:  window.innerWidth,
-          height: window.innerHeight,
-          dpr:    Math.min(window.devicePixelRatio || 1, 2)
-        };
-        canvas.width  = Math.round(vp.width  * vp.dpr);
-        canvas.height = Math.round(vp.height * vp.dpr);
+        var currentFrame = 0;
+        var started = false;
 
-        // Spacer = hauteur de scroll voulue
-        spacer.style.height = (SCROLL_H + vp.height) + 'px';
+        function getDpr() {
+          return Math.min(window.devicePixelRatio || 1, 2);
+        }
 
-        // ── drawImageCover — object-fit:cover, coordonnées entières ──
+        function resizeCanvas() {
+          var dpr = getDpr();
+          canvas.style.width  = '100vw';
+          canvas.style.height = '100vh';
+          canvas.width  = Math.round(window.innerWidth  * dpr);
+          canvas.height = Math.round(window.innerHeight * dpr);
+          if (spacer) spacer.style.height = (SCROLL_H + window.innerHeight) + 'px';
+          renderFrame(currentFrame);
+        }
+
         function drawImageCover(img) {
+          if (!img || !img.naturalWidth || !img.naturalHeight) return;
           var cw = canvas.width, ch = canvas.height;
           var iw = img.naturalWidth, ih = img.naturalHeight;
           var scale = Math.max(cw / iw, ch / ih);
-          var sw = iw * scale, sh = ih * scale;
-          var x = Math.round((cw - sw) / 2);
-          var y = Math.round((ch - sh) / 2);
+          var dw = iw * scale, dh = ih * scale;
+          var dx = Math.round((cw - dw) / 2);
+          var dy = Math.round((ch - dh) / 2);
           ctx.clearRect(0, 0, cw, ch);
-          ctx.drawImage(img, x, y, sw, sh);
+          ctx.drawImage(img, dx, dy, dw, dh);
         }
 
-        // ── renderFrame — unique point d'entrée pour dessiner une frame ──
-        var currentFrame = -1;
         function renderFrame(idx) {
           idx = Math.max(0, Math.min(FRAMES_COUNT - 1, idx));
           var img = _frames[idx];
-          if (!img || !img.complete) return;
+          if (!img || !img.complete || !img.naturalWidth) return;
           currentFrame = idx;
           drawImageCover(img);
         }
 
-        // ── Overlay affiches : show / hide sans toucher au canvas ──
-        var _overlay = document.getElementById('frame-overlay');
         function showPosterArrows() {
-          if (_overlay && !_overlay.classList.contains('visible')) _overlay.classList.add('visible');
-        }
-        function hidePosterArrows() {
-          if (_overlay && _overlay.classList.contains('visible')) _overlay.classList.remove('visible');
+          if (overlay && !overlay.classList.contains('visible')) overlay.classList.add('visible');
         }
 
-        // ── Boucle scrub : progress → renderFrame, scroll hint, overlay ──
-        var _scrollHint = document.getElementById('scroll-hint');
+        function hidePosterArrows() {
+          if (overlay && overlay.classList.contains('visible')) overlay.classList.remove('visible');
+        }
+
+        function getProgress() {
+          var scroll = window.scrollY || window.pageYOffset || 0;
+          return Math.max(0, Math.min(1, scroll / SCROLL_H));
+        }
+
         function tick() {
-          var scroll   = window.scrollY || window.pageYOffset || 0;
-          var progress = Math.max(0, Math.min(1, scroll / SCROLL_H));
+          var progress = getProgress();
           var idx = Math.round(progress * (FRAMES_COUNT - 1));
           if (progress >= 0.999) idx = FRAMES_COUNT - 1;
           renderFrame(idx);
 
-          // Scroll hint : visible au début et quand on revient vers le début
-          if (_scrollHint) {
-            if (progress > 0.04) _scrollHint.classList.add('hidden');
-            else                 _scrollHint.classList.remove('hidden');
+          if (scrollHint) {
+            if (progress > 0.04) scrollHint.classList.add('hidden');
+            else                 scrollHint.classList.remove('hidden');
           }
 
-          // Overlay affiches : apparaît à la fin, disparaît en scrollant en arrière
           if (progress >= 0.985) showPosterArrows();
           else                   hidePosterArrows();
 
           _introRafId = requestAnimationFrame(tick);
         }
 
-        // ── Clic sur le canvas → auto-scroll jusqu'à la fin ──
-        canvas.addEventListener('click', function() {
-          lenis.scrollTo(SCROLL_H, { duration: 2.0 });
-        });
-
-        // ── Phase 1 : attend la frame 0, la dessine, rend la section visible ──
-        function waitForFrame0() {
+        function startWhenFrame0Ready() {
           var f0 = _frames[0];
           if (f0 && f0.complete && f0.naturalWidth) {
-            // Cacher le loader instantanément (il couvre le canvas sinon)
-            if (loader) { loader.style.opacity = '0'; loader.style.display = 'none'; }
-            // Dessiner la frame 0 sur le canvas (pendant que phase-expo est encore display:none)
+            resizeCanvas();
             renderFrame(0);
-            // Rendre la section visible : le canvas a déjà son image, aucun flash noir
+            if (loader) { loader.style.opacity = '0'; loader.style.display = 'none'; }
             if (onFirstFrameReady) onFirstFrameReady();
-            // Démarrer la boucle scrub
-            _introRafId = requestAnimationFrame(tick);
-            // Phase 2 : surveille le chargement des frames restantes
-            waitForAllFrames();
-          } else {
-            setTimeout(waitForFrame0, 30);
-          }
-        }
-
-        // ── Phase 2 : log quand tout est chargé + check cohérence ──
-        function waitForAllFrames() {
-          if (_framesReady >= FRAMES_COUNT) {
-            console.log('[initImageSequence] ' + FRAMES_COUNT + ' frames chargées');
-            var fw = _frames[0].naturalWidth, fh = _frames[0].naturalHeight;
-            for (var ci = 1; ci < FRAMES_COUNT; ci++) {
-              if (_frames[ci].naturalWidth !== fw || _frames[ci].naturalHeight !== fh)
-                console.warn('[frame-mismatch] frame ' + ci, _frames[ci].naturalWidth + 'x' + _frames[ci].naturalHeight, '≠', fw + 'x' + fh);
+            if (!started) {
+              started = true;
+              _introRafId = requestAnimationFrame(tick);
             }
+            checkFrameSizes();
           } else {
-            if (bar) bar.style.width = Math.round(_framesReady / FRAMES_COUNT * 100) + '%';
-            setTimeout(waitForAllFrames, 100);
+            setTimeout(startWhenFrame0Ready, 30);
           }
         }
 
-        waitForFrame0();
+        function checkFrameSizes() {
+          if (!_frames[0] || !_frames[0].naturalWidth) return;
+          var fw = _frames[0].naturalWidth, fh = _frames[0].naturalHeight;
+          for (var i = 1; i < FRAMES_COUNT; i++) {
+            if (!_frames[i]) continue;
+            if (_frames[i].naturalWidth && (_frames[i].naturalWidth !== fw || _frames[i].naturalHeight !== fh)) {
+              console.warn('[frame-mismatch] frame ' + i, _frames[i].naturalWidth + 'x' + _frames[i].naturalHeight, '≠', fw + 'x' + fh);
+            }
+          }
+        }
+
+        window.removeEventListener('resize', resizeCanvas);
+        window.addEventListener('resize', resizeCanvas);
+
+        canvas.onclick = function() {
+          lenis.scrollTo(SCROLL_H, { duration: 2.0 });
+        };
+
+        startWhenFrame0Ready();
       }
 
       // ═══════════════════════════════════════════════════════
