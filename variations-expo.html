@@ -1507,6 +1507,37 @@
           scrollHint.onclick = handleExpoClick;
         }
 
+        function isPhaseExpoActive() {
+          var phase = document.getElementById('phase-expo');
+          return phase && window.getComputedStyle(phase).display !== 'none';
+        }
+
+        function shouldIgnoreExpoClick(e) {
+          var overlay = document.getElementById('frame-overlay');
+          var lightbox = document.getElementById('poster-lightbox');
+          if (lightbox && lightbox.classList.contains('open')) return true;
+          if (overlay && overlay.classList.contains('visible')) return true;
+          if (e.target.closest && e.target.closest('.site-header')) return true;
+          if (
+            e.target.closest &&
+            e.target.closest('a, button, input, textarea, select') &&
+            !e.target.closest('#scroll-hint')
+          ) return true;
+          return false;
+        }
+
+        if (window.__expoGlobalClickHandler) {
+          document.removeEventListener('click', window.__expoGlobalClickHandler, true);
+        }
+
+        window.__expoGlobalClickHandler = function(e) {
+          if (!isPhaseExpoActive()) return;
+          if (shouldIgnoreExpoClick(e)) return;
+          goToEnd();
+        };
+
+        document.addEventListener('click', window.__expoGlobalClickHandler, true);
+
         startWhenFrame0Ready();
       }
 
