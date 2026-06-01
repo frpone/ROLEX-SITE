@@ -536,12 +536,19 @@
     /* ─── Phase expo ─── */
     #phase-expo { display: none; }
 
+    #phase-expo,
+    #intro2-fixed,
+    #intro2-canvas {
+      pointer-events: auto;
+    }
+
     /* Canvas fixed — reste en place pendant le scroll du spacer */
     #intro2-fixed {
       position: fixed;
       inset: 0;
       z-index: 6;
       background: #000;
+      cursor: pointer;
     }
     #intro2-canvas {
       position: fixed;
@@ -1480,14 +1487,24 @@
           });
         }
 
-        canvas.onclick = function() {
+        var introFixed = document.getElementById('intro2-fixed');
+
+        function handleExpoClick(e) {
+          var overlay = document.getElementById('frame-overlay');
+          var lightbox = document.getElementById('poster-lightbox');
+          if (overlay && overlay.classList.contains('visible')) return;
+          if (lightbox && lightbox.classList.contains('open')) return;
           goToEnd();
-        };
+        }
+
+        canvas.onclick = handleExpoClick;
+
+        if (introFixed) {
+          introFixed.onclick = handleExpoClick;
+        }
 
         if (scrollHint) {
-          scrollHint.onclick = function() {
-            goToEnd();
-          };
+          scrollHint.onclick = handleExpoClick;
         }
 
         startWhenFrame0Ready();
