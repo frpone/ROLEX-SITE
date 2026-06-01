@@ -573,18 +573,18 @@
       background: rgba(255,255,255,0.7);
       transition: width 0.1s linear;
     }
-    /* Scroll hint — fixed, centré dans le viewport */
+    /* Scroll hint — fixed, centré sur le viewport, en bas de l'image */
     #scroll-hint {
       position: fixed;
       left: 50%;
-      top: 74%;
-      transform: translate(-50%, -50%);
+      bottom: clamp(28px, 4.2vh, 48px);
+      transform: translateX(-50%);
       z-index: 15;
       text-align: center;
       font-family: var(--ff-display, 'sweet-sans-pro', 'Helvetica Neue', Arial, sans-serif);
-      font-size: clamp(12px, 1.05vw, 17px);
-      font-weight: 650;
-      letter-spacing: 0.48em;
+      font-size: clamp(11px, 0.95vw, 15px);
+      font-weight: 700;
+      letter-spacing: 0.45em;
       text-transform: uppercase;
       color: rgba(10, 14, 18, 0.82);
       white-space: nowrap;
@@ -595,9 +595,9 @@
     #scroll-hint.hidden { opacity: 0; }
     .scroll-enter-arrow {
       display: block;
-      margin: 14px auto 0;
-      width: 18px;
-      height: 18px;
+      margin: 0 auto 12px;
+      width: 16px;
+      height: 16px;
       border-right: 2px solid rgba(10, 14, 18, 0.72);
       border-bottom: 2px solid rgba(10, 14, 18, 0.72);
       transform: rotate(45deg);
@@ -896,8 +896,8 @@
       <div id="intro2-spacer"></div>
       <!-- Scroll hint : position fixed, en dehors de tout parent transformé -->
       <div id="scroll-hint">
-        Scroll to enter
         <span class="scroll-enter-arrow"></span>
+        Scroll to enter
       </div>
     </div>
 
@@ -1321,7 +1321,7 @@
       var SCROLL_H   = 2500;  // px de scroll total
       var _introRafId = null;
 
-      function initImageSequence() {
+      function initImageSequence(onFirstFrameReady) {
         if (_introRafId) { cancelAnimationFrame(_introRafId); _introRafId = null; }
 
         var canvas  = document.getElementById('intro2-canvas');
@@ -1400,27 +1400,41 @@
           lenis.scrollTo(SCROLL_H, { duration: 2.0 });
         });
 
-        // ── Démarrer quand toutes les frames sont prêtes ──
-        function tryStart() {
-          if (_framesReady >= FRAMES_COUNT) {
-            if (loader) { loader.style.opacity = '0'; setTimeout(function() { loader.style.display = 'none'; }, 400); }
+        // ── Phase 1 : attend la frame 0, la dessine, rend la section visible ──
+        function waitForFrame0() {
+          var f0 = _frames[0];
+          if (f0 && f0.complete && f0.naturalWidth) {
+            // Cacher le loader instantanément (il couvre le canvas sinon)
+            if (loader) { loader.style.opacity = '0'; loader.style.display = 'none'; }
+            // Dessiner la frame 0 sur le canvas (pendant que phase-expo est encore display:none)
             renderFrame(0);
+            // Rendre la section visible : le canvas a déjà son image, aucun flash noir
+            if (onFirstFrameReady) onFirstFrameReady();
+            // Démarrer la boucle scrub
             _introRafId = requestAnimationFrame(tick);
-            console.log('[initImageSequence] ' + FRAMES_COUNT + ' frames → scrub démarré');
+            // Phase 2 : surveille le chargement des frames restantes
+            waitForAllFrames();
+          } else {
+            setTimeout(waitForFrame0, 30);
+          }
+        }
 
-            // Vérification de cohérence des dimensions (dev check)
-            var firstW = _frames[0].naturalWidth, firstH = _frames[0].naturalHeight;
+        // ── Phase 2 : log quand tout est chargé + check cohérence ──
+        function waitForAllFrames() {
+          if (_framesReady >= FRAMES_COUNT) {
+            console.log('[initImageSequence] ' + FRAMES_COUNT + ' frames chargées');
+            var fw = _frames[0].naturalWidth, fh = _frames[0].naturalHeight;
             for (var ci = 1; ci < FRAMES_COUNT; ci++) {
-              if (_frames[ci].naturalWidth !== firstW || _frames[ci].naturalHeight !== firstH) {
-                console.warn('[frame-mismatch] frame', ci, _frames[ci].naturalWidth, 'x', _frames[ci].naturalHeight, '≠', firstW, 'x', firstH);
-              }
+              if (_frames[ci].naturalWidth !== fw || _frames[ci].naturalHeight !== fh)
+                console.warn('[frame-mismatch] frame ' + ci, _frames[ci].naturalWidth + 'x' + _frames[ci].naturalHeight, '≠', fw + 'x' + fh);
             }
           } else {
             if (bar) bar.style.width = Math.round(_framesReady / FRAMES_COUNT * 100) + '%';
-            setTimeout(tryStart, 50);
+            setTimeout(waitForAllFrames, 100);
           }
         }
-        tryStart();
+
+        waitForFrame0();
       }
 
       // ═══════════════════════════════════════════════════════
@@ -1442,16 +1456,14 @@
           document.getElementById('bgLight').style.display = 'none';
           document.getElementById('bgDark').style.display = 'none';
 
-          // 4. Afficher la phase expo (canvas fixed + spacer)
-          document.getElementById('phase-expo').style.display = 'block';
-
-          // 5. Scroll au top (Lenis + natif)
+          // 4. Scroll au top avant d'afficher quoi que ce soit
           lenis.scrollTo(0, { immediate: true });
           window.scrollTo(0, 0);
 
-          // 6. Démarrer la séquence d'images (frames déjà pré-chargées en arrière-plan)
-          requestAnimationFrame(function() {
-            initImageSequence();
+          // 5. Démarrer la séquence : phase-expo n'est rendue visible
+          //    qu'une fois la première frame dessinée (pas de flash noir)
+          initImageSequence(function onFirstFrameReady() {
+            document.getElementById('phase-expo').style.display = 'block';
           });
 
         }, 650); // attend la fin du fade-out du poster (600ms + marge)
