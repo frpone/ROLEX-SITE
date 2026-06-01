@@ -39,6 +39,10 @@
       --tr-tight: -0.025em;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    html {
+      overflow-y: scroll;
+      scrollbar-gutter: stable;
+    }
     html, body {
       background: var(--bg-light);
       color: var(--ink);
@@ -539,9 +543,14 @@
       background: #000;
     }
     #intro2-canvas {
-      width: 100%;
-      height: 100%;
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
       display: block;
+      transform: none !important;
+      left: 0 !important;
+      top: 0 !important;
     }
     /* Loader frames */
     #intro2-loader {
@@ -564,40 +573,39 @@
       background: rgba(255,255,255,0.7);
       transition: width 0.1s linear;
     }
-    /* Scroll hint — chevron + texte au bas du canvas, disparaît au premier scroll */
+    /* Scroll hint — fixed, centré dans le viewport */
     #scroll-hint {
-      position: absolute;
-      bottom: 22%;
+      position: fixed;
       left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
+      top: 74%;
+      transform: translate(-50%, -50%);
+      z-index: 15;
+      text-align: center;
+      font-family: var(--ff-display, 'sweet-sans-pro', 'Helvetica Neue', Arial, sans-serif);
+      font-size: clamp(12px, 1.05vw, 17px);
+      font-weight: 650;
+      letter-spacing: 0.48em;
+      text-transform: uppercase;
+      color: rgba(10, 14, 18, 0.82);
+      white-space: nowrap;
+      pointer-events: none;
       opacity: 1;
       transition: opacity 0.8s ease;
-      pointer-events: auto;
-      cursor: pointer;
-      z-index: 3;
     }
-    #scroll-hint.hidden { opacity: 0; pointer-events: none; }
-    #scroll-hint span {
-      font-family: var(--ff-display);
-      font-size: 16px;
-      font-weight: 700;
-      letter-spacing: 0.35em;
-      text-transform: uppercase;
-      color: rgba(20, 22, 28, 0.95);
-      white-space: nowrap;
-      text-shadow: 0 1px 12px rgba(255,255,255,0.6);
-    }
-    #scroll-hint svg {
-      width: 28px;
+    #scroll-hint.hidden { opacity: 0; }
+    .scroll-enter-arrow {
+      display: block;
+      margin: 14px auto 0;
+      width: 18px;
+      height: 18px;
+      border-right: 2px solid rgba(10, 14, 18, 0.72);
+      border-bottom: 2px solid rgba(10, 14, 18, 0.72);
+      transform: rotate(45deg);
       animation: scrollHintBounce 2s ease-in-out infinite;
     }
     @keyframes scrollHintBounce {
-      0%, 100% { transform: translateY(0);   opacity: 0.80; }
-      50%       { transform: translateY(6px); opacity: 1.00; }
+      0%, 100% { transform: rotate(45deg) translateY(0);   opacity: 0.72; }
+      50%       { transform: rotate(45deg) translateY(4px); opacity: 1.00; }
     }
 
     /* Spacer : fournit la hauteur scrollable (height définie en JS) */
@@ -883,16 +891,14 @@
             <div id="intro2-loader-bar"></div>
           </div>
         </div>
-        <div id="scroll-hint">
-          <span>Scroll to enter</span>
-          <svg width="20" height="14" viewBox="0 0 20 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M1 2L10 12L19 2" stroke="rgba(20,22,28,0.95)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
       </div>
       <!-- height = SCROLL_H + window.innerHeight, calculé en JS -->
       <div id="intro2-spacer"></div>
-
+      <!-- Scroll hint : position fixed, en dehors de tout parent transformé -->
+      <div id="scroll-hint">
+        Scroll to enter
+        <span class="scroll-enter-arrow"></span>
+      </div>
     </div>
 
     <!-- ══ OVERLAY affiches — visible dès que le scroll s'arrête sur la dernière frame ══
@@ -1323,133 +1329,98 @@
         var loader  = document.getElementById('intro2-loader');
         var bar     = document.getElementById('intro2-loader-bar');
         var spacer  = document.getElementById('intro2-spacer');
-        var lastIdx = -1;
-        var _scrollStopped = false;
 
-        // Taille canvas = taille viewport (pixel perfect)
-        function resizeCanvas() {
-          if (_scrollStopped) return; // ne pas redimensionner après arrêt (évite le saut scrollbar)
-          var dpr = window.devicePixelRatio || 1;
-          // Bitmap en pixels physiques — évite le flou sur les écrans Retina (DPR=2)
-          canvas.width  = window.innerWidth  * dpr;
-          canvas.height = window.innerHeight * dpr;
-          if (lastIdx >= 0 && _frames[lastIdx] && _frames[lastIdx].complete) {
-            drawIdx(lastIdx);
-          }
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
+        // ── Viewport figé une seule fois — ne change jamais pendant la séquence ──
+        var vp = {
+          width:  window.innerWidth,
+          height: window.innerHeight,
+          dpr:    Math.min(window.devicePixelRatio || 1, 2)
+        };
+        canvas.width  = Math.round(vp.width  * vp.dpr);
+        canvas.height = Math.round(vp.height * vp.dpr);
 
         // Spacer = hauteur de scroll voulue
-        spacer.style.height = (SCROLL_H + window.innerHeight) + 'px';
+        spacer.style.height = (SCROLL_H + vp.height) + 'px';
 
-        // Dessin d'un frame : object-fit:cover (centre, recadre)
-        function drawIdx(idx) {
-          var img = _frames[idx];
-          if (!img || !img.naturalWidth) return;
+        // ── drawImageCover — object-fit:cover, coordonnées entières ──
+        function drawImageCover(img) {
           var cw = canvas.width, ch = canvas.height;
           var iw = img.naturalWidth, ih = img.naturalHeight;
           var scale = Math.max(cw / iw, ch / ih);
-          var dw = iw * scale, dh = ih * scale;
-          var dx = (cw - dw) / 2, dy = (ch - dh) / 2;
-          ctx.drawImage(img, dx, dy, dw, dh);
-          lastIdx = idx;
+          var sw = iw * scale, sh = ih * scale;
+          var x = Math.round((cw - sw) / 2);
+          var y = Math.round((ch - sh) / 2);
+          ctx.clearRect(0, 0, cw, ch);
+          ctx.drawImage(img, x, y, sw, sh);
         }
 
-        // Frames étalonnées à la source — aucun filtre CSS supplémentaire
-        canvas.style.filter = '';
+        // ── renderFrame — unique point d'entrée pour dessiner une frame ──
+        var currentFrame = -1;
+        function renderFrame(idx) {
+          idx = Math.max(0, Math.min(FRAMES_COUNT - 1, idx));
+          var img = _frames[idx];
+          if (!img || !img.complete) return;
+          currentFrame = idx;
+          drawImageCover(img);
+        }
 
-        // Boucle scrub : progress → index frame
+        // ── Overlay affiches : show / hide sans toucher au canvas ──
+        var _overlay = document.getElementById('frame-overlay');
+        function showPosterArrows() {
+          if (_overlay && !_overlay.classList.contains('visible')) _overlay.classList.add('visible');
+        }
+        function hidePosterArrows() {
+          if (_overlay && _overlay.classList.contains('visible')) _overlay.classList.remove('visible');
+        }
+
+        // ── Boucle scrub : progress → renderFrame, scroll hint, overlay ──
         var _scrollHint = document.getElementById('scroll-hint');
         function tick() {
           var scroll   = window.scrollY || window.pageYOffset || 0;
           var progress = Math.max(0, Math.min(1, scroll / SCROLL_H));
-          // Snap à la dernière frame uniquement dans le dernier 1% — évite le saut visuel
-          var idx = progress >= 0.99
-            ? FRAMES_COUNT - 1
-            : Math.min(FRAMES_COUNT - 1, Math.floor(progress * FRAMES_COUNT));
-          if (idx !== lastIdx) drawIdx(idx);
-          // Scroll hint : visible au début et quand on revient en arrière
+          var idx = Math.round(progress * (FRAMES_COUNT - 1));
+          if (progress >= 0.999) idx = FRAMES_COUNT - 1;
+          renderFrame(idx);
+
+          // Scroll hint : visible au début et quand on revient vers le début
           if (_scrollHint) {
             if (progress > 0.04) _scrollHint.classList.add('hidden');
             else                 _scrollHint.classList.remove('hidden');
           }
-          // Arrêt du scroll + affichage overlay quand on atteint la dernière frame
-          if (progress >= 0.99 && !_scrollStopped) {
-            _scrollStopped = true;
-            // Verrouille la taille CSS AVANT lenis.stop() — overflow:hidden sur <html>
-            // peut faire recalculer les dimensions des éléments position:fixed,
-            // ce qui décalerait visuellement le canvas même si ses pixels ne changent pas.
-            canvas.style.width  = window.innerWidth  + 'px';
-            canvas.style.height = window.innerHeight + 'px';
-            lenis.stop();
-            var overlay = document.getElementById('frame-overlay');
-            if (overlay) overlay.classList.add('visible');
-          }
+
+          // Overlay affiches : apparaît à la fin, disparaît en scrollant en arrière
+          if (progress >= 0.985) showPosterArrows();
+          else                   hidePosterArrows();
+
           _introRafId = requestAnimationFrame(tick);
         }
 
-        // Démarrer quand toutes les frames sont prêtes
+        // ── Clic sur le canvas → auto-scroll jusqu'à la fin ──
+        canvas.addEventListener('click', function() {
+          lenis.scrollTo(SCROLL_H, { duration: 2.0 });
+        });
+
+        // ── Démarrer quand toutes les frames sont prêtes ──
         function tryStart() {
           if (_framesReady >= FRAMES_COUNT) {
-            // Masquer le loader, démarrer le scrub
             if (loader) { loader.style.opacity = '0'; setTimeout(function() { loader.style.display = 'none'; }, 400); }
-            drawIdx(0);   // première frame immédiate
+            renderFrame(0);
             _introRafId = requestAnimationFrame(tick);
-            console.log('[initImageSequence] ' + FRAMES_COUNT + ' frames prêtes → scrub démarré');
+            console.log('[initImageSequence] ' + FRAMES_COUNT + ' frames → scrub démarré');
+
+            // Vérification de cohérence des dimensions (dev check)
+            var firstW = _frames[0].naturalWidth, firstH = _frames[0].naturalHeight;
+            for (var ci = 1; ci < FRAMES_COUNT; ci++) {
+              if (_frames[ci].naturalWidth !== firstW || _frames[ci].naturalHeight !== firstH) {
+                console.warn('[frame-mismatch] frame', ci, _frames[ci].naturalWidth, 'x', _frames[ci].naturalHeight, '≠', firstW, 'x', firstH);
+              }
+            }
           } else {
-            // Attendre encore
             if (bar) bar.style.width = Math.round(_framesReady / FRAMES_COUNT * 100) + '%';
             setTimeout(tryStart, 50);
           }
         }
         tryStart();
-
-        // ── Déverrouille le scroll arrière (depuis fin d'animation ou overlay) ──
-        // IMPORTANT: lenis.start() AVANT window.scrollTo() — sinon tick() voit
-        // progress=1 et re-déclenche lenis.stop() immédiatement.
-        function unlockScroll() {
-          _scrollStopped = false;
-          var overlay = document.getElementById('frame-overlay');
-          if (overlay) overlay.classList.remove('visible');
-          // Déverrouille la taille CSS du canvas (revenue à 100%/100%)
-          canvas.style.width  = '';
-          canvas.style.height = '';
-          lenis.start();
-          // window.scrollTo() natif = synchrone, garantit que le prochain tick()
-          // voit progress < 0.99 avant que lenis ne redonne la main.
-          window.scrollTo(0, Math.floor(SCROLL_H * 0.92));
-        }
-
-        // ── Clic sur le canvas → auto-scroll jusqu'à la fin ──
-        canvas.addEventListener('click', function() {
-          if (_scrollStopped) return;
-          lenis.scrollTo(SCROLL_H, { duration: 2.0 });
-        });
-
-        // ── Clic sur scroll-hint → auto-scroll aussi ──
-        if (_scrollHint) {
-          _scrollHint.addEventListener('click', function() {
-            if (_scrollStopped) return;
-            lenis.scrollTo(SCROLL_H, { duration: 2.0 });
-          });
-        }
-
-        // ── Scroll arrière (molette vers le haut) depuis la dernière frame ──
-        window.addEventListener('wheel', function(e) {
-          if (_scrollStopped && e.deltaY < 0) unlockScroll();
-        }, { passive: true });
-
-        // ── Touch scroll arrière depuis la dernière frame ──
-        var _touchStartY = 0;
-        window.addEventListener('touchstart', function(e) {
-          _touchStartY = e.touches[0].clientY;
-        }, { passive: true });
-        window.addEventListener('touchend', function(e) {
-          if (_scrollStopped && (e.changedTouches[0].clientY - _touchStartY) > 30) {
-            unlockScroll();
-          }
-        }, { passive: true });
       }
 
       // ═══════════════════════════════════════════════════════
