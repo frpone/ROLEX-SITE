@@ -27,6 +27,7 @@
       --text-dark-dim: #45433f;
       --rolex-green: #00513b;
       --rolex-blue: #0e3b9a;
+      --scroll-hint-offset-x: 0px;
       --accent-yellow: #d9c87a;
       --accent-yellow-dim: #8a7e4a;
       --string: #c8b896;
@@ -576,10 +577,15 @@
     /* Scroll hint — fixed, centré sur le viewport, en bas de l'image */
     #scroll-hint {
       position: fixed;
-      left: 50%;
+      left: calc(50% + var(--scroll-hint-offset-x));
       bottom: clamp(22px, 3.2vh, 42px);
       transform: translateX(-50%);
       z-index: 15;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
       text-align: center;
       font-family: var(--ff-display, 'sweet-sans-pro', 'Helvetica Neue', Arial, sans-serif);
       font-size: clamp(11px, 0.95vw, 15px);
@@ -588,18 +594,21 @@
       text-transform: uppercase;
       color: rgba(10, 14, 18, 0.82);
       white-space: nowrap;
-      pointer-events: none;
+      pointer-events: auto;
       opacity: 1;
       transition: opacity 0.8s ease;
+      cursor: pointer;
     }
-    #scroll-hint.hidden { opacity: 0; }
+    #scroll-hint.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
     .scroll-enter-arrow {
       display: block;
-      margin: 0 auto 12px;
       width: 16px;
       height: 16px;
-      border-right: 2px solid rgba(10, 14, 18, 0.72);
-      border-bottom: 2px solid rgba(10, 14, 18, 0.72);
+      border-right: 2.2px solid rgba(10, 14, 18, 0.74);
+      border-bottom: 2.2px solid rgba(10, 14, 18, 0.74);
       transform: rotate(45deg);
       animation: scrollHintBounce 2s ease-in-out infinite;
     }
@@ -1433,9 +1442,23 @@
         window.removeEventListener('resize', resizeCanvas);
         window.addEventListener('resize', resizeCanvas);
 
+        function goToEnd() {
+          if (!lenis) return;
+          lenis.scrollTo(SCROLL_H, {
+            duration: 2.4,
+            easing: function(t) { return 1 - Math.pow(1 - t, 3); }
+          });
+        }
+
         canvas.onclick = function() {
-          lenis.scrollTo(SCROLL_H, { duration: 2.0 });
+          goToEnd();
         };
+
+        if (scrollHint) {
+          scrollHint.onclick = function() {
+            goToEnd();
+          };
+        }
 
         startWhenFrame0Ready();
       }
