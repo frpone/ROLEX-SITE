@@ -574,12 +574,13 @@
       background: rgba(255,255,255,0.7);
       transition: width 0.1s linear;
     }
-    /* Scroll hint — fixed, centré sur le viewport, en bas de l'image */
+    /* Scroll hint — positionné par JS via getCoverRect() */
     #scroll-hint {
       position: fixed;
-      left: calc(50% + var(--scroll-hint-offset-x));
-      bottom: clamp(22px, 3.2vh, 42px);
-      transform: translateX(-50%);
+      left: 50%;
+      top: 92.5%;
+      bottom: auto;
+      transform: translate(-50%, -50%);
       z-index: 15;
       display: flex;
       flex-direction: column;
@@ -1351,6 +1352,33 @@
           return Math.min(window.devicePixelRatio || 1, 2);
         }
 
+        var HINT_SOURCE_X = 0.524;
+        var HINT_SOURCE_Y = 0.925;
+
+        function getCoverRect() {
+          var img = _frames[currentFrame] || _frames[0];
+          if (!img || !img.naturalWidth) return null;
+          var dpr = getDpr();
+          var cw = canvas.width, ch = canvas.height;
+          var iw = img.naturalWidth, ih = img.naturalHeight;
+          var scale = Math.max(cw / iw, ch / ih);
+          var dw = iw * scale, dh = ih * scale;
+          var dx = Math.round((cw - dw) / 2);
+          var dy = Math.round((ch - dh) / 2);
+          // Convertit pixels canvas → pixels CSS
+          return { x: dx / dpr, y: dy / dpr, w: dw / dpr, h: dh / dpr };
+        }
+
+        function positionScrollHint() {
+          if (!scrollHint) return;
+          var rect = getCoverRect();
+          if (!rect) return;
+          var x = rect.x + rect.w * HINT_SOURCE_X;
+          var y = rect.y + rect.h * HINT_SOURCE_Y;
+          scrollHint.style.left = x + 'px';
+          scrollHint.style.top  = y + 'px';
+        }
+
         function resizeCanvas() {
           var dpr = getDpr();
           canvas.style.width  = '100vw';
@@ -1359,6 +1387,7 @@
           canvas.height = Math.round(window.innerHeight * dpr);
           if (spacer) spacer.style.height = (SCROLL_H + window.innerHeight) + 'px';
           renderFrame(currentFrame);
+          positionScrollHint();
         }
 
         function drawImageCover(img) {
@@ -1417,6 +1446,7 @@
             resizeCanvas();
             renderFrame(0);
             if (loader) { loader.style.opacity = '0'; loader.style.display = 'none'; }
+            positionScrollHint();
             if (onFirstFrameReady) onFirstFrameReady();
             if (!started) {
               started = true;
