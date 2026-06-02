@@ -150,7 +150,7 @@
   <button class="lb-nav" id="lb-prev">&#8249;</button>
   <button class="lb-nav" id="lb-next">&#8250;</button>
   <button id="lb-close">&#10005;</button>
-  <div id="lb-zoom-hint">Scroll pour zoomer · Glisser pour déplacer</div>
+  <div id="lb-zoom-hint">Scroll to zoom · Drag to pan</div>
 </div>
 
 <script>
@@ -226,11 +226,8 @@
     t.addEventListener('click', () => openLightbox(+t.dataset.idx));
   });
 
-  // ── Fermer
-  btnClose.addEventListener('click', closeLightbox);
-  lb.addEventListener('click', e => {
-    if (e.target === lb) closeLightbox();
-  });
+  // ── Fermer (bouton ✕ uniquement — le fond ne ferme plus, il zoom)
+  btnClose.addEventListener('click', e => { e.stopPropagation(); closeLightbox(); });
 
   // ── Navigation prev/next
   btnPrev.addEventListener('click', e => { e.stopPropagation(); goTo(currentIdx - 1); });
@@ -256,6 +253,26 @@
 
     applyTransform();
   }, { passive: false });
+
+  // ── Clic = zoom ×2 centré sur le curseur, ou reset si déjà zoomé
+  let clickZoomPending = false;
+  lb.addEventListener('click', e => {
+    if (e.target === btnPrev || e.target === btnNext || e.target === btnClose) return;
+    if (clickZoomPending) { clickZoomPending = false; return; }
+    const cx = e.clientX - window.innerWidth  / 2;
+    const cy = e.clientY - window.innerHeight / 2;
+    if (scale > 1) {
+      scale = 1; tx = 0; ty = 0;
+    } else {
+      const prevScale = scale;
+      scale = 2;
+      const ratio = scale / prevScale;
+      tx = cx + (tx - cx) * ratio;
+      ty = cy + (ty - cy) * ratio;
+      clampTranslation();
+    }
+    applyTransform();
+  });
 
   // ── Pan au drag
   lb.addEventListener('mousedown', e => {
