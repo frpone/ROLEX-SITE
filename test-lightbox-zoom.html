@@ -155,7 +155,7 @@
 
 <script>
   const ZOOM_MIN = 1;
-  const ZOOM_MAX = 8;
+  const ZOOM_MAX = 6;
   const ZOOM_STEP = 0.12; // sensibilité scroll
 
   const thumbs = Array.from(document.querySelectorAll('.thumb'));
@@ -283,9 +283,15 @@
     dragMoved = false;
     applyTransform();
 
-    // Si pas de mouvement → c'est un clic → zoom
+    // Si pas de mouvement → c'est un clic
     if (!wasDragging) {
       if (e.target === btnPrev || e.target === btnNext || e.target === btnClose) return;
+      // Clic en dehors de l'image → fermer
+      const imgRect = img.getBoundingClientRect();
+      const outsideImg = e.clientX < imgRect.left || e.clientX > imgRect.right ||
+                         e.clientY < imgRect.top  || e.clientY > imgRect.bottom;
+      if (outsideImg) { closeLightbox(); return; }
+      // Clic sur l'image → zoom ×2 / reset
       const cx = e.clientX - window.innerWidth  / 2;
       const cy = e.clientY - window.innerHeight / 2;
       if (scale > 1) {
