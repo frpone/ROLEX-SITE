@@ -1693,9 +1693,11 @@
           _dragging = false; _dragMoved = false;
           applyTransform();
           if (!wasDrag) {
-            if (e.target === lbClose) return;
-            // Clic sur l'image → zoom ×2 / reset
-            if (e.target === lbImg) {
+            var btnPrev = document.getElementById('lb-prev');
+            var btnNext = document.getElementById('lb-next');
+            if (e.target === lbClose || e.target === btnPrev || e.target === btnNext) return;
+            // Clic dans la zone image → zoom ×2 / reset
+            if (lbScroll.contains(e.target)) {
               var cx = e.clientX - window.innerWidth  / 2;
               var cy = e.clientY - window.innerHeight / 2;
               if (_scale > 1) { _scale = 1; _tx = 0; _ty = 0; }
