@@ -1631,58 +1631,82 @@
           openLightbox((currentZoneIdx + 1) % zones.length);
         });
 
-        // ── Zoom ×2 sur toute l'image + drag sur toute la lightbox ──
-        var ZOOM = 2;
-        var _zoomed = false;
-        var _panX = 0, _panY = 0;
-        var _didDrag = false;
-        var _dragX0, _dragY0, _panX0, _panY0;
+        // ── Zoom scroll + clic + drag ──
+        var ZOOM_MIN = 1, ZOOM_MAX = 6, ZOOM_STEP = 0.12;
+        var _scale = 1, _tx = 0, _ty = 0;
+        var _dragging = false, _dragMoved = false;
+        var _dragX0, _dragY0, _tx0, _ty0;
 
         function applyTransform() {
-          if (_zoomed) {
-            // translate en espace pré-scale
-            lbImg.style.transform = 'scale(' + ZOOM + ') translate(' + (_panX / ZOOM) + 'px,' + (_panY / ZOOM) + 'px)';
-          } else {
-            lbImg.style.transform = '';
-          }
+          lbScroll.style.transform = 'translate(' + _tx + 'px,' + _ty + 'px) scale(' + _scale + ')';
+          lightbox.style.cursor = _scale > 1 ? (_dragging ? 'grabbing' : 'grab') : 'zoom-in';
+        }
+
+        function clampPan() {
+          var r = lbImg.getBoundingClientRect();
+          var maxX = Math.max(0, (r.width  - window.innerWidth)  / 2);
+          var maxY = Math.max(0, (r.height - window.innerHeight) / 2);
+          _tx = Math.max(-maxX, Math.min(maxX, _tx));
+          _ty = Math.max(-maxY, Math.min(maxY, _ty));
         }
 
         function resetZoom() {
-          _zoomed = false; _panX = 0; _panY = 0; _didDrag = false;
-          lbScroll.classList.remove('zoomed', 'grabbing');
-          applyTransform();
+          _scale = 1; _tx = 0; _ty = 0; _dragging = false; _dragMoved = false;
+          lbScroll.style.transform = '';
+          lightbox.style.cursor = 'zoom-in';
         }
 
-        // Clic sur l'image → zoom in / zoom out
-        lbScroll.addEventListener('click', function() {
-          if (_didDrag) return;
-          _zoomed = !_zoomed;
-          _panX = 0; _panY = 0;
-          lbScroll.classList.toggle('zoomed', _zoomed);
-          if (!_zoomed) lbScroll.classList.remove('grabbing');
+        // Scroll → zoom centré sur le curseur
+        lightbox.addEventListener('wheel', function(e) {
+          e.preventDefault();
+          var delta = e.deltaY < 0 ? 1 : -1;
+          var prev = _scale;
+          _scale = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, _scale * (1 + delta * ZOOM_STEP)));
+          var cx = e.clientX - window.innerWidth  / 2;
+          var cy = e.clientY - window.innerHeight / 2;
+          var ratio = _scale / prev;
+          _tx = cx + (_tx - cx) * ratio;
+          _ty = cy + (_ty - cy) * ratio;
+          if (_scale === ZOOM_MIN) { _tx = 0; _ty = 0; }
+          else clampPan();
           applyTransform();
-        });
+        }, { passive: false });
 
-        // Drag sur TOUTE la lightbox quand zoomé (image peut dépasser le cadre)
+        // Mousedown → début drag
         lightbox.addEventListener('mousedown', function(e) {
-          if (!_zoomed) return;
           if (e.target === lbClose) return;
-          _didDrag = false;
+          _dragging = true; _dragMoved = false;
           _dragX0 = e.clientX; _dragY0 = e.clientY;
-          _panX0 = _panX;      _panY0 = _panY;
-          lbScroll.classList.add('grabbing');
+          _tx0 = _tx; _ty0 = _ty;
           e.preventDefault();
         });
         document.addEventListener('mousemove', function(e) {
-          if (!_zoomed || _dragX0 === undefined) return;
+          if (!_dragging) return;
           var dx = e.clientX - _dragX0, dy = e.clientY - _dragY0;
-          if (Math.abs(dx) > 3 || Math.abs(dy) > 3) _didDrag = true;
-          if (_didDrag) { _panX = _panX0 + dx; _panY = _panY0 + dy; applyTransform(); }
+          if (Math.abs(dx) > 4 || Math.abs(dy) > 4) _dragMoved = true;
+          if (!_dragMoved) return;
+          _tx = _tx0 + dx; _ty = _ty0 + dy;
+          clampPan();
+          applyTransform();
         });
-        document.addEventListener('mouseup', function() {
-          lbScroll.classList.remove('grabbing');
-          _dragX0 = undefined;
-          setTimeout(function() { _didDrag = false; }, 30);
+        document.addEventListener('mouseup', function(e) {
+          var wasDrag = _dragMoved;
+          _dragging = false; _dragMoved = false;
+          applyTransform();
+          if (!wasDrag) {
+            if (e.target === lbClose) return;
+            // Clic → zoom ×2 / reset
+            var cx = e.clientX - window.innerWidth  / 2;
+            var cy = e.clientY - window.innerHeight / 2;
+            if (_scale > 1) { _scale = 1; _tx = 0; _ty = 0; }
+            else {
+              var prev = _scale; _scale = 2;
+              _tx = cx + (_tx - cx) * (_scale / prev);
+              _ty = cy + (_ty - cy) * (_scale / prev);
+              clampPan();
+            }
+            applyTransform();
+          }
         });
 
         // Fermeture — clic hors image ou × ou Echap
