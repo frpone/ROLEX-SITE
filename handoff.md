@@ -1,8 +1,8 @@
 # Handoff — ROLEX-SITE / variations-expo.html
 
-Date : 2026-06-02
-Branche de travail : `main` / `claude/rolex-webflow-site-FF8tB`
-Sauvegarde stable : `stable-expo-entry-click-scroll-working` (commit `9c10334`)
+Date : 2026-06-03
+Branche de travail : `main`
+Sauvegarde stable : `stable-lightbox-zoom-scroll-working` (commit `5e34710`)
 Déployé sur : https://frpone.github.io/ROLEX-SITE/variations-expo.html
 
 ---
@@ -27,7 +27,8 @@ Construire un site portfolio Rolex en trois parties :
 - Clic sur n'importe quelle zone de l'image → avance automatiquement jusqu'à la dernière frame via `lenis.scrollTo(SCROLL_H, { duration: 2.4 })` (listener global en capture sur `document`)
 - Scroll manuel fonctionne dans les deux sens
 - Overlay des affiches (`#frame-overlay`) apparaît à `progress >= 0.985`, disparaît en scrollant en arrière
-- Lightbox (prev/next, zoom ×2, swipe) opérationnelle sur les 3 affiches
+- Lightbox opérationnelle sur les 3 affiches : zoom scroll jusqu'à ×6, clic image = zoom ×2 / reset, drag pour déplacer, clic fond noir = fermer, prev/next, swipe tactile
+- Architecture lightbox : `#lb-backdrop` (z-index 0) capte le clic extérieur → ferme ; `#poster-lb-inner` (z-index 1) contient image + meta
 - `SCROLL_H = 2500` px
 - `html { overflow-y: scroll; scrollbar-gutter: stable }` — évite tout reflow lié à la scrollbar
 - `#scroll-hint` positionné via `getCoverRect()` + coordonnées source normalisées (`HINT_SOURCE_X = 0.524`, `HINT_SOURCE_Y = 0.925`)
