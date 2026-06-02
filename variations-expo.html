@@ -703,6 +703,13 @@
       opacity: 1;
       pointer-events: auto;
     }
+    #lb-backdrop {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      cursor: default;
+    }
+    #poster-lb-inner { position: relative; z-index: 1; }
     #poster-lb-close {
       position: absolute;
       top: 48px; right: 40px;
@@ -967,6 +974,7 @@
 
     <!-- Lightbox affiche — poster image + panneau méta à droite -->
     <div id="poster-lightbox">
+      <div id="lb-backdrop"></div>
       <button id="poster-lb-close" aria-label="Fermer">×</button>
       <button id="lb-prev" aria-label="Affiche précédente">&#8249;</button>
       <button id="lb-next" aria-label="Affiche suivante">&#8250;</button>
@@ -1695,26 +1703,18 @@
           var wasInLb = _mousedownInLb;
           _dragging = false; _dragMoved = false; _mousedownInLb = false;
           applyTransform();
-          if (!wasDrag && wasInLb) {
-            var btnPrev = document.getElementById('lb-prev');
-            var btnNext = document.getElementById('lb-next');
-            if (e.target === lbClose || e.target === btnPrev || e.target === btnNext) return;
-            // Clic dans la zone image → zoom ×2 / reset
-            if (lbScroll.contains(e.target)) {
-              var cx = e.clientX - window.innerWidth  / 2;
-              var cy = e.clientY - window.innerHeight / 2;
-              if (_scale > 1) { _scale = 1; _tx = 0; _ty = 0; }
-              else {
-                var prev = _scale; _scale = 2;
-                _tx = cx + (_tx - cx) * (_scale / prev);
-                _ty = cy + (_ty - cy) * (_scale / prev);
-                clampPan();
-              }
-              applyTransform();
-            } else {
-              // Clic sur le fond noir → fermer
-              closeLightbox();
+          if (!wasDrag && wasInLb && lbScroll.contains(e.target)) {
+            // Clic sur l'image → zoom ×2 / reset
+            var cx = e.clientX - window.innerWidth  / 2;
+            var cy = e.clientY - window.innerHeight / 2;
+            if (_scale > 1) { _scale = 1; _tx = 0; _ty = 0; }
+            else {
+              var prev = _scale; _scale = 2;
+              _tx = cx + (_tx - cx) * (_scale / prev);
+              _ty = cy + (_ty - cy) * (_scale / prev);
+              clampPan();
             }
+            applyTransform();
           }
         });
 
@@ -1725,6 +1725,9 @@
           setTimeout(function() { lbImg.src = ''; }, 400);
         }
         lbClose.addEventListener('click', closeLightbox);
+        document.getElementById('lb-backdrop').addEventListener('click', function() {
+          if (!_dragMoved) closeLightbox();
+        });
         // Swipe tactile — gauche/droite pour naviguer
         var _touchX0 = null;
         lightbox.addEventListener('touchstart', function(e) {
