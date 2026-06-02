@@ -769,22 +769,19 @@
     #poster-lb-img-wrap { position: relative; flex-shrink: 0; }
     #poster-lb-img-scroll {
       position: relative;
-      overflow: hidden;
+      overflow: visible;
       cursor: zoom-in;
       user-select: none;
       z-index: 1;
+      transform-origin: center center;
+      will-change: transform;
     }
-    #poster-lb-img-scroll.zoomed   { cursor: grab;     overflow: visible; }
-    #poster-lb-img-scroll.grabbing { cursor: grabbing; }
     #poster-lb-img {
       display: block;
       max-height: 88vh;
       max-width: 72vw;
       width: auto; height: auto;
       box-shadow: 0 32px 96px rgba(0,0,0,0.7);
-      transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-      transform-origin: center center;
-      pointer-events: none;
       -webkit-user-drag: none;
     }
 
@@ -1656,14 +1653,16 @@
           lightbox.style.cursor = 'zoom-in';
         }
 
-        // Scroll → zoom centré sur le curseur
+        // Scroll → zoom centré sur le curseur (stoppe Lenis + scroll page)
         lightbox.addEventListener('wheel', function(e) {
           e.preventDefault();
+          e.stopPropagation();
           var delta = e.deltaY < 0 ? 1 : -1;
           var prev = _scale;
           _scale = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, _scale * (1 + delta * ZOOM_STEP)));
-          var cx = e.clientX - window.innerWidth  / 2;
-          var cy = e.clientY - window.innerHeight / 2;
+          var rect = lbScroll.getBoundingClientRect();
+          var cx = e.clientX - (rect.left + rect.width  / 2);
+          var cy = e.clientY - (rect.top  + rect.height / 2);
           var ratio = _scale / prev;
           _tx = cx + (_tx - cx) * ratio;
           _ty = cy + (_ty - cy) * ratio;
