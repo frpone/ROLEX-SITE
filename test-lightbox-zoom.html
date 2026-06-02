@@ -254,31 +254,12 @@
     applyTransform();
   }, { passive: false });
 
-  // ── Clic = zoom ×2 centré sur le curseur, ou reset si déjà zoomé
-  let clickZoomPending = false;
-  lb.addEventListener('click', e => {
-    if (e.target === btnPrev || e.target === btnNext || e.target === btnClose) return;
-    if (clickZoomPending) { clickZoomPending = false; return; }
-    const cx = e.clientX - window.innerWidth  / 2;
-    const cy = e.clientY - window.innerHeight / 2;
-    if (scale > 1) {
-      scale = 1; tx = 0; ty = 0;
-    } else {
-      const prevScale = scale;
-      scale = 2;
-      const ratio = scale / prevScale;
-      tx = cx + (tx - cx) * ratio;
-      ty = cy + (ty - cy) * ratio;
-      clampTranslation();
-    }
-    applyTransform();
-  });
-
-  // ── Pan au drag
+  // ── Pan au drag + clic zoom (distingue drag vs clic via distance)
+  let dragMoved = false;
   lb.addEventListener('mousedown', e => {
-    if (scale <= 1) return;
     if (e.target === btnPrev || e.target === btnNext || e.target === btnClose) return;
     dragging = true;
+    dragMoved = false;
     dragStart = { x: e.clientX, y: e.clientY };
     dragOrigin = { tx, ty };
     e.preventDefault();
@@ -286,13 +267,39 @@
 
   window.addEventListener('mousemove', e => {
     if (!dragging) return;
-    tx = dragOrigin.tx + (e.clientX - dragStart.x);
-    ty = dragOrigin.ty + (e.clientY - dragStart.y);
+    const dx = e.clientX - dragStart.x;
+    const dy = e.clientY - dragStart.y;
+    if (Math.abs(dx) > 4 || Math.abs(dy) > 4) dragMoved = true;
+    if (!dragMoved) return;
+    tx = dragOrigin.tx + dx;
+    ty = dragOrigin.ty + dy;
     clampTranslation();
     applyTransform();
   });
 
-  window.addEventListener('mouseup', () => { dragging = false; applyTransform(); });
+  window.addEventListener('mouseup', e => {
+    const wasDragging = dragMoved;
+    dragging = false;
+    dragMoved = false;
+    applyTransform();
+
+    // Si pas de mouvement → c'est un clic → zoom
+    if (!wasDragging) {
+      if (e.target === btnPrev || e.target === btnNext || e.target === btnClose) return;
+      const cx = e.clientX - window.innerWidth  / 2;
+      const cy = e.clientY - window.innerHeight / 2;
+      if (scale > 1) {
+        scale = 1; tx = 0; ty = 0;
+      } else {
+        const prev = scale;
+        scale = 2;
+        tx = cx + (tx - cx) * (scale / prev);
+        ty = cy + (ty - cy) * (scale / prev);
+        clampTranslation();
+      }
+      applyTransform();
+    }
+  });
 
   // ── Clavier
   window.addEventListener('keydown', e => {
