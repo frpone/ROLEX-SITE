@@ -1671,9 +1671,11 @@
           applyTransform();
         }, { passive: false });
 
-        // Mousedown → début drag
+        // Mousedown → début drag (seulement si lightbox déjà ouverte)
+        var _lbWasOpen = false;
         lightbox.addEventListener('mousedown', function(e) {
           if (e.target === lbClose) return;
+          _lbWasOpen = lightbox.classList.contains('open');
           _dragging = true; _dragMoved = false;
           _dragX0 = e.clientX; _dragY0 = e.clientY;
           _tx0 = _tx; _ty0 = _ty;
@@ -1692,7 +1694,7 @@
           var wasDrag = _dragMoved;
           _dragging = false; _dragMoved = false;
           applyTransform();
-          if (!wasDrag) {
+          if (!wasDrag && _lbWasOpen) {
             var btnPrev = document.getElementById('lb-prev');
             var btnNext = document.getElementById('lb-next');
             if (e.target === lbClose || e.target === btnPrev || e.target === btnNext) return;
