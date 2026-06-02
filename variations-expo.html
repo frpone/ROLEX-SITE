@@ -1692,9 +1692,10 @@
         });
         document.addEventListener('mouseup', function(e) {
           var wasDrag = _dragMoved;
+          var wasInLb = _mousedownInLb;
           _dragging = false; _dragMoved = false; _mousedownInLb = false;
           applyTransform();
-          if (!wasDrag && _mousedownInLb) {
+          if (!wasDrag && wasInLb) {
             var btnPrev = document.getElementById('lb-prev');
             var btnNext = document.getElementById('lb-next');
             if (e.target === lbClose || e.target === btnPrev || e.target === btnNext) return;
