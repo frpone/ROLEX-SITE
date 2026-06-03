@@ -131,6 +131,8 @@
       display: flex; justify-content: space-between; align-items: center;
       mix-blend-mode: difference; color: white;
     }
+    /* Lightbox ouverte : le header ne doit pas intercepter les clics du fond noir */
+    body.lb-open .site-header { pointer-events: none; }
     .site-logo {
       font-size: 10px; font-weight: 500;
       letter-spacing: 0.22em; text-transform: uppercase;
@@ -1568,9 +1570,6 @@
       (function initFrameOverlay() {
         var lightbox  = document.getElementById('poster-lightbox');
         var lbImg     = document.getElementById('poster-lb-img');
-        var lbTitle   = document.getElementById('poster-lb-title');
-        var lbSpecs   = document.getElementById('poster-lb-specs');
-        var lbDesc    = document.getElementById('poster-lb-desc');
         var lbClose   = document.getElementById('poster-lb-close');
         var lbScroll  = document.getElementById('poster-lb-img-scroll');
         var singleArrow = document.getElementById('frame-single-arrow');
@@ -1593,11 +1592,9 @@
           var zone = zones[idx];
           currentZoneIdx = idx;
           lbImg.src = zone.getAttribute('data-src') || '';
-          lbTitle.textContent = zone.getAttribute('data-title') || '';
-          lbSpecs.textContent = zone.getAttribute('data-specs') || '';
-          lbDesc.textContent  = zone.getAttribute('data-desc')  || '';
           resetZoom();
           lightbox.classList.add('open');
+          document.body.classList.add('lb-open');
         }
 
         // Clic zone → ouvre lightbox
@@ -1702,6 +1699,7 @@
         function closeLightbox() {
           resetZoom();
           lightbox.classList.remove('open');
+          document.body.classList.remove('lb-open');
           setTimeout(function() { lbImg.src = ''; }, 400);
         }
         lbClose.addEventListener('click', closeLightbox);
