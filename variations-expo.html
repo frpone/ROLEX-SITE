@@ -645,6 +645,47 @@
       pointer-events: auto;
     }
 
+    /* Bouton vers la salle suivante */
+    #next-room-btn {
+      position: absolute;
+      left: 50%; bottom: 5.5%;
+      transform: translateX(-50%) translateY(10px);
+      display: flex; align-items: center; gap: 12px;
+      background: rgba(10,10,10,0.55);
+      -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+      border: 1px solid rgba(255,255,255,0.35);
+      color: #fff;
+      padding: 14px 30px;
+      font-family: var(--ff-display);
+      font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease 0.3s, transform 0.5s ease 0.3s, background 0.2s, border-color 0.2s;
+    }
+    /* Le bouton n'apparaît qu'avec l'overlay visible */
+    #frame-overlay.visible #next-room-btn {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
+    }
+    #next-room-btn:hover {
+      background: rgba(255,255,255,0.92);
+      border-color: rgba(255,255,255,0.92);
+      color: #0b1116;
+    }
+    #next-room-btn .nr-arrow { font-size: 14px; transition: transform 0.2s; }
+    #next-room-btn:hover .nr-arrow { transform: translateX(4px); }
+
+    /* Overlay de transition entre salles */
+    #room-transition {
+      position: fixed; inset: 0; z-index: 9998;
+      background: #0a0a0a;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.6s ease;
+    }
+    #room-transition.active { opacity: 1; pointer-events: auto; }
+
     /* Zone invisible cliquable au-dessus de chaque affiche dans la frame */
     .poster-zone {
       position: absolute;
@@ -970,7 +1011,16 @@
         <img src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20GAUCHE-.png" alt="" />
       </div>
 
+      <!-- Bouton vers la salle suivante (apparaît avec l'overlay des affiches) -->
+      <button id="next-room-btn" type="button" data-next="salle-2.html">
+        <span class="nr-label">Enter the next room</span>
+        <span class="nr-arrow">&#8594;</span>
+      </button>
+
     </div><!-- /frame-overlay -->
+
+    <!-- Overlay de transition entre salles (fondu au noir) -->
+    <div id="room-transition"></div>
 
     <!-- Lightbox affiche — poster image + panneau méta à droite -->
     <div id="poster-lightbox">
@@ -1752,6 +1802,19 @@
         ScrollTrigger.refresh();
         document.getElementById('loader').classList.add('done');
       }, 300);
+
+      // ─── Bouton « salle suivante » : fondu au noir puis navigation ───
+      (function initNextRoom() {
+        var btn = document.getElementById('next-room-btn');
+        var trans = document.getElementById('room-transition');
+        if (!btn || !trans) return;
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          var url = btn.getAttribute('data-next') || 'salle-2.html';
+          trans.classList.add('active');           // fondu au noir 0.6s
+          setTimeout(function() { window.location.href = url; }, 600);
+        });
+      })();
 
       // DEBUG — touche D : force l'affichage de l'overlay (sans attendre de scroller)
       document.addEventListener('keydown', function(e) {
