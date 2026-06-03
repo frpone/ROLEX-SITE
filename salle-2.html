@@ -765,7 +765,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      pointer-events: none; /* les clics sur le fond noir passent au parent #poster-lightbox */
       animation: lbIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
     }
     @keyframes lbIn {
@@ -774,7 +773,7 @@
     }
 
     /* Image — centrée, prend tout l'espace disponible */
-    #poster-lb-img-wrap { position: relative; flex-shrink: 0; pointer-events: auto; }
+    #poster-lb-img-wrap { position: relative; flex-shrink: 0; }
     #poster-lb-img-scroll {
       position: relative;
       overflow: visible;
@@ -1727,8 +1726,8 @@
           setTimeout(function() { lbImg.src = ''; }, 400);
         }
         lbClose.addEventListener('click', closeLightbox);
-        lightbox.addEventListener('click', function(e) {
-          if (e.target === lightbox) closeLightbox();
+        document.getElementById('lb-backdrop').addEventListener('click', function() {
+          if (!_dragMoved) closeLightbox();
         });
         // Swipe tactile — gauche/droite pour naviguer
         var _touchX0 = null;
