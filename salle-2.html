@@ -1321,7 +1321,7 @@
       //  drawImage() = 0ms de latence, scroll 100% fluide.
       // ═══════════════════════════════════════════════════════
 
-      var SCROLL_H   = 2000;  // px de scroll total
+      var SCROLL_H   = 1200;  // px de scroll total (plus court = plus rapide)
       var _introRafId = null;
 
       function initImageSequence(onFirstFrameReady) {
@@ -1468,7 +1468,7 @@
         function goToEnd() {
           if (!lenis) return;
           lenis.scrollTo(SCROLL_H, {
-            duration: 1.5,
+            duration: 1.1,
             easing: function(t) { return 1 - Math.pow(1 - t, 3); }
           });
         }
