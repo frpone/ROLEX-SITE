@@ -765,6 +765,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      pointer-events: none; /* les clics sur le fond noir passent au parent #poster-lightbox */
       animation: lbIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
     }
     @keyframes lbIn {
@@ -773,7 +774,7 @@
     }
 
     /* Image — centrée, prend tout l'espace disponible */
-    #poster-lb-img-wrap { position: relative; flex-shrink: 0; }
+    #poster-lb-img-wrap { position: relative; flex-shrink: 0; pointer-events: auto; }
     #poster-lb-img-scroll {
       position: relative;
       overflow: visible;
@@ -800,6 +801,7 @@
       text-align: right;
       max-width: 180px;
       z-index: 5;
+      pointer-events: auto;
       pointer-events: none;
     }
     #poster-lb-eyebrow {
@@ -1340,7 +1342,7 @@
       //  drawImage() = 0ms de latence, scroll 100% fluide.
       // ═══════════════════════════════════════════════════════
 
-      var SCROLL_H   = 2500;  // px de scroll total
+      var SCROLL_H   = 2000;  // px de scroll total
       var _introRafId = null;
 
       function initImageSequence(onFirstFrameReady) {
@@ -1487,7 +1489,7 @@
         function goToEnd() {
           if (!lenis) return;
           lenis.scrollTo(SCROLL_H, {
-            duration: 2.4,
+            duration: 1.5,
             easing: function(t) { return 1 - Math.pow(1 - t, 3); }
           });
         }
@@ -1725,8 +1727,8 @@
           setTimeout(function() { lbImg.src = ''; }, 400);
         }
         lbClose.addEventListener('click', closeLightbox);
-        document.getElementById('lb-backdrop').addEventListener('click', function() {
-          if (!_dragMoved) closeLightbox();
+        lightbox.addEventListener('click', function(e) {
+          if (e.target === lightbox) closeLightbox();
         });
         // Swipe tactile — gauche/droite pour naviguer
         var _touchX0 = null;

@@ -765,6 +765,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      pointer-events: none;
       animation: lbIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
     }
     @keyframes lbIn {
@@ -773,7 +774,7 @@
     }
 
     /* Image — centrée, prend tout l'espace disponible */
-    #poster-lb-img-wrap { position: relative; flex-shrink: 0; }
+    #poster-lb-img-wrap { position: relative; flex-shrink: 0; pointer-events: auto; }
     #poster-lb-img-scroll {
       position: relative;
       overflow: visible;
@@ -800,7 +801,7 @@
       text-align: right;
       max-width: 180px;
       z-index: 5;
-      pointer-events: none;
+      pointer-events: auto;
     }
     #poster-lb-eyebrow {
       font-family: var(--ff-display);
@@ -1725,8 +1726,8 @@
           setTimeout(function() { lbImg.src = ''; }, 400);
         }
         lbClose.addEventListener('click', closeLightbox);
-        document.getElementById('lb-backdrop').addEventListener('click', function() {
-          if (!_dragMoved) closeLightbox();
+        lightbox.addEventListener('click', function(e) {
+          if (e.target === lightbox) closeLightbox();
         });
         // Swipe tactile — gauche/droite pour naviguer
         var _touchX0 = null;
