@@ -131,6 +131,8 @@
       display: flex; justify-content: space-between; align-items: center;
       mix-blend-mode: difference; color: white;
     }
+    /* Lightbox ouverte : le header ne doit pas intercepter les clics du fond noir */
+    body.lb-open .site-header { pointer-events: none; }
     .site-logo {
       font-size: 10px; font-weight: 500;
       letter-spacing: 0.22em; text-transform: uppercase;
@@ -744,13 +746,6 @@
       opacity: 1;
       pointer-events: auto;
     }
-    #lb-backdrop {
-      position: absolute;
-      inset: 0;
-      z-index: 0;
-      cursor: default;
-    }
-    #poster-lb-inner { position: relative; z-index: 1; }
     #poster-lb-close {
       position: absolute;
       top: 48px; right: 40px;
@@ -799,22 +794,16 @@
       #frame-single-arrow { left: 50% !important; }
     }
 
-    /* Inner : centré dans la lightbox */
-    #poster-lb-inner {
+    /* Image — centrée directement dans #poster-lightbox (flex) */
+    #poster-lb-img-wrap {
       position: relative;
-      width: 100%; height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      flex-shrink: 0;
       animation: lbIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
     }
     @keyframes lbIn {
       from { opacity: 0; transform: scale(0.96); }
       to   { opacity: 1; transform: scale(1); }
     }
-
-    /* Image — centrée, prend tout l'espace disponible */
-    #poster-lb-img-wrap { position: relative; flex-shrink: 0; }
     #poster-lb-img-scroll {
       position: relative;
       overflow: visible;
@@ -1022,23 +1011,14 @@
     <!-- Overlay de transition entre salles (fondu au noir) -->
     <div id="room-transition"></div>
 
-    <!-- Lightbox affiche — poster image + panneau méta à droite -->
+    <!-- Lightbox affiche -->
     <div id="poster-lightbox">
-      <div id="lb-backdrop"></div>
       <button id="poster-lb-close" aria-label="Fermer">×</button>
       <button id="lb-prev" aria-label="Affiche précédente">&#8249;</button>
       <button id="lb-next" aria-label="Affiche suivante">&#8250;</button>
-      <div id="poster-lb-inner">
-        <div id="poster-lb-img-wrap">
-          <div id="poster-lb-img-scroll">
-            <img id="poster-lb-img" src="" alt="" />
-          </div>
-        </div>
-        <div id="poster-lb-meta">
-          <p id="poster-lb-eyebrow">François Peyranne × Rolex</p>
-          <p id="poster-lb-title"></p>
-          <p id="poster-lb-specs"></p>
-          <p id="poster-lb-desc"></p>
+      <div id="poster-lb-img-wrap">
+        <div id="poster-lb-img-scroll">
+          <img id="poster-lb-img" src="" alt="" />
         </div>
       </div>
     </div>
@@ -1639,9 +1619,6 @@
       (function initFrameOverlay() {
         var lightbox  = document.getElementById('poster-lightbox');
         var lbImg     = document.getElementById('poster-lb-img');
-        var lbTitle   = document.getElementById('poster-lb-title');
-        var lbSpecs   = document.getElementById('poster-lb-specs');
-        var lbDesc    = document.getElementById('poster-lb-desc');
         var lbClose   = document.getElementById('poster-lb-close');
         var lbScroll  = document.getElementById('poster-lb-img-scroll');
         var singleArrow = document.getElementById('frame-single-arrow');
@@ -1664,11 +1641,9 @@
           var zone = zones[idx];
           currentZoneIdx = idx;
           lbImg.src = zone.getAttribute('data-src') || '';
-          lbTitle.textContent = zone.getAttribute('data-title') || '';
-          lbSpecs.textContent = zone.getAttribute('data-specs') || '';
-          lbDesc.textContent  = zone.getAttribute('data-desc')  || '';
           resetZoom();
           lightbox.classList.add('open');
+          document.body.classList.add('lb-open');
         }
 
         // Clic zone → ouvre lightbox
@@ -1729,10 +1704,11 @@
           applyTransform();
         }, { passive: false });
 
-        // Mousedown → début drag
+        // Mousedown → début drag (seulement sur l'image)
         var _mousedownInLb = false;
         lightbox.addEventListener('mousedown', function(e) {
           if (e.target === lbClose) return;
+          if (!lbScroll.contains(e.target)) return; // clic fond noir → laisse passer au click listener
           _mousedownInLb = true;
           _dragging = true; _dragMoved = false;
           _dragX0 = e.clientX; _dragY0 = e.clientY;
@@ -1768,15 +1744,16 @@
           }
         });
 
-        // Fermeture — × ou Echap
+        // Fermeture — × ou Echap ou clic fond noir
         function closeLightbox() {
           resetZoom();
           lightbox.classList.remove('open');
+          document.body.classList.remove('lb-open');
           setTimeout(function() { lbImg.src = ''; }, 400);
         }
         lbClose.addEventListener('click', closeLightbox);
-        document.getElementById('lb-backdrop').addEventListener('click', function() {
-          if (!_dragMoved) closeLightbox();
+        lightbox.addEventListener('click', function(e) {
+          if (e.target === lightbox) closeLightbox();
         });
         // Swipe tactile — gauche/droite pour naviguer
         var _touchX0 = null;
