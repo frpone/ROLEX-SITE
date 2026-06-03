@@ -832,7 +832,7 @@
 
   <div class="loader" id="loader">
     <div class="loader-mark" id="loaderMark"></div>
-    <div class="loader-text" id="loaderText">Sculpting the Crown</div>
+    <div class="loader-text" id="loaderText">Entering the Room</div>
   </div>
 
   <div class="bg-light" id="bgLight"></div>
@@ -1725,11 +1725,29 @@
         });
       })();
 
-      // Refresh ScrollTrigger une fois tout setup, après un petit délai
-      setTimeout(function() {
-        ScrollTrigger.refresh();
-        document.getElementById('loader').classList.add('done');
-      }, 300);
+      // ═══════════════════════════════════════════════════════
+      //  ROOM MODE — salle autonome.
+      //  Démarre directement sur la séquence de frames, sans la
+      //  couronne 3D ni les chapitres. Réutilise exactement la
+      //  logique éprouvée d'enterExpo() (juste appelée au load).
+      //  Le loader reste visible jusqu'à ce que frame 0 soit prête
+      //  → aucun flash, aucune couronne visible.
+      // ═══════════════════════════════════════════════════════
+      (function startRoomDirectly() {
+        if (crownST) crownST.kill(true);   // retire le pin couronne
+        _renderActive = false;             // stoppe le rendu WebGL
+        document.getElementById('crown-sequence').style.display = 'none';
+        sceneAffiche.style.display = 'none';
+        canvasContainer.style.display = 'none';
+        document.getElementById('bgLight').style.display = 'none';
+        document.getElementById('bgDark').style.display = 'none';
+        lenis.scrollTo(0, { immediate: true });
+        window.scrollTo(0, 0);
+        initImageSequence(function onFirstFrameReady() {
+          document.getElementById('phase-expo').style.display = 'block';
+          document.getElementById('loader').classList.add('done');
+        });
+      })();
 
       // DEBUG — touche D : force l'affichage de l'overlay (sans attendre de scroller)
       document.addEventListener('keydown', function(e) {
