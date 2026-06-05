@@ -1322,6 +1322,7 @@
       // ═══════════════════════════════════════════════════════
 
       var SCROLL_H   = 1200;  // px de scroll total (plus court = plus rapide)
+      var FRAME_START = 30;   // démarre la séquence à cette frame (saute le couloir trop large)
       var _introRafId = null;
 
       function initImageSequence(onFirstFrameReady) {
@@ -1338,7 +1339,7 @@
         var overlay   = document.getElementById('frame-overlay');
         var scrollHint = document.getElementById('scroll-hint');
 
-        var currentFrame = 0;
+        var currentFrame = FRAME_START;
         var started = false;
 
         function getDpr() {
@@ -1418,7 +1419,8 @@
 
         function tick() {
           var progress = getProgress();
-          var idx = Math.round(progress * (FRAMES_COUNT - 1));
+          // Mappe le scroll sur [FRAME_START, dernière frame] — saute le couloir initial
+          var idx = FRAME_START + Math.round(progress * (FRAMES_COUNT - 1 - FRAME_START));
           if (progress >= 0.999) idx = FRAMES_COUNT - 1;
           renderFrame(idx);
 
@@ -1434,10 +1436,10 @@
         }
 
         function startWhenFrame0Ready() {
-          var f0 = _frames[0];
+          var f0 = _frames[FRAME_START];
           if (f0 && f0.complete && f0.naturalWidth) {
             resizeCanvas();
-            renderFrame(0);
+            renderFrame(FRAME_START);
             if (loader) { loader.style.opacity = '0'; loader.style.display = 'none'; }
             positionScrollHint();
             if (onFirstFrameReady) onFirstFrameReady();
