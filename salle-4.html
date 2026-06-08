@@ -1309,8 +1309,8 @@
       //  drawImage() = 0ms de latence, scroll 100% fluide.
       // ═══════════════════════════════════════════════════════
 
-      var SCROLL_H   = 1200;  // px de scroll total (plus court = plus rapide)
-      var FRAME_START = 25;   // démarre la séquence à cette frame (saute le couloir trop large)
+      var SCROLL_H   = 850;   // px de scroll total — court = scroll rapide vers les affiches
+      var FRAME_START = 0;    // démarre sur la frame 1 (arbre + titre, entrée du musée sombre)
       var _introRafId = null;
 
       function initImageSequence(onFirstFrameReady) {
