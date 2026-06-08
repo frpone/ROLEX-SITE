@@ -1,0 +1,1772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>Salle V — François Peyranne × Rolex</title>
+
+  <link rel="preconnect" href="https://use.typekit.net" />
+  <link rel="stylesheet" href="https://use.typekit.net/fqu8chv.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300;1,400&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg-light: #f4f6f8;
+      --bg-dark: #0a0a0a;
+      --paper: #f2efe9;
+      --ink: #0b1116;
+      --ink-soft: rgba(11, 17, 22, 0.62);
+      --ink-mute: rgba(11, 17, 22, 0.36);
+      --text-dark: #e8e4dc;
+      --text-dark-mute: #75716b;
+      --text-dark-dim: #45433f;
+      --rolex-green: #00513b;
+      --rolex-blue: #0e3b9a;
+      --scroll-hint-offset-x: 25px;
+      --accent-yellow: #d9c87a;
+      --accent-yellow-dim: #8a7e4a;
+      --string: #c8b896;
+      --pin-metal: #d4d2cc;
+
+      --ff-display: 'sweet-sans-pro', 'Helvetica Neue', sans-serif;
+      --ff-serif: 'Cormorant Garamond', serif;
+      --tr-loose: 0.16em;
+      --tr-wide: 0.32em;
+      --tr-tight: -0.025em;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html {
+      overflow-y: scroll;
+      scrollbar-gutter: stable;
+    }
+    html, body {
+      background: var(--bg-light);
+      color: var(--ink);
+      font-family: var(--ff-display);
+      font-weight: 300;
+      line-height: 1.5;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    .lenis.lenis-smooth { scroll-behavior: auto !important; }
+    .lenis.lenis-stopped { overflow: hidden; }
+
+    /* =====================================
+       FONDS
+       ===================================== */
+    .bg-light {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 70% 60% at 50% 45%, rgba(255,255,255,1) 0%, rgba(245,247,250,0.95) 30%, rgba(220,228,235,0.7) 65%, rgba(195,210,222,0.55) 100%),
+        radial-gradient(ellipse at 85% 90%, rgba(180, 220, 230, 0.35) 0%, transparent 50%),
+        radial-gradient(ellipse at 15% 75%, rgba(200, 215, 225, 0.4) 0%, transparent 55%);
+    }
+    .bg-dark-overlay {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      opacity: 0;
+      background:
+        /* Halo central chaud (puits de lumière central) */
+        radial-gradient(ellipse 40% 70% at 50% 30%, rgba(180,155,115,0.18) 0%, rgba(120,100,75,0.08) 30%, transparent 65%),
+        /* Lueurs latérales */
+        radial-gradient(ellipse 35% 55% at 8% 45%, rgba(70,60,45,0.22) 0%, transparent 65%),
+        radial-gradient(ellipse 35% 55% at 92% 45%, rgba(70,60,45,0.22) 0%, transparent 65%),
+        /* Sol éclairé */
+        radial-gradient(ellipse 70% 35% at 50% 85%, rgba(60,50,38,0.5) 0%, transparent 70%),
+        /* Base dégradée verticale */
+        linear-gradient(180deg, #060606 0%, #0a0a08 30%, #0c0a07 60%, #050402 100%);
+    }
+    body::after {
+      content: ''; position: fixed; inset: 0; pointer-events: none;
+      z-index: 9999; opacity: 0.04;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' /%3E%3C/svg%3E");
+      mix-blend-mode: overlay;
+    }
+
+    /* =====================================
+       CANVAS THREE.JS
+       ===================================== */
+    #canvas-container {
+      position: fixed; inset: 0; z-index: 1;
+      pointer-events: none;
+    }
+    #canvas-container canvas { display: block; width: 100%; height: 100%; }
+
+    /* =====================================
+       LOADER
+       ===================================== */
+    .loader {
+      position: fixed; inset: 0; z-index: 1000;
+      background: var(--bg-light);
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 24px;
+      transition: opacity 0.8s, visibility 0.8s;
+    }
+    .loader.done { opacity: 0; visibility: hidden; }
+    .loader-mark {
+      width: 32px; height: 32px; border-radius: 50%;
+      border: 1.5px solid var(--ink-mute);
+      border-top-color: var(--rolex-green);
+      animation: spin 1.4s linear infinite;
+    }
+    .loader-mark.error { border-color: #c0392b; animation: none; }
+    .loader-text {
+      font-size: 9px; letter-spacing: var(--tr-wide);
+      text-transform: uppercase; color: var(--ink-mute);
+      max-width: 480px; text-align: center; line-height: 1.6;
+    }
+    .loader-text.error { color: #c0392b; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* =====================================
+       SITE HEADER
+       ===================================== */
+    .site-header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+      padding: 22px 36px;
+      display: flex; justify-content: space-between; align-items: center;
+      mix-blend-mode: difference; color: white;
+    }
+    /* Lightbox ouverte : le header ne doit pas intercepter les clics du fond noir */
+    body.lb-open .site-header { pointer-events: none; }
+    .site-logo {
+      font-size: 10px; font-weight: 500;
+      letter-spacing: 0.22em; text-transform: uppercase;
+    }
+    .site-nav { display: flex; gap: 32px; }
+    .site-nav a {
+      font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+      color: inherit; text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .site-nav a:hover { opacity: 0.55; }
+
+    main { position: relative; z-index: 2; pointer-events: none; }
+    main a, main button, main .p-btn { pointer-events: auto; }
+
+    /* =====================================
+       CROWN SEQUENCE — section unique, pin GSAP
+       ===================================== */
+    #crown-sequence {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+    }
+    /* Couches superposées dans la section unique */
+    .seq-layer {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      opacity: 0;
+      pointer-events: none;
+      padding: 80px 60px;
+    }
+    #seq-hero {
+      opacity: 1;
+      pointer-events: auto;
+      flex-direction: column;
+      justify-content: center;
+      text-align: center;
+    }
+    #seq-ch1 { justify-content: flex-end; }
+    #seq-ch2 { justify-content: center; }
+
+    .seq-freeze-mark {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 9px;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--ink-mute);
+    }
+    .seq-freeze-mark .dot {
+      width: 5px; height: 5px;
+      background: var(--ink-mute);
+      border-radius: 50%;
+    }
+    .scene-hero-eyebrow {
+      font-size: 13px; letter-spacing: 0.28em;
+      text-transform: uppercase; color: var(--ink);
+      font-weight: 500;
+      margin-bottom: 28px;
+    }
+    .scene-hero-title {
+      font-size: clamp(44px, 9vw, 140px);
+      font-weight: 500; line-height: 0.95;
+      letter-spacing: var(--tr-tight);
+      text-transform: uppercase; max-width: 1100px;
+    }
+    .scene-hero-title .italic {
+      font-family: var(--ff-serif);
+      font-style: italic; font-weight: 300;
+      text-transform: none; letter-spacing: 0;
+    }
+    /* Sous-titre sorti du flux flex — positionné en bas, au-dessus du scroll-cue */
+    .scene-hero-sub {
+      position: absolute;
+      bottom: 100px;
+      left: 50%; transform: translateX(-50%);
+      white-space: nowrap;
+      font-size: 13px;
+      letter-spacing: var(--tr-loose);
+      text-transform: uppercase;
+      color: var(--ink);
+      font-weight: 500;
+    }
+    .scroll-cue {
+      position: absolute; bottom: 36px;
+      left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column;
+      align-items: center; gap: 10px;
+      font-size: 10px; letter-spacing: var(--tr-wide);
+      color: var(--ink); font-weight: 500;
+      text-transform: uppercase;
+    }
+    .scroll-cue svg { animation: bob 2.4s ease-in-out infinite; }
+    @keyframes bob {
+      0%, 100% { transform: translateY(0); opacity: 0.5; }
+      50% { transform: translateY(8px); opacity: 1; }
+    }
+
+    /* =====================================
+       RESPONSIVE — MOBILE (≤ 640px)
+       ===================================== */
+    @media (max-width: 640px) {
+      /* Hero */
+      .seq-layer { padding: 56px 24px; }
+      .scene-hero-eyebrow { font-size: 11px; margin-bottom: 20px; }
+      .scene-hero-title { font-size: clamp(38px, 11vw, 72px); }
+      .scene-hero-sub {
+        bottom: 88px;
+        white-space: normal;
+        text-align: center;
+        width: 88vw;
+        left: 6vw;
+        transform: none;
+        font-size: 11px;
+        line-height: 1.7;
+      }
+      .scroll-cue { font-size: 9px; bottom: 28px; }
+
+      /* Chapitres */
+      #seq-ch1 { justify-content: center; align-items: flex-start; }
+      #seq-ch2 { justify-content: center; }
+      .chapter-content { max-width: 100%; }
+      .chapter-title { font-size: clamp(38px, 10vw, 60px); }
+      .chapter-text { font-size: 16px; line-height: 1.75; }
+      .chapter-eyebrow { font-size: 10px; }
+      .seq-freeze-mark { font-size: 8px; bottom: 28px; }
+
+      /* Affiche */
+      .poster-img { height: auto; width: min(82vw, 340px); }
+    }
+
+    /* Tablette (641–980px) */
+    @media (min-width: 641px) and (max-width: 980px) {
+      .scene-hero-title { font-size: clamp(44px, 8vw, 100px); }
+      .seq-layer { padding: 64px 40px; }
+      .chapter-title { font-size: clamp(46px, 6vw, 72px); }
+      .scene-hero-sub { font-size: 12px; bottom: 96px; }
+    }
+
+    /* =====================================
+       MANIFESTE — chapitres pinned via ScrollTrigger
+       Chaque chapter = simple 100vh, le pin et la sync
+       sont faits en JS (plus fiable que sticky avec overflow:hidden)
+       ===================================== */
+    .chapter {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      padding: 0 60px;
+      display: flex;
+      align-items: center;
+    }
+    .chapter-left { justify-content: flex-start; }
+    .chapter-right { justify-content: flex-end; }
+    .chapter-center { justify-content: center; }
+
+    .chapter-content { max-width: 480px; padding: 40px 0; }
+    .chapter-center .chapter-content { max-width: 720px; text-align: center; }
+
+    .chapter-eyebrow {
+      font-size: 12px; letter-spacing: var(--tr-wide);
+      text-transform: uppercase; color: var(--ink-mute);
+      margin-bottom: 28px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .chapter-eyebrow::before {
+      content: ''; width: 28px; height: 1px; background: var(--ink-mute);
+    }
+    .chapter-center .chapter-eyebrow { justify-content: center; }
+    .chapter-title {
+      font-size: clamp(56px, 6.5vw, 96px);
+      font-weight: 500; line-height: 1.0;
+      letter-spacing: var(--tr-tight);
+      text-transform: uppercase; margin-bottom: 32px;
+    }
+    .chapter-title .italic {
+      font-family: var(--ff-serif);
+      font-style: italic; font-weight: 300;
+      text-transform: none; letter-spacing: 0;
+    }
+    .chapter-text {
+      font-size: clamp(16px, 1.4vw, 22px);
+      line-height: 1.75;
+      color: var(--ink-soft);
+    }
+    .chapter-text strong { color: var(--ink); font-weight: 500; }
+
+    /* Indicateur de freeze — un cercle qui pulse pendant le pin */
+    .chapter-freeze-mark {
+      position: absolute;
+      bottom: 60px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; align-items: center; gap: 12px;
+      font-size: 9px;
+      letter-spacing: var(--tr-wide);
+      text-transform: uppercase;
+      color: var(--ink-mute);
+    }
+    .chapter-freeze-mark .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--rolex-green);
+      animation: freezePulse 2s ease-in-out infinite;
+    }
+    @keyframes freezePulse {
+      0%, 100% { opacity: 0.4; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.3); }
+    }
+    .chapter-freeze-mark .scroll-arrow {
+      color: var(--ink-mute);
+      margin-left: 4px;
+      animation: scrollArrowBob 2.2s ease-in-out infinite;
+    }
+    @keyframes scrollArrowBob {
+      0%, 100% { transform: translateY(0); opacity: 0.4; }
+      50%       { transform: translateY(5px); opacity: 1; }
+    }
+
+    /* ===== AFFICHE TITRE ===== */
+    #scene-affiche {
+      position: fixed; inset: 0; z-index: 8;
+      pointer-events: none;
+      opacity: 0;
+      overflow: hidden;
+      /* Fond CSS pur — cool grey atmosphérique, aucun problème de ratio */
+      background: radial-gradient(
+        ellipse 90% 80% at 50% 44%,
+        #f4f5f7 0%,
+        #e0e3e8 55%,
+        #cdd2d9 100%
+      );
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Container principal — opacity animée par GSAP (0.94→1.00) */
+    .affiche-titre-cta {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(20px, 4.5vw, 72px);
+      padding: 0 clamp(16px, 5vw, 56px);
+      width: 100%;
+      opacity: 0;
+    }
+
+    /* Bloc affiche : poster + subtitle lockés ensemble */
+    .poster-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    /* CTA mobile au-dessus (caché par défaut) */
+    .cta-above {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    /* Wrapper poster — le scale s'applique ici → cadre + image zooment ensemble */
+    .poster-wrap {
+      flex-shrink: 0;
+      box-shadow:
+        0 12px 32px rgba(0, 0, 0, 0.12),
+        0 32px 72px rgba(0, 0, 0, 0.10);
+      transition:
+        transform 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+      will-change: transform;
+      transform-origin: center bottom;
+    }
+    .poster-wrap:hover {
+      transform: scale(1.032);
+      box-shadow:
+        0 18px 48px rgba(0, 0, 0, 0.14),
+        0 44px 96px rgba(0, 0, 0, 0.11);
+    }
+
+    .poster-img {
+      display: block;
+      height: min(84vh, 54vw);
+      width: auto;
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    /* Subtitle locké dans poster-block — scale avec l'affiche */
+    .poster-subtitle {
+      font-family: var(--ff-display);
+      font-size: clamp(7px, 0.58vw, 10px);
+      font-weight: 400;
+      letter-spacing: 0.40em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+      white-space: nowrap;
+      line-height: 1;
+      text-align: center;
+    }
+
+    /* CTAs latéraux */
+    .enter-zone {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: clamp(12px, 1.8vw, 26px);
+      border: 0;
+      background: transparent;
+      padding: 0;
+      cursor: pointer;
+      pointer-events: auto;
+    }
+    .enter-zone-left  { animation: slideInLeft  0.9s cubic-bezier(0.22,1,0.36,1) 0.4s both; }
+    .enter-zone-right { animation: slideInRight 0.9s cubic-bezier(0.22,1,0.36,1) 0.4s both; }
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-44px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(44px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    .enter-label {
+      font-family: var(--ff-display);
+      font-size: clamp(8px, 0.65vw, 12px);
+      font-weight: 500;
+      letter-spacing: 0.46em;
+      text-transform: uppercase;
+      color: var(--ink);
+      white-space: nowrap;
+      line-height: 1;
+    }
+
+    /* Flèches PNG — pulse permanent vers l'affiche */
+    .enter-arrow {
+      display: block;
+      width: clamp(54px, 5.4vw, 96px);
+      height: auto;
+      object-fit: contain;
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-drag: none;
+      flex-shrink: 0;
+    }
+    .enter-zone-left  .enter-arrow { animation: pulseRight 2.2s ease-in-out infinite; }
+    .enter-zone-right .enter-arrow { animation: pulseLeft  2.2s ease-in-out infinite; }
+    @keyframes pulseRight {
+      0%,100% { transform: translateX(0);   opacity: 0.50; }
+      50%      { transform: translateX(8px); opacity: 1; }
+    }
+    @keyframes pulseLeft {
+      0%,100% { transform: translateX(0);    opacity: 0.50; }
+      50%      { transform: translateX(-8px); opacity: 1; }
+    }
+
+    /* ── Mobile ≤ 640px ── */
+    @media (max-width: 640px) {
+      .affiche-titre-cta {
+        flex-direction: column;
+        justify-content: center;
+        gap: 20px;
+        padding: 16px;
+      }
+      .enter-zone-left, .enter-zone-right { display: none; }
+      .poster-img { height: auto; width: min(78vw, 320px); }
+      .poster-subtitle { font-size: clamp(7px, 2vw, 10px); }
+      .cta-above {
+        display: flex;
+        animation: slideInTop 0.9s cubic-bezier(0.22,1,0.36,1) 0.35s both;
+      }
+      @keyframes slideInTop {
+        from { opacity: 0; transform: translateY(-28px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      .cta-above .enter-label { font-size: 9px; letter-spacing: 0.42em; }
+      .cta-above .enter-arrow {
+        width: clamp(32px, 8vw, 48px);
+        animation: pulseDown 2.2s ease-in-out infinite;
+      }
+      @keyframes pulseDown {
+        0%,100% { transform: rotate(90deg) translateX(0);   opacity: 0.50; }
+        50%      { transform: rotate(90deg) translateX(8px); opacity: 1; }
+      }
+    }
+
+    /* ─── Phase expo ─── */
+    #phase-expo { display: none; }
+
+    #phase-expo,
+    #intro2-fixed,
+    #intro2-canvas {
+      pointer-events: auto;
+    }
+
+    /* Canvas fixed — reste en place pendant le scroll du spacer */
+    #intro2-fixed {
+      position: fixed;
+      inset: 0;
+      z-index: 6;
+      background: #000;
+      cursor: pointer;
+    }
+    #intro2-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      display: block;
+      transform: none !important;
+      left: 0 !important;
+      top: 0 !important;
+    }
+    /* Loader frames */
+    #intro2-loader {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+      z-index: 2;
+    }
+    #intro2-loader-bar-wrap {
+      width: 160px;
+      height: 1px;
+      background: rgba(255,255,255,0.15);
+    }
+    #intro2-loader-bar {
+      height: 1px;
+      width: 0%;
+      background: rgba(255,255,255,0.7);
+      transition: width 0.1s linear;
+    }
+    /* Scroll hint — positionné par JS via getCoverRect() */
+    #scroll-hint {
+      position: fixed;
+      left: 50%;
+      top: 92.5%;
+      bottom: auto;
+      transform: translate(-50%, -50%);
+      z-index: 15;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      text-align: center;
+      font-family: var(--ff-display, 'sweet-sans-pro', 'Helvetica Neue', Arial, sans-serif);
+      font-size: clamp(11px, 0.95vw, 15px);
+      font-weight: 760;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(10, 14, 18, 0.82);
+      white-space: nowrap;
+      pointer-events: auto;
+      opacity: 1;
+      transition: opacity 0.8s ease;
+      cursor: pointer;
+    }
+    #scroll-hint.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .scroll-enter-arrow {
+      display: block;
+      width: 16px;
+      height: 16px;
+      border-right: 2.2px solid rgba(10, 14, 18, 0.74);
+      border-bottom: 2.2px solid rgba(10, 14, 18, 0.74);
+      transform: rotate(45deg);
+      animation: scrollHintBounce 2s ease-in-out infinite;
+    }
+    @keyframes scrollHintBounce {
+      0%, 100% { transform: rotate(45deg) translateY(0);   opacity: 0.72; }
+      50%       { transform: rotate(45deg) translateY(4px); opacity: 1.00; }
+    }
+
+    /* Spacer : fournit la hauteur scrollable (height définie en JS) */
+    #intro2-spacer {
+      position: relative;
+      z-index: 2;
+    }
+
+    /* ─── Overlay affiches — zone interactive sur la dernière frame ─── */
+    #frame-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 7;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+    #frame-overlay.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Zone invisible cliquable au-dessus de chaque affiche dans la frame */
+    .poster-zone {
+      position: absolute;
+      cursor: pointer;
+      /* Pas de background : la frame vidéo reste visible en dessous */
+    }
+
+    /* Wrapper inner — le scale se fait ici */
+    .poster-zone-inner {
+      width: 100%;
+      height: 100%;
+      transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+      transform-origin: center center;
+    }
+    .poster-zone:hover .poster-zone-inner {
+      transform: scale(1.05);
+    }
+
+    /* Flèche unique — se déplace horizontalement selon l'affiche survolée */
+    #frame-single-arrow {
+      position: absolute;
+      bottom: 21%;          /* juste sous les zones (top:17% + height:56% = 73%) */
+      left: 50%;            /* position par défaut : affiche centrale */
+      pointer-events: none;
+      transition: left 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    #frame-single-arrow img {
+      display: block;
+      width: clamp(14px, 1.3vw, 20px);
+      height: auto;
+      transform: rotate(-90deg);
+      margin-left: calc(clamp(14px, 1.3vw, 20px) / -2);
+      pointer-events: none;
+      user-select: none;
+      animation: arrowBounceUp 2.2s ease-in-out infinite;
+    }
+    @keyframes arrowBounceUp {
+      0%, 100% { transform: rotate(-90deg) translateX(0);    opacity: 0.55; }
+      50%       { transform: rotate(-90deg) translateX(-6px); opacity: 1.00; }
+    }
+
+    /* ── Lightbox poster ───────────────────────────────────────────── */
+    #poster-lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(0, 0, 0, 0.94);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+    #poster-lightbox.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #poster-lb-close {
+      position: absolute;
+      top: 48px; right: 40px;
+      font-size: 28px; line-height: 1;
+      background: transparent;
+      border: 0; color: rgba(255,255,255,0.55);
+      cursor: pointer;
+      font-family: var(--ff-display);
+      transition: color 0.2s;
+      z-index: 10;
+    }
+    #poster-lb-close:hover { color: rgba(255,255,255,0.9); }
+
+    /* Flèches prev/next — navigation entre affiches (mobile + desktop) */
+    #lb-prev, #lb-next {
+      position: absolute;
+      top: 50%; transform: translateY(-50%);
+      background: transparent; border: none;
+      color: rgba(255,255,255,0.35);
+      font-size: 56px; line-height: 1;
+      cursor: pointer; z-index: 10;
+      padding: 24px 20px;
+      transition: color 0.2s;
+      font-family: var(--ff-display);
+    }
+    #lb-prev { left: 12px; }
+    #lb-next { right: 12px; }
+    #lb-prev:hover, #lb-next:hover { color: rgba(255,255,255,0.85); }
+
+    /* Sur desktop large, les flèches nav sont discrètes mais présentes */
+    @media (min-width: 769px) {
+      #lb-prev, #lb-next { font-size: 48px; color: rgba(255,255,255,0.20); }
+    }
+
+    /* ── Responsive mobile : overlay affiches ── */
+    @media (max-width: 768px) {
+      /* On mobile, seule l'affiche centrale est visible dans le canvas (cover centré)
+         Zones A et C sont hors écran, on les masque */
+      #zone-a, #zone-c { display: none !important; }
+      /* Zone B repositionnée pour couvrir la zone centrale visible ~7%-92% de l'écran */
+      #zone-b {
+        left: 5% !important;
+        width: 90% !important;
+      }
+      /* Flèche centrée en mobile */
+      #frame-single-arrow { left: 50% !important; }
+    }
+
+    /* Image — centrée directement dans #poster-lightbox (flex) */
+    #poster-lb-img-wrap {
+      position: relative;
+      flex-shrink: 0;
+      animation: lbIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    @keyframes lbIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    #poster-lb-img-scroll {
+      position: relative;
+      overflow: visible;
+      cursor: zoom-in;
+      user-select: none;
+      z-index: 1;
+      transform-origin: center center;
+      will-change: transform;
+    }
+    #poster-lb-img {
+      display: block;
+      max-height: 88vh;
+      max-width: 72vw;
+      width: auto; height: auto;
+      box-shadow: 0 32px 96px rgba(0,0,0,0.7);
+      -webkit-user-drag: none;
+    }
+
+
+    /* Meta — petit overlay en haut à droite, z-index au-dessus de l'image */
+    #poster-lb-meta {
+      position: absolute;
+      top: 68px; right: 32px;
+      text-align: right;
+      max-width: 180px;
+      z-index: 5;
+      pointer-events: auto;
+      pointer-events: none;
+    }
+    #poster-lb-eyebrow {
+      font-family: var(--ff-display);
+      font-size: 7px; font-weight: 400;
+      letter-spacing: 0.40em; text-transform: uppercase;
+      color: rgba(255,255,255,0.28);
+      margin-bottom: 8px;
+    }
+    #poster-lb-title {
+      font-family: var(--ff-display);
+      font-size: 10px; font-weight: 500;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: rgba(255,255,255,0.72);
+      margin-bottom: 5px;
+    }
+    #poster-lb-specs {
+      font-family: var(--ff-display);
+      font-size: 8px; font-weight: 400;
+      letter-spacing: 0.28em; text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 10px;
+    }
+    #poster-lb-desc {
+      font-family: var(--ff-display);
+      font-size: 9px; font-weight: 300;
+      line-height: 1.75;
+      color: rgba(255,255,255,0.42);
+    }
+
+    /* Transition de sortie du poster */
+    #scene-affiche.leaving {
+      transition: opacity 0.6s ease;
+      opacity: 0 !important;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="loader" id="loader">
+    <div class="loader-mark" id="loaderMark"></div>
+    <div class="loader-text" id="loaderText">Entering the Room</div>
+  </div>
+
+  <div class="bg-light" id="bgLight"></div>
+  <div class="bg-dark-overlay" id="bgDark"></div>
+  <div id="canvas-container"></div>
+
+  <header class="site-header">
+    <div class="site-logo">François Peyranne × Rolex</div>
+    <nav class="site-nav">
+      <a href="#">Home</a><a href="#">Works</a><a href="#">About</a><a href="#">Contact</a>
+    </nav>
+  </header>
+
+  <main>
+
+    <!-- SÉQUENCE COURONNE — une seule section pinned, timeline continue -->
+    <div id="crown-sequence">
+
+      <!-- Couche 0 : Hero (visible au départ) -->
+      <div id="seq-hero" class="seq-layer">
+        <div class="scene-hero-eyebrow">Solo Study</div>
+        <h1 class="scene-hero-title">Variations<br/><span class="italic">on a Crown</span></h1>
+        <p class="scene-hero-sub">Twenty-four works on the same icon · François Peyranne</p>
+        <div class="scroll-cue">
+          <span>Scroll to begin</span>
+          <svg width="14" height="20" viewBox="0 0 14 20" fill="none" stroke="currentColor" stroke-width="1">
+            <path d="M7 1v18M1 13l6 6 6-6" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Couche 1 : Chapter I (apparaît ~13% du scroll) -->
+      <div id="seq-ch1" class="seq-layer">
+        <div class="chapter-content">
+          <div class="chapter-eyebrow">Chapter I</div>
+          <h2 class="chapter-title">The<br/><span class="italic">Laboratory</span></h2>
+          <p class="chapter-text">Ten years of work on the crown under brand constraint. <strong>This series approaches it free.</strong> Like a painter who studies a single chair for months — same subject, dozens of treatments, no commercial end.</p>
+        </div>
+        <div class="seq-freeze-mark">
+          <span class="dot"></span>
+          <span>I &nbsp;·&nbsp; Take time to read</span>
+        </div>
+      </div>
+
+      <!-- Couche 2 : Chapter II (apparaît ~47% du scroll) -->
+      <div id="seq-ch2" class="seq-layer">
+        <div class="chapter-content chapter-center" style="max-width:720px; text-align:center;">
+          <div class="chapter-eyebrow">Chapter II</div>
+          <h2 class="chapter-title">The<br/><span class="italic">variations</span></h2>
+          <p class="chapter-text">Twenty-four posters. <strong>Pop art, photography, typography, sculpture, illustration, brutalism.</strong> One single source motif : the Rolex Crown.</p>
+        </div>
+        <div class="seq-freeze-mark">
+          <span class="dot"></span>
+          <span>II &nbsp;·&nbsp; Take time to read</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PHASE EXPO : séquence d'images sur canvas + spacer scrollable -->
+    <!-- Le canvas reste fixe. Le spacer crée la hauteur de scroll. -->
+    <div id="phase-expo">
+      <div id="intro2-fixed">
+        <canvas id="intro2-canvas"></canvas>
+        <div id="intro2-loader">
+          <div id="intro2-loader-bar-wrap">
+            <div id="intro2-loader-bar"></div>
+          </div>
+        </div>
+      </div>
+      <!-- height = SCROLL_H + window.innerHeight, calculé en JS -->
+      <div id="intro2-spacer"></div>
+      <!-- Scroll hint : position fixed, en dehors de tout parent transformé -->
+      <div id="scroll-hint">
+        <span class="scroll-enter-arrow"></span>
+        Scroll to enter
+      </div>
+    </div>
+
+    <!-- ══ OVERLAY affiches — visible dès que le scroll s'arrête sur la dernière frame ══
+         Position fixe, z-index 7 (au-dessus du canvas z-index 6).
+         3 zones invisibles positionnées sur les affiches de la galerie.
+         Les % left/top/width/height sont à ajuster selon la composition de frame_069.
+    ══════════════════════════════════════════════════════════════════════════════════ -->
+    <div id="frame-overlay">
+
+      <!-- Affiche gauche — Lady Datejust (rose) -->
+      <div class="poster-zone" id="zone-a"
+        data-title="Lady-Datejust"
+        data-specs="40 cm × 60 cm"
+        data-desc="Edition limitée — Tirage numéroté et signé par l'artiste."
+        data-src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/TRYPTIQUE_012_HD_B_.webp"
+        data-arrow="25%"
+        data-index="0"
+        style="left:13%;top:22%;width:23%;height:57%">
+        <div class="poster-zone-inner"></div>
+      </div>
+
+      <!-- Affiche centre — Submariner (teal) -->
+      <div class="poster-zone" id="zone-b"
+        data-title="Submariner"
+        data-specs="40 cm × 60 cm"
+        data-desc="Edition limitée — Tirage numéroté et signé par l'artiste."
+        data-src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/TRYPTIQUE_002_HD_B_.webp"
+        data-arrow="50%"
+        data-index="1"
+        style="left:39%;top:22%;width:23%;height:57%">
+        <div class="poster-zone-inner"></div>
+      </div>
+
+      <!-- Affiche droite — Perpetual Tennis (bleu) -->
+      <div class="poster-zone" id="zone-c"
+        data-title="Perpetual Tennis"
+        data-specs="40 cm × 60 cm"
+        data-desc="Edition limitée — Tirage numéroté et signé par l'artiste."
+        data-src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/TRYPTIQUE_002_HD_C_.webp"
+        data-arrow="75%"
+        data-index="2"
+        style="left:64%;top:22%;width:23%;height:57%">
+        <div class="poster-zone-inner"></div>
+      </div>
+
+      <!-- Flèche unique — glisse sous l'affiche survolée -->
+      <div id="frame-single-arrow">
+        <img src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20GAUCHE-.png" alt="" />
+      </div>
+
+    </div><!-- /frame-overlay -->
+
+    <!-- Lightbox affiche -->
+    <div id="poster-lightbox">
+      <button id="poster-lb-close" aria-label="Fermer">×</button>
+      <button id="lb-prev" aria-label="Affiche précédente">&#8249;</button>
+      <button id="lb-next" aria-label="Affiche suivante">&#8250;</button>
+      <div id="poster-lb-img-wrap">
+        <div id="poster-lb-img-scroll">
+          <img id="poster-lb-img" src="" alt="" />
+        </div>
+      </div>
+    </div>
+
+    <!-- AFFICHE TITRE — fondu après zoom couronne -->
+    <div id="scene-affiche">
+      <div class="affiche-titre-cta">
+
+        <!-- CTA gauche (desktop) -->
+        <button class="enter-zone enter-zone-left" id="btnEntrerExpo" aria-label="Enter exhibition">
+          <span class="enter-label">Click to Enter</span>
+          <img class="enter-arrow"
+            src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20GAUCHE-.png"
+            alt="" />
+        </button>
+
+        <!-- Bloc affiche : poster + subtitle + CTA mobile -->
+        <div class="poster-block" id="affiche-img-wrap">
+          <div class="cta-above">
+            <span class="enter-label">Click to Enter</span>
+            <img class="enter-arrow"
+              src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20GAUCHE-.png"
+              alt="" />
+          </div>
+          <div class="poster-wrap">
+            <img class="poster-img"
+              src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/AFFICHE%20TITRE%2Bcadre%20.webp"
+              alt="Rolex Crown Exhibition — François Peyranne" />
+          </div>
+          <p class="poster-subtitle">The Rolex Crown Exhibiton</p>
+        </div>
+
+        <!-- CTA droite (desktop) -->
+        <button class="enter-zone enter-zone-right" id="affiche-cta-right" aria-label="Enter exhibition">
+          <img class="enter-arrow"
+            src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20DROITE-.png"
+            alt="" />
+          <span class="enter-label">Click to Enter</span>
+        </button>
+
+      </div>
+    </div>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/loaders/SVGLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/loaders/RGBELoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/lights/RectAreaLightUniformsLib.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.23/dist/lenis.min.js"></script>
+
+  <script>
+    function showError(msg) {
+      var m = document.getElementById('loaderMark'), t = document.getElementById('loaderText');
+      if (m) m.classList.add('error');
+      if (t) { t.classList.add('error'); t.textContent = msg; }
+      console.error(msg);
+    }
+
+    var CROWN_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1920"><g><path transform="matrix(1,0,0,-1,959.4926,1546.1266)" d="M0 0C176.025 0 318.742-44.445 318.742-99.201 318.742-154.031 176.025-198.293 0-198.293-176.061-198.293-318.78-154.031-318.78-99.201-318.78-44.445-176.061 0 0 0M-697.585 888.138C-688.878 888.138-680.393 889.501-672.318 891.562L-382.938-81.932H-382.864C-350.562-190.633-190.725-273.044 1.637-273.044 194.036-273.044 353.835-190.633 386.175-81.932H386.25L675.407 890.789C682.476 889.243 689.92 888.138 697.511 888.138 753.704 888.138 799.293 933.209 799.293 988.961 799.293 1044.417 753.704 1089.561 697.511 1089.561 641.392 1089.561 595.693 1044.417 595.693 988.961 595.693 948.86 619.398 914.429 653.523 898.265L318.296 187.172 372.218 1145.311H374.564C430.609 1145.311 476.197 1190.311 476.197 1245.876 476.197 1301.516 430.609 1346.551 374.564 1346.551 318.296 1346.551 272.744 1301.516 272.744 1245.876 272.744 1199.958 303.893 1161.44 346.17 1149.251L123.105 212.728 15.592 1244.844C64.865 1251.952 102.712 1293.746 102.712 1344.451 102.712 1399.906 57.161 1445.127 1.078 1445.127-55.189 1445.127-100.703 1399.906-100.703 1344.451-100.703 1293.635-62.447 1251.584-12.989 1244.808L-120.352 214.532-342.969 1149.068C-300.136 1161.035-268.615 1199.7-268.615 1245.876-268.615 1301.516-314.24 1346.551-370.433 1346.551-426.552 1346.551-472.14 1301.516-472.14 1245.876-472.14 1190.311-426.552 1145.311-370.433 1145.311H-368.981L-315.095 187.577-650.993 899.516C-618.281 916.234-595.842 949.929-595.842 988.961-595.842 1044.417-641.356 1089.561-697.585 1089.561-753.706 1089.561-799.257 1044.417-799.257 988.961-799.257 933.209-753.706 888.138-697.585 888.138" fill="#000"/></g></svg>';
+
+    window.addEventListener('load', function() {
+      try {
+        if (typeof THREE === 'undefined') return showError('Three.js non chargé.');
+        if (typeof THREE.SVGLoader === 'undefined') return showError('SVGLoader non chargé.');
+        if (typeof THREE.RGBELoader === 'undefined') return showError('RGBELoader non chargé.');
+        if (typeof THREE.RectAreaLightUniformsLib === 'undefined') return showError('RectAreaLightUniformsLib non chargé.');
+        if (typeof gsap === 'undefined') return showError('GSAP non chargé.');
+        if (typeof Lenis === 'undefined') return showError('Lenis non chargé.');
+        initAll();
+      } catch (err) {
+        showError('Erreur : ' + err.message); console.error(err);
+      }
+    });
+
+    function initAll() {
+      // =============== THREE.JS ===============
+      var container = document.getElementById('canvas-container');
+      var scene = new THREE.Scene();
+      var camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 100);
+      camera.position.set(0, 0, 12);
+      camera.lookAt(0, 0, 0);
+
+      var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.3;
+      renderer.outputEncoding = THREE.sRGBEncoding;
+      container.appendChild(renderer.domElement);
+
+      function buildEnv() {
+        var es = new THREE.Scene();
+        es.background = new THREE.Color(0xe8eef2);
+        function p(w, h, x, y, z, rx, ry, c, i) {
+          var m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(c).multiplyScalar(i) }));
+          m.position.set(x, y, z); m.rotation.set(rx, ry, 0); es.add(m);
+        }
+        p(20, 10, 0, 8, 0, -Math.PI/2, 0, 0xffffff, 4.5);
+        p(8, 12, 8, 2, 2, 0, -Math.PI/2, 0xfff5e8, 3.2);
+        p(8, 12, -8, 2, 2, 0, Math.PI/2, 0xd6e8f0, 3.0);
+        p(14, 8, 0, 3, -6, 0, Math.PI, 0xffffff, 2.5);
+        p(14, 8, 0, 0, 8, 0, 0, 0xe8f0f5, 1.4);
+        p(20, 20, 0, -6, 0, Math.PI/2, 0, 0xf0f4f6, 1.8);
+        return es;
+      }
+      var pmrem = new THREE.PMREMGenerator(renderer);
+      pmrem.compileEquirectangularShader();
+      scene.environment = pmrem.fromScene(buildEnv(), 0.02).texture;
+
+      THREE.RectAreaLightUniformsLib.init();
+      var l1 = new THREE.RectAreaLight(0xffffff, 10, 12, 6); l1.position.set(0, 7, 3); l1.lookAt(0,0,0); scene.add(l1);
+      var l2 = new THREE.RectAreaLight(0xffffff, 7, 8, 10); l2.position.set(7, 1, 4); l2.lookAt(0,0,0); scene.add(l2);
+      var l3 = new THREE.RectAreaLight(0xffffff, 6, 8, 10); l3.position.set(-7, 1, 4); l3.lookAt(0,0,0); scene.add(l3);
+      var l4 = new THREE.RectAreaLight(0xffffff, 5, 10, 6); l4.position.set(0, 2, -5); l4.lookAt(0,0,0); scene.add(l4);
+      var dl = new THREE.DirectionalLight(0xffffff, 0.6); dl.position.set(6, 10, 6); scene.add(dl);
+      scene.add(new THREE.HemisphereLight(0xffffff, 0xd8d8d8, 0.2));
+
+      new THREE.RGBELoader().load(
+        'https://threejs.org/examples/textures/equirectangular/spot1Lux.hdr',
+        function(t) { t.mapping = THREE.EquirectangularReflectionMapping; scene.environment = pmrem.fromEquirectangular(t).texture; t.dispose(); },
+        undefined, function() { console.warn('HDR failed'); }
+      );
+
+      var sd = new THREE.SVGLoader().parse(CROWN_SVG);
+      var shapes = THREE.SVGLoader.createShapes(sd.paths[0]);
+      var crownGroup = new THREE.Group();
+      var crownMaterials = [];
+      shapes.forEach(function(shape) {
+        var geom = new THREE.ExtrudeGeometry(shape, {
+          depth: 70, bevelEnabled: true, bevelThickness: 24, bevelSize: 12,
+          bevelSegments: 20, curveSegments: 48, steps: 1
+        });
+        geom.center();
+        var mat = new THREE.MeshPhysicalMaterial({
+          color: new THREE.Color(0x365549), metalness: 0, roughness: 0.0,
+          transmission: 0.78, thickness: 2.5, ior: 1.6,
+          clearcoat: 1.0, clearcoatRoughness: 0.0, envMapIntensity: 2.5,
+          attenuationColor: new THREE.Color(0x6e9485), attenuationDistance: 0.8,
+          iridescence: 0.15, iridescenceIOR: 1.25,
+          specularIntensity: 2.2, reflectivity: 0.75,
+          transparent: true, opacity: 1, side: THREE.DoubleSide
+        });
+        crownMaterials.push(mat);
+        crownGroup.add(new THREE.Mesh(geom, mat));
+      });
+      var bbox = new THREE.Box3().setFromObject(crownGroup);
+      crownGroup.position.sub(bbox.getCenter(new THREE.Vector3()));
+      var sz = bbox.getSize(new THREE.Vector3());
+      crownGroup.scale.setScalar(4 / Math.max(sz.x, sz.y));
+      var crownBaseScale = crownGroup.scale.x;
+      crownGroup.rotation.x = Math.PI + 0.18;
+      crownGroup.rotation.y = 0.42;
+      scene.add(crownGroup);
+
+      // ★★★ FIX BUG : Force les positions/scale/rotation initiales explicitement
+      // Évite que les ScrollTrigger scrub interprètent une position bizarre au démarrage
+      gsap.set(crownGroup.position, { x: 0, y: 0, z: 0 });
+      gsap.set(crownGroup.scale, { x: crownBaseScale, y: crownBaseScale, z: crownBaseScale });
+      gsap.set(crownGroup.rotation, { x: Math.PI + 0.18, y: 0.42, z: 0 });
+
+      // Force le scroll au top au chargement (évite les reload mi-page qui foutent les ScrollTriggers)
+      if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+      window.scrollTo(0, 0);
+
+      // =============== LENIS + GSAP ===============
+      // lerp:0.1 = démarrage immédiat (pas de dead-zone), décélération naturelle
+      // =============== LENIS — config premium ===============
+      // duration:1.15 + scrub:1.4 = inertie naturelle sans double-lag
+      var lenis = new Lenis({
+        duration: 0.75,
+        smoothWheel: true,
+        wheelMultiplier: 1.0,
+        touchMultiplier: 1.5,
+        infinite: false
+      });
+      lenis.on('scroll', function() { ScrollTrigger.update(); });
+      gsap.ticker.add(function(time) {
+        lenis.raf(time * 1000);
+        if (_renderActive) renderer.render(scene, camera);
+      });
+      gsap.ticker.lagSmoothing(0);
+      gsap.registerPlugin(ScrollTrigger);
+
+      var canvasContainer = document.getElementById('canvas-container');
+      var _renderActive = true;
+
+      // ── Séquence d'images intro2 — 69 frames JPEG ───────────────────────────
+      // Architecture Apple-style : chaque frame = un <img> en mémoire RAM.
+      // Seek = 0ms (drawImage instantané), aucune décompression vidéo.
+      var FRAMES_BASE  = './FRAMES_SALLE5/frame_';
+      var FRAMES_COUNT = 121;
+      var _frames      = new Array(FRAMES_COUNT); // Image objects pré-chargées
+      var _framesReady = 0;                        // nb de frames chargées
+
+      // Préchargement en arrière-plan (démarre dès le chargement de la page)
+      for (var _fi = 0; _fi < FRAMES_COUNT; _fi++) {
+        (function(idx) {
+          var img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = img.onerror = function() {
+            _framesReady++;
+            // Mettre à jour la barre de progression si la phase expo est active
+            var bar = document.getElementById('intro2-loader-bar');
+            if (bar) bar.style.width = Math.round(_framesReady / FRAMES_COUNT * 100) + '%';
+          };
+          var n = String(idx + 1).padStart(3, '0');
+          img.src = FRAMES_BASE + n + '.jpg';
+          _frames[idx] = img;
+        })(_fi);
+      }
+
+      // =============== MOTEUR DIRECT — couronne pilotée par progress ===============
+      // Pas de timeline scrubbed. Toutes les valeurs sont calculées depuis p = self.progress.
+      // ScrollTrigger sert uniquement à pin la section et fournir la progression.
+      // Résultat : réactivité immédiate, aucun double-lissage, rotation + zoom simultanés.
+
+      // Affiche — définis avant le ScrollTrigger
+      var sceneAffiche = document.getElementById('scene-affiche');
+      var afCta = sceneAffiche.querySelector('.affiche-titre-cta');
+
+      // ─── Helpers mathématiques ────────────────────────────────────────────────
+      function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+      function lerp(a, b, t)  { return a + (b - a) * t; }
+      function smoothstep(t)  { t = clamp(t, 0, 1); return t * t * (3 - 2 * t); }
+      function range(p, a, b) { return clamp((p - a) / (b - a), 0, 1); }
+      function rangeSmooth(p, a, b) { return smoothstep(range(p, a, b)); }
+
+      // ─── Texte de chapitre : entrée bas→centre, pause, sortie centre→haut ────
+      function setReadableLayer(selector, p, enterStart, enterEnd, holdEnd, exitEnd) {
+        var el = document.querySelector(selector);
+        if (!el) return;
+        var opacity, y;
+        if (p < enterStart || p > exitEnd) {
+          opacity = 0;
+          y = p <= enterStart ? 90 : -90;
+        } else if (p <= enterEnd) {
+          var tIn = rangeSmooth(p, enterStart, enterEnd);
+          opacity = tIn;
+          y = lerp(90, 0, tIn);
+        } else if (p <= holdEnd) {
+          opacity = 1;
+          y = 0;
+        } else {
+          var tOut = rangeSmooth(p, holdEnd, exitEnd);
+          opacity = 1 - tOut;
+          y = lerp(0, -90, tOut);
+        }
+        gsap.set(el, { opacity: opacity, y: y });
+      }
+
+      // ─── Mise à jour complète de la scène pour un progress p ∈ [0, 1] ────────
+      function updateCrownSequence(p) {
+        // Hero
+        var heroFade = rangeSmooth(p, 0.05, 0.20);
+        gsap.set('#seq-hero', {
+          opacity: 1 - heroFade,
+          pointerEvents: p < 0.18 ? 'auto' : 'none'
+        });
+
+        // Chapitres avec vraie zone de lecture
+        setReadableLayer('#seq-ch1', p, 0.13, 0.24, 0.42, 0.50);
+        setReadableLayer('#seq-ch2', p, 0.47, 0.58, 0.72, 0.80);
+
+        // Progressions de mouvement (smoothstep sur chaque segment)
+        var a = rangeSmooth(p, 0.00, 0.27); // face → gauche
+        var b = rangeSmooth(p, 0.27, 0.58); // gauche → centre
+        var c = rangeSmooth(p, 0.58, 0.86); // approche lente
+        var d = rangeSmooth(p, 0.86, 1.00); // traversée finale
+
+        var x = lerp(0, -2.2, a);
+        x = lerp(x, 0, b);
+        x = lerp(x, 0.15, d);
+
+        var z = 0;
+        z = lerp(z, -0.6, b);
+        z = lerp(z, 2.4,  c);
+        z = lerp(z, 7.0,  d);
+
+        var scale = crownBaseScale;
+        scale = lerp(scale, crownBaseScale * 0.9,  b);
+        scale = lerp(scale, crownBaseScale * 1.75, c);
+        scale = lerp(scale, crownBaseScale * 4.5,  d);
+
+        var rotY = 0.42;
+        rotY = lerp(rotY, 0.92, a);
+        rotY = lerp(rotY, 1.32, b);
+        rotY = lerp(rotY, 1.32 + Math.PI * 0.22, c);
+        rotY = lerp(rotY, 1.32 + Math.PI * 0.5,  d);
+
+        crownGroup.position.set(x, 0, z);
+        crownGroup.scale.set(scale, scale, scale);
+        crownGroup.rotation.set(Math.PI + 0.18, rotY, 0);
+
+        // Crossfade affiche finale
+        var poster = rangeSmooth(p, 0.88, 1.00);
+        gsap.set(canvasContainer, { opacity: 1 - poster });
+        gsap.set(sceneAffiche,    { opacity: poster });
+        gsap.set(afCta,           { opacity: rangeSmooth(p, 0.94, 1.00) });
+        sceneAffiche.style.pointerEvents = p > 0.985 ? 'auto' : 'none';
+      }
+
+      // ─── ScrollTrigger : pin uniquement, progress → updateCrownSequence ──────
+      var crownST = ScrollTrigger.create({
+        trigger: '#crown-sequence',
+        start: 'top top',
+        end: '+=7600',
+        pin: true,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+
+        onUpdate: function(self) {
+          updateCrownSequence(self.progress);
+        },
+        onLeave: function() {
+          updateCrownSequence(1);
+          _renderActive = false;
+          sceneAffiche.style.pointerEvents = 'auto';
+        },
+        onEnterBack: function() {
+          _renderActive = true;
+          sceneAffiche.style.pointerEvents = 'none';
+          updateCrownSequence(crownST.progress || 0);
+        },
+        onRefresh: function(self) {
+          updateCrownSequence(self.progress || 0);
+        }
+      });
+
+      // Wrapper de compatibilité : enterExpo() appelle crownTL.scrollTrigger.kill(true)
+      var crownTL = { scrollTrigger: crownST };
+
+      // État initial
+      updateCrownSequence(0);
+
+      window.addEventListener('resize', function() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+
+      // ═══════════════════════════════════════════════════════
+      //  initImageSequence — scrub Apple-style via canvas
+      //
+      //  Architecture : 69 frames JPEG pré-chargées en RAM,
+      //  canvas fixed + spacer scrollable.
+      //  drawImage() = 0ms de latence, scroll 100% fluide.
+      // ═══════════════════════════════════════════════════════
+
+      var SCROLL_H   = 1000;  // px de scroll total (plus court = plus rapide)
+      var FRAME_START = 0;   // démarre la séquence à cette frame (saute le couloir trop large)
+      var _introRafId = null;
+
+      function initImageSequence(onFirstFrameReady) {
+        if (_introRafId) {
+          cancelAnimationFrame(_introRafId);
+          _introRafId = null;
+        }
+
+        var canvas    = document.getElementById('intro2-canvas');
+        var ctx       = canvas.getContext('2d');
+        var loader    = document.getElementById('intro2-loader');
+        var bar       = document.getElementById('intro2-loader-bar');
+        var spacer    = document.getElementById('intro2-spacer');
+        var overlay   = document.getElementById('frame-overlay');
+        var scrollHint = document.getElementById('scroll-hint');
+
+        var currentFrame = FRAME_START;
+        var started = false;
+
+        function getDpr() {
+          return Math.min(window.devicePixelRatio || 1, 2);
+        }
+
+        var HINT_SOURCE_X = 0.524;
+        var HINT_SOURCE_Y = 0.925;
+
+        function getCoverRect() {
+          var img = _frames[currentFrame] || _frames[0];
+          if (!img || !img.naturalWidth) return null;
+          var dpr = getDpr();
+          var cw = canvas.width, ch = canvas.height;
+          var iw = img.naturalWidth, ih = img.naturalHeight;
+          var scale = Math.max(cw / iw, ch / ih);
+          var dw = iw * scale, dh = ih * scale;
+          var dx = Math.round((cw - dw) / 2);
+          var dy = Math.round((ch - dh) / 2);
+          // Convertit pixels canvas → pixels CSS
+          return { x: dx / dpr, y: dy / dpr, w: dw / dpr, h: dh / dpr };
+        }
+
+        function positionScrollHint() {
+          if (!scrollHint) return;
+          var rect = getCoverRect();
+          if (!rect) return;
+          var x = rect.x + rect.w * HINT_SOURCE_X;
+          var y = rect.y + rect.h * HINT_SOURCE_Y;
+          scrollHint.style.left = x + 'px';
+          scrollHint.style.top  = y + 'px';
+        }
+
+        function resizeCanvas() {
+          var dpr = getDpr();
+          canvas.style.width  = '100vw';
+          canvas.style.height = '100vh';
+          canvas.width  = Math.round(window.innerWidth  * dpr);
+          canvas.height = Math.round(window.innerHeight * dpr);
+          if (spacer) spacer.style.height = (SCROLL_H + window.innerHeight) + 'px';
+          renderFrame(currentFrame);
+          positionScrollHint();
+        }
+
+        function drawImageCover(img) {
+          if (!img || !img.naturalWidth || !img.naturalHeight) return;
+          var cw = canvas.width, ch = canvas.height;
+          var iw = img.naturalWidth, ih = img.naturalHeight;
+          var scale = Math.max(cw / iw, ch / ih);
+          var dw = iw * scale, dh = ih * scale;
+          var dx = Math.round((cw - dw) / 2);
+          var dy = Math.round((ch - dh) / 2);
+          ctx.clearRect(0, 0, cw, ch);
+          ctx.drawImage(img, dx, dy, dw, dh);
+        }
+
+        function renderFrame(idx) {
+          idx = Math.max(0, Math.min(FRAMES_COUNT - 1, idx));
+          var img = _frames[idx];
+          if (!img || !img.complete || !img.naturalWidth) return;
+          currentFrame = idx;
+          drawImageCover(img);
+        }
+
+        function showPosterArrows() {
+          if (overlay && !overlay.classList.contains('visible')) overlay.classList.add('visible');
+        }
+
+        function hidePosterArrows() {
+          if (overlay && overlay.classList.contains('visible')) overlay.classList.remove('visible');
+        }
+
+        function getProgress() {
+          var scroll = window.scrollY || window.pageYOffset || 0;
+          return Math.max(0, Math.min(1, scroll / SCROLL_H));
+        }
+
+        function tick() {
+          var progress = getProgress();
+          // Mappe le scroll sur [FRAME_START, dernière frame] — saute le couloir initial
+          var idx = FRAME_START + Math.round(progress * (FRAMES_COUNT - 1 - FRAME_START));
+          if (progress >= 0.999) idx = FRAMES_COUNT - 1;
+          renderFrame(idx);
+
+          if (scrollHint) {
+            if (progress > 0.04) scrollHint.classList.add('hidden');
+            else                 scrollHint.classList.remove('hidden');
+          }
+
+          if (progress >= 0.985) showPosterArrows();
+          else                   hidePosterArrows();
+
+          _introRafId = requestAnimationFrame(tick);
+        }
+
+        function startWhenFrame0Ready() {
+          var f0 = _frames[FRAME_START];
+          if (f0 && f0.complete && f0.naturalWidth) {
+            resizeCanvas();
+            renderFrame(FRAME_START);
+            if (loader) { loader.style.opacity = '0'; loader.style.display = 'none'; }
+            positionScrollHint();
+            if (onFirstFrameReady) onFirstFrameReady();
+            if (!started) {
+              started = true;
+              _introRafId = requestAnimationFrame(tick);
+            }
+            checkFrameSizes();
+          } else {
+            setTimeout(startWhenFrame0Ready, 30);
+          }
+        }
+
+        function checkFrameSizes() {
+          if (!_frames[0] || !_frames[0].naturalWidth) return;
+          var fw = _frames[0].naturalWidth, fh = _frames[0].naturalHeight;
+          for (var i = 1; i < FRAMES_COUNT; i++) {
+            if (!_frames[i]) continue;
+            if (_frames[i].naturalWidth && (_frames[i].naturalWidth !== fw || _frames[i].naturalHeight !== fh)) {
+              console.warn('[frame-mismatch] frame ' + i, _frames[i].naturalWidth + 'x' + _frames[i].naturalHeight, '≠', fw + 'x' + fh);
+            }
+          }
+        }
+
+        window.removeEventListener('resize', resizeCanvas);
+        window.addEventListener('resize', resizeCanvas);
+
+        function goToEnd() {
+          if (!lenis) return;
+          lenis.scrollTo(SCROLL_H, {
+            duration: 1.1,
+            easing: function(t) { return 1 - Math.pow(1 - t, 3); }
+          });
+        }
+
+        var introFixed = document.getElementById('intro2-fixed');
+
+        function handleExpoClick(e) {
+          var overlay = document.getElementById('frame-overlay');
+          var lightbox = document.getElementById('poster-lightbox');
+          if (overlay && overlay.classList.contains('visible')) return;
+          if (lightbox && lightbox.classList.contains('open')) return;
+          goToEnd();
+        }
+
+        canvas.onclick = handleExpoClick;
+
+        if (introFixed) {
+          introFixed.onclick = handleExpoClick;
+        }
+
+        if (scrollHint) {
+          scrollHint.onclick = handleExpoClick;
+        }
+
+        function isPhaseExpoActive() {
+          var phase = document.getElementById('phase-expo');
+          return phase && window.getComputedStyle(phase).display !== 'none';
+        }
+
+        function shouldIgnoreExpoClick(e) {
+          var overlay = document.getElementById('frame-overlay');
+          var lightbox = document.getElementById('poster-lightbox');
+          if (lightbox && lightbox.classList.contains('open')) return true;
+          if (overlay && overlay.classList.contains('visible')) return true;
+          if (e.target.closest && e.target.closest('.site-header')) return true;
+          if (
+            e.target.closest &&
+            e.target.closest('a, button, input, textarea, select') &&
+            !e.target.closest('#scroll-hint')
+          ) return true;
+          return false;
+        }
+
+        if (window.__expoGlobalClickHandler) {
+          document.removeEventListener('click', window.__expoGlobalClickHandler, true);
+        }
+
+        window.__expoGlobalClickHandler = function(e) {
+          if (!isPhaseExpoActive()) return;
+          if (shouldIgnoreExpoClick(e)) return;
+          goToEnd();
+        };
+
+        document.addEventListener('click', window.__expoGlobalClickHandler, true);
+
+        startWhenFrame0Ready();
+      }
+
+      // ═══════════════════════════════════════════════════════
+      //  Entrer dans l'exposition — bouton + clic sur l'affiche
+      // ═══════════════════════════════════════════════════════
+      function enterExpo() {
+        // 1. Fade-out du poster
+        sceneAffiche.classList.add('leaving');
+
+        setTimeout(function() {
+          // 2. Tuer le ScrollTrigger couronne (retire le pin spacer)
+          if (crownTL.scrollTrigger) crownTL.scrollTrigger.kill(true);
+          _renderActive = false;
+
+          // 3. Cacher la phase couronne
+          document.getElementById('crown-sequence').style.display = 'none';
+          sceneAffiche.style.display = 'none';
+          canvasContainer.style.display = 'none';
+          document.getElementById('bgLight').style.display = 'none';
+          document.getElementById('bgDark').style.display = 'none';
+
+          // 4. Scroll au top avant d'afficher quoi que ce soit
+          lenis.scrollTo(0, { immediate: true });
+          window.scrollTo(0, 0);
+
+          // 5. Démarrer la séquence : phase-expo n'est rendue visible
+          //    qu'une fois la première frame dessinée (pas de flash noir)
+          initImageSequence(function onFirstFrameReady() {
+            document.getElementById('phase-expo').style.display = 'block';
+          });
+
+        }, 650); // attend la fin du fade-out du poster (600ms + marge)
+      }
+
+      // Les trois zones cliquables déclenchent enterExpo()
+      document.getElementById('btnEntrerExpo').addEventListener('click', enterExpo);
+      document.getElementById('affiche-cta-right').addEventListener('click', enterExpo);
+      document.getElementById('affiche-img-wrap').addEventListener('click', enterExpo);
+
+      // ═══════════════════════════════════════════════════════════
+      //  OVERLAY affiches + lightbox
+      // ═══════════════════════════════════════════════════════════
+      (function initFrameOverlay() {
+        var lightbox  = document.getElementById('poster-lightbox');
+        var lbImg     = document.getElementById('poster-lb-img');
+        var lbClose   = document.getElementById('poster-lb-close');
+        var lbScroll  = document.getElementById('poster-lb-img-scroll');
+        var singleArrow = document.getElementById('frame-single-arrow');
+        var lbPrev    = document.getElementById('lb-prev');
+        var lbNext    = document.getElementById('lb-next');
+
+        var zones = Array.from(document.querySelectorAll('.poster-zone'));
+        var currentZoneIdx = 0;
+
+        // Flèche unique — se déplace sous l'affiche survolée
+        zones.forEach(function(zone) {
+          zone.addEventListener('mouseenter', function() {
+            var pos = zone.getAttribute('data-arrow') || '50%';
+            singleArrow.style.left = pos;
+          });
+        });
+
+        // Ouvre la lightbox pour un index donné
+        function openLightbox(idx) {
+          var zone = zones[idx];
+          currentZoneIdx = idx;
+          lbImg.src = zone.getAttribute('data-src') || '';
+          resetZoom();
+          lightbox.classList.add('open');
+          document.body.classList.add('lb-open');
+        }
+
+        // Clic zone → ouvre lightbox
+        zones.forEach(function(zone, idx) {
+          zone.addEventListener('click', function() { openLightbox(idx); });
+        });
+
+        // Navigation prev / next
+        lbPrev.addEventListener('click', function(e) {
+          e.stopPropagation();
+          openLightbox((currentZoneIdx - 1 + zones.length) % zones.length);
+        });
+        lbNext.addEventListener('click', function(e) {
+          e.stopPropagation();
+          openLightbox((currentZoneIdx + 1) % zones.length);
+        });
+
+        // ── Zoom scroll + clic + drag ──
+        var ZOOM_MIN = 1, ZOOM_MAX = 6, ZOOM_STEP = 0.12;
+        var _scale = 1, _tx = 0, _ty = 0;
+        var _dragging = false, _dragMoved = false;
+        var _dragX0, _dragY0, _tx0, _ty0;
+
+        function applyTransform() {
+          lbScroll.style.transform = 'translate(' + _tx + 'px,' + _ty + 'px) scale(' + _scale + ')';
+          lightbox.style.cursor = _scale > 1 ? (_dragging ? 'grabbing' : 'grab') : 'zoom-in';
+        }
+
+        function clampPan() {
+          var r = lbImg.getBoundingClientRect();
+          var maxX = Math.max(0, (r.width  - window.innerWidth)  / 2);
+          var maxY = Math.max(0, (r.height - window.innerHeight) / 2);
+          _tx = Math.max(-maxX, Math.min(maxX, _tx));
+          _ty = Math.max(-maxY, Math.min(maxY, _ty));
+        }
+
+        function resetZoom() {
+          _scale = 1; _tx = 0; _ty = 0; _dragging = false; _dragMoved = false;
+          lbScroll.style.transform = '';
+          lightbox.style.cursor = 'zoom-in';
+        }
+
+        // Scroll → zoom centré sur le curseur (stoppe Lenis + scroll page)
+        lightbox.addEventListener('wheel', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          var delta = e.deltaY < 0 ? 1 : -1;
+          var prev = _scale;
+          _scale = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, _scale * (1 + delta * ZOOM_STEP)));
+          var rect = lbScroll.getBoundingClientRect();
+          var cx = e.clientX - (rect.left + rect.width  / 2);
+          var cy = e.clientY - (rect.top  + rect.height / 2);
+          var ratio = _scale / prev;
+          _tx = cx + (_tx - cx) * ratio;
+          _ty = cy + (_ty - cy) * ratio;
+          if (_scale === ZOOM_MIN) { _tx = 0; _ty = 0; }
+          else clampPan();
+          applyTransform();
+        }, { passive: false });
+
+        // Mousedown → début drag (seulement sur l'image)
+        var _mousedownInLb = false;
+        lightbox.addEventListener('mousedown', function(e) {
+          if (e.target === lbClose) return;
+          if (!lbScroll.contains(e.target)) return;
+          _mousedownInLb = true;
+          _dragging = true; _dragMoved = false;
+          _dragX0 = e.clientX; _dragY0 = e.clientY;
+          _tx0 = _tx; _ty0 = _ty;
+          e.preventDefault();
+        });
+        document.addEventListener('mousemove', function(e) {
+          if (!_dragging) return;
+          var dx = e.clientX - _dragX0, dy = e.clientY - _dragY0;
+          if (Math.abs(dx) > 4 || Math.abs(dy) > 4) _dragMoved = true;
+          if (!_dragMoved) return;
+          _tx = _tx0 + dx; _ty = _ty0 + dy;
+          clampPan();
+          applyTransform();
+        });
+        document.addEventListener('mouseup', function(e) {
+          var wasDrag = _dragMoved;
+          var wasInLb = _mousedownInLb;
+          _dragging = false; _dragMoved = false; _mousedownInLb = false;
+          applyTransform();
+          if (!wasDrag && wasInLb && lbScroll.contains(e.target)) {
+            // Clic sur l'image → zoom ×2 / reset
+            var cx = e.clientX - window.innerWidth  / 2;
+            var cy = e.clientY - window.innerHeight / 2;
+            if (_scale > 1) { _scale = 1; _tx = 0; _ty = 0; }
+            else {
+              var prev = _scale; _scale = 2;
+              _tx = cx + (_tx - cx) * (_scale / prev);
+              _ty = cy + (_ty - cy) * (_scale / prev);
+              clampPan();
+            }
+            applyTransform();
+          }
+        });
+
+        // Fermeture — × ou Echap
+        function closeLightbox() {
+          resetZoom();
+          lightbox.classList.remove('open');
+          document.body.classList.remove('lb-open');
+          setTimeout(function() { lbImg.src = ''; }, 400);
+        }
+        lbClose.addEventListener('click', closeLightbox);
+        lightbox.addEventListener('click', function(e) {
+          if (e.target === lightbox) closeLightbox();
+        });
+        // Swipe tactile — gauche/droite pour naviguer
+        var _touchX0 = null;
+        lightbox.addEventListener('touchstart', function(e) {
+          _touchX0 = e.touches[0].clientX;
+        }, { passive: true });
+        lightbox.addEventListener('touchend', function(e) {
+          if (_touchX0 === null) return;
+          var dx = e.changedTouches[0].clientX - _touchX0;
+          _touchX0 = null;
+          if (Math.abs(dx) > 50) {
+            if (dx < 0) openLightbox((currentZoneIdx + 1) % zones.length);
+            else         openLightbox((currentZoneIdx - 1 + zones.length) % zones.length);
+          }
+        }, { passive: true });
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape') closeLightbox();
+        });
+      })();
+
+      // ═══════════════════════════════════════════════════════
+      //  ROOM MODE — salle autonome.
+      //  Démarre directement sur la séquence de frames, sans la
+      //  couronne 3D ni les chapitres. Réutilise exactement la
+      //  logique éprouvée d'enterExpo() (juste appelée au load).
+      //  Le loader reste visible jusqu'à ce que frame 0 soit prête
+      //  → aucun flash, aucune couronne visible.
+      // ═══════════════════════════════════════════════════════
+      (function startRoomDirectly() {
+        if (crownST) crownST.kill(true);   // retire le pin couronne
+        _renderActive = false;             // stoppe le rendu WebGL
+        document.getElementById('crown-sequence').style.display = 'none';
+        sceneAffiche.style.display = 'none';
+        canvasContainer.style.display = 'none';
+        document.getElementById('bgLight').style.display = 'none';
+        document.getElementById('bgDark').style.display = 'none';
+        lenis.scrollTo(0, { immediate: true });
+        window.scrollTo(0, 0);
+        initImageSequence(function onFirstFrameReady() {
+          document.getElementById('phase-expo').style.display = 'block';
+          document.getElementById('loader').classList.add('done');
+        });
+      })();
+
+      // DEBUG — touche D : force l'affichage de l'overlay (sans attendre de scroller)
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'd' || e.key === 'D') {
+          var overlay = document.getElementById('frame-overlay');
+          var lb = document.getElementById('poster-lightbox');
+          if (overlay && !overlay.classList.contains('visible')) {
+            overlay.classList.add('visible');
+            console.log('[DEBUG] frame-overlay forcé visible');
+          } else if (overlay) {
+            overlay.classList.remove('visible');
+            if (lb) lb.classList.remove('open');
+            console.log('[DEBUG] frame-overlay masqué');
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
