@@ -1627,13 +1627,22 @@
           lightbox.style.cursor = 'zoom-in';
         }
 
+        // Plafond de zoom dynamique : on s'arrête au pixel 1:1 de l'image native.
+        // = largeur native / (largeur affichée à scale 1 × densité écran). Jamais < 1.
+        function maxZoomForImage() {
+          var dpr = window.devicePixelRatio || 1;
+          var baseW = lbImg.getBoundingClientRect().width / (_scale || 1);
+          if (!baseW || !lbImg.naturalWidth) return ZOOM_MAX;
+          return Math.max(1, Math.min(ZOOM_MAX, lbImg.naturalWidth / (baseW * dpr)));
+        }
+
         // Scroll → zoom centré sur le curseur (stoppe Lenis + scroll page)
         lightbox.addEventListener('wheel', function(e) {
           e.preventDefault();
           e.stopPropagation();
           var delta = e.deltaY < 0 ? 1 : -1;
           var prev = _scale;
-          _scale = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, _scale * (1 + delta * ZOOM_STEP)));
+          _scale = Math.min(maxZoomForImage(), Math.max(ZOOM_MIN, _scale * (1 + delta * ZOOM_STEP)));
           var rect = lbScroll.getBoundingClientRect();
           var cx = e.clientX - (rect.left + rect.width  / 2);
           var cy = e.clientY - (rect.top  + rect.height / 2);
@@ -1676,7 +1685,7 @@
             var cy = e.clientY - window.innerHeight / 2;
             if (_scale > 1) { _scale = 1; _tx = 0; _ty = 0; }
             else {
-              var prev = _scale; _scale = 2;
+              var prev = _scale; _scale = Math.min(2, maxZoomForImage());
               _tx = cx + (_tx - cx) * (_scale / prev);
               _ty = cy + (_ty - cy) * (_scale / prev);
               clampPan();
