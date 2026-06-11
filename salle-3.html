@@ -1603,7 +1603,7 @@
         });
 
         // ── Zoom scroll + clic + drag ──
-        var ZOOM_MIN = 1, ZOOM_MAX = 6, ZOOM_STEP = 0.12;
+        var ZOOM_MIN = 1, ZOOM_MAX = 10, ZOOM_STEP = 0.12;
         var _scale = 1, _tx = 0, _ty = 0;
         var _dragging = false, _dragMoved = false;
         var _dragX0, _dragY0, _tx0, _ty0;
@@ -1629,10 +1629,11 @@
 
         // Plafond de zoom dynamique : on s'arrête au pixel 1:1 de l'image native.
         function maxZoomForImage() {
-          var dpr = window.devicePixelRatio || 1;
+          // Plafond = taille native 100% (1 pixel image = 1 pixel CSS) — sharp sur retina,
+          // permet de zoomer jusqu'aux dimensions natives de l'affiche.
           var baseW = lbImg.getBoundingClientRect().width / (_scale || 1);
           if (!baseW || !lbImg.naturalWidth) return ZOOM_MAX;
-          return Math.max(1, Math.min(ZOOM_MAX, lbImg.naturalWidth / (baseW * dpr)));
+          return Math.max(1, Math.min(ZOOM_MAX, lbImg.naturalWidth / baseW));
         }
 
         // Scroll → zoom centré sur le curseur (stoppe Lenis + scroll page)
