@@ -770,7 +770,8 @@
       user-select: none;
       z-index: 1;
       transform-origin: center center;
-      will-change: transform;
+      /* pas de will-change: laisse le navigateur re-rendre l'image depuis la source
+         à chaque niveau de zoom (netteté max), au lieu d'étirer un cache basse-déf */
     }
     #poster-lb-img {
       display: block;
