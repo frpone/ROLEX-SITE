@@ -682,6 +682,7 @@
       pointer-events: none;
       user-select: none;
       animation: arrowBounceUp 2.2s ease-in-out infinite;
+      filter: brightness(0) invert(1); /* flèche en blanc (salle sombre) */
     }
     @keyframes arrowBounceUp {
       0%, 100% { transform: rotate(-90deg) translateX(0);    opacity: 0.55; }
@@ -1575,7 +1576,7 @@
             singleArrow.style.left = pos;
             // Flèche calée juste sous l'affiche survolée, avec de l'air (28px) — robuste à toutes les salles
             var _zr = zone.getBoundingClientRect();
-            singleArrow.style.top = (_zr.bottom + 28) + 'px';
+            singleArrow.style.top = (_zr.bottom + 8) + 'px';
             singleArrow.style.bottom = 'auto';
           });
         });
