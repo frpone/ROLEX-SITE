@@ -671,7 +671,7 @@
       bottom: 21%;          /* juste sous les zones (top:17% + height:56% = 73%) */
       left: 50%;            /* position par défaut : affiche centrale */
       pointer-events: none;
-      transition: left 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+      transition: left 0.45s cubic-bezier(0.22, 1, 0.36, 1), top 0.45s cubic-bezier(0.22, 1, 0.36, 1);
     }
     #frame-single-arrow img {
       display: block;
@@ -1602,6 +1602,10 @@
           zone.addEventListener('mouseenter', function() {
             var pos = zone.getAttribute('data-arrow') || '50%';
             singleArrow.style.left = pos;
+            // Flèche calée juste sous l'affiche survolée, avec de l'air (28px) — robuste à toutes les salles
+            var _zr = zone.getBoundingClientRect();
+            singleArrow.style.top = (_zr.bottom + 28) + 'px';
+            singleArrow.style.bottom = 'auto';
           });
         });
 
