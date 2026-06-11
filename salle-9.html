@@ -1605,7 +1605,7 @@
         // ── Zoom scroll + clic + drag ──
         var ZOOM_MIN = 1, ZOOM_MAX = 10, ZOOM_STEP = 0.12;
         var _scale = 1, _tx = 0, _ty = 0;
-        var _dragging = false, _dragMoved = false;
+        var _dragging = false, _dragMoved = false, _clickDir = 1;
         var _dragX0, _dragY0, _tx0, _ty0;
 
         function applyTransform() {
@@ -1622,7 +1622,7 @@
         }
 
         function resetZoom() {
-          _scale = 1; _tx = 0; _ty = 0; _dragging = false; _dragMoved = false;
+          _scale = 1; _tx = 0; _ty = 0; _dragging = false; _dragMoved = false; _clickDir = 1;
           lbScroll.style.transform = '';
           lightbox.style.cursor = 'zoom-in';
         }
@@ -1684,11 +1684,20 @@
             // Clic sur l'image → zoom ×2 / reset
             var cx = e.clientX - window.innerWidth  / 2;
             var cy = e.clientY - window.innerHeight / 2;
-            if (_scale > 1) { _scale = 1; _tx = 0; _ty = 0; }
+            // Clic = zoom par paliers (1 → mi → max), aller-retour
+            var _mx = maxZoomForImage();
+            var _levels = [1, 1 + (_mx - 1) * 0.5, _mx];
+            var _ci = 0, _best = 1e9;
+            for (var _k = 0; _k < _levels.length; _k++) { var _d = Math.abs(_levels[_k] - _scale); if (_d < _best) { _best = _d; _ci = _k; } }
+            if (_ci >= _levels.length - 1) _clickDir = -1;
+            else if (_ci <= 0) _clickDir = 1;
+            _ci = Math.max(0, Math.min(_levels.length - 1, _ci + _clickDir));
+            var _target = _levels[_ci];
+            var _prev = _scale; _scale = _target;
+            if (_target <= 1.0001) { _tx = 0; _ty = 0; }
             else {
-              var prev = _scale; _scale = Math.min(2, maxZoomForImage());
-              _tx = cx + (_tx - cx) * (_scale / prev);
-              _ty = cy + (_ty - cy) * (_scale / prev);
+              _tx = cx + (_tx - cx) * (_target / _prev);
+              _ty = cy + (_ty - cy) * (_target / _prev);
               clampPan();
             }
             applyTransform();
