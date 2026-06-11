@@ -1697,7 +1697,7 @@
             var cy = e.clientY - window.innerHeight / 2;
             // Clic = zoom par paliers (1 → mi → max), aller-retour
             var _mx = maxZoomForImage();
-            var _levels = [1, 1 + (_mx - 1) * 0.5, _mx];
+            var _levels = [1, Math.min(1.6, _mx), _mx];
             var _ci = 0, _best = 1e9;
             for (var _k = 0; _k < _levels.length; _k++) { var _d = Math.abs(_levels[_k] - _scale); if (_d < _best) { _best = _d; _ci = _k; } }
             if (_ci >= _levels.length - 1) _clickDir = -1;
