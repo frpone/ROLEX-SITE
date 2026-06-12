@@ -1175,12 +1175,17 @@
         (function(idx) {
           var img = new Image();
           img.crossOrigin = 'anonymous';
-          img.onload = img.onerror = function() {
+          function _ready() {
             _framesReady++;
-            // Mettre à jour la barre de progression si la phase expo est active
             var bar = document.getElementById('intro2-loader-bar');
             if (bar) bar.style.width = Math.round(_framesReady / FRAMES_COUNT * 100) + '%';
+          }
+          img.onload = function() {
+            // Pré-décodage hors thread principal → supprime la saccade au 1er scroll
+            if (img.decode) { img.decode().then(_ready).catch(_ready); }
+            else { _ready(); }
           };
+          img.onerror = _ready;
           var n = String(idx + 1).padStart(3, '0');
           img.src = FRAMES_BASE + n + '.jpg';
           _frames[idx] = img;
