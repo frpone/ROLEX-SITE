@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<title>Chemin de fer — Exposition Rolex × François Peyranne</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #f4f6f8;
+    color: #0b1116;
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    padding: 48px 40px 80px;
+    -webkit-font-smoothing: antialiased;
+  }
+  header { text-align: center; margin-bottom: 40px; }
+  h1 { font-size: 22px; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 600; }
+  .sub { margin-top: 10px; font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: #6b7280; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+    max-width: 1500px;
+    margin: 0 auto;
+  }
+  .card {
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.18s, box-shadow 0.18s;
+  }
+  .card:hover { transform: translateY(-4px); box-shadow: 0 16px 44px rgba(0,0,0,0.16); }
+  .thumb-wrap { position: relative; aspect-ratio: 16 / 9; background: #222; overflow: hidden; }
+  .thumb-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .badge {
+    position: absolute; top: 12px; left: 12px;
+    width: 34px; height: 34px; border-radius: 50%;
+    background: rgba(0,0,0,0.62); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 600;
+    -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+  }
+  .meta { padding: 14px 16px 16px; }
+  .meta .name { font-size: 13px; font-weight: 600; letter-spacing: 0.04em; }
+  .meta .desc { font-size: 11px; color: #6b7280; margin-top: 4px; letter-spacing: 0.02em; }
+  .meta .file { font-size: 10px; color: #9aa3ad; margin-top: 6px; font-family: ui-monospace, monospace; }
+  footer { text-align:center; margin-top: 48px; font-size: 11px; color:#9aa3ad; letter-spacing:0.1em; }
+  @media print {
+    body { background: #fff; padding: 20px; }
+    .card { box-shadow: none; border: 1px solid #e5e7eb; break-inside: avoid; }
+    .card:hover { transform: none; }
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Chemin de fer — The Rolex Crown Exhibition</h1>
+    <div class="sub">François Peyranne × Rolex · 9 salles · décider l'ordre du parcours</div>
+  </header>
+
+  <div class="grid" id="grid"></div>
+
+  <footer>Astuce : Cmd + P pour exporter en PDF · clique une salle pour l'ouvrir</footer>
+
+  <script>
+    var ROOMS = [
+      { n:1, file:'variations-expo.html', frame:'FRAMES_INTRO2/frame_143.jpg',  name:'Intro Couronne 3D + Tryptique', desc:'Hero couronne or, chapitres, tryptique 003' },
+      { n:2, file:'salle-2.html', frame:'FRAMES_SALLE2/frame_121.jpg', name:'Tryptique 003', desc:'The Crown / cercle noir / signes colorés' },
+      { n:3, file:'salle-3.html', frame:'FRAMES_SALLE3/frame_071.jpg', name:'Dyptique 006', desc:'CROWN / ROLEX typographiques' },
+      { n:4, file:'salle-4.html', frame:'FRAMES_SALLE4/frame_121.jpg', name:'Salle sombre — Dyptique 005', desc:'Swiss Made (rouge) / Perpetual Planet' },
+      { n:5, file:'salle-5.html', frame:'FRAMES_SALLE5/frame_121.jpg', name:'Salle sombre — Tryptique', desc:'Lady-Datejust / Submariner / Perpetual Tennis' },
+      { n:6, file:'salle-6.html', frame:'FRAMES_SALLE6/frame_097.jpg', name:'Salle Musique — 4 affiches', desc:'Perpetual Planet / The Crown / study / Crown bleu' },
+      { n:7, file:'salle-7.html', frame:'FRAMES_SALLE7/frame_121.jpg', name:'Salle Techno', desc:'Daytona / arc-en-ciel / Crown bleu' },
+      { n:8, file:'salle-8.html', frame:'FRAMES_SALLE8/frame_121.jpg', name:'Salle Sport', desc:'Golf Masters / Grand Slam / Paris Master' },
+      { n:9, file:'salle-9.html', frame:'FRAMES_SALLE9/frame_121.jpg', name:'Salle Milgauss', desc:'Milgauss / The Rolex Crown (N&B)' }
+    ];
+    var g = document.getElementById('grid');
+    ROOMS.forEach(function(r){
+      var a = document.createElement('a');
+      a.className = 'card'; a.href = r.file;
+      a.innerHTML =
+        '<div class="thumb-wrap"><span class="badge">'+r.n+'</span><img loading="lazy" src="'+r.frame+'" alt="Salle '+r.n+'"></div>'+
+        '<div class="meta"><div class="name">Salle '+r.n+' — '+r.name+'</div><div class="desc">'+r.desc+'</div><div class="file">'+r.file+'</div></div>';
+      g.appendChild(a);
+    });
+  </script>
+</body>
+</html>
