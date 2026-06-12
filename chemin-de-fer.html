@@ -47,7 +47,8 @@
     -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
   }
   .meta { padding: 14px 16px 16px; }
-  .meta .name { font-size: 13px; font-weight: 600; letter-spacing: 0.04em; }
+  .meta .name { font-size: 13px; font-weight: 600; letter-spacing: 0.04em; display:flex; align-items:center; }
+  .amb { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:8px; border:1px solid rgba(0,0,0,0.18); flex:0 0 auto; }
   .meta .desc { font-size: 11px; color: #6b7280; margin-top: 4px; letter-spacing: 0.02em; }
   .meta .file { font-size: 10px; color: #9aa3ad; margin-top: 6px; font-family: ui-monospace, monospace; }
   footer { text-align:center; margin-top: 48px; font-size: 11px; color:#9aa3ad; letter-spacing:0.1em; }
@@ -61,7 +62,7 @@
 <body>
   <header>
     <h1>Chemin de fer — The Rolex Crown Exhibition</h1>
-    <div class="sub">François Peyranne × Rolex · 9 salles · décider l'ordre du parcours</div>
+    <div class="sub">François Peyranne × Rolex · Parcours proposé : 1 · 8 · 3 │ 4 · 5 · 7 │ 6 · 2 · 9 · ( ● sombre / ○ clair )</div>
   </header>
 
   <div class="grid" id="grid"></div>
@@ -69,24 +70,27 @@
   <footer>Astuce : Cmd + P pour exporter en PDF · clique une salle pour l'ouvrir</footer>
 
   <script>
+    // Ordre du PARCOURS proposé : 1 · 8 · 3 · 4 · 5 · 7 · 6 · 2 · 9
     var ROOMS = [
-      { n:1, file:'variations-expo.html', frame:'FRAMES_INTRO2/frame_143.jpg',  name:'Intro Couronne 3D + Tryptique', desc:'Hero couronne or, chapitres, tryptique 003' },
-      { n:2, file:'salle-2.html', frame:'FRAMES_SALLE2/frame_121.jpg', name:'Tryptique 003', desc:'The Crown / cercle noir / signes colorés' },
-      { n:3, file:'salle-3.html', frame:'FRAMES_SALLE3/frame_071.jpg', name:'Dyptique 006', desc:'CROWN / ROLEX typographiques' },
-      { n:4, file:'salle-4.html', frame:'FRAMES_SALLE4/frame_121.jpg', name:'Salle sombre — Dyptique 005', desc:'Swiss Made (rouge) / Perpetual Planet' },
-      { n:5, file:'salle-5.html', frame:'FRAMES_SALLE5/frame_121.jpg', name:'Salle sombre — Tryptique', desc:'Lady-Datejust / Submariner / Perpetual Tennis' },
-      { n:6, file:'salle-6.html', frame:'FRAMES_SALLE6/frame_097.jpg', name:'Salle Musique — 4 affiches', desc:'Perpetual Planet / The Crown / study / Crown bleu' },
-      { n:7, file:'salle-7.html', frame:'FRAMES_SALLE7/frame_121.jpg', name:'Salle Techno', desc:'Daytona / arc-en-ciel / Crown bleu' },
-      { n:8, file:'salle-8.html', frame:'FRAMES_SALLE8/frame_121.jpg', name:'Salle Sport', desc:'Golf Masters / Grand Slam / Paris Master' },
-      { n:9, file:'salle-9.html', frame:'FRAMES_SALLE9/frame_121.jpg', name:'Salle Milgauss', desc:'Milgauss / The Rolex Crown (N&B)' }
+      { step:1, salle:1, file:'variations-expo.html', frame:'FRAMES_INTRO2/frame_143.jpg', amb:'clair', name:'Intro Couronne 3D + Tryptique 003', desc:'Hero couronne or, chapitres, tryptique' },
+      { step:2, salle:8, file:'salle-8.html', frame:'FRAMES_SALLE8/frame_121.jpg', amb:'clair', name:'Sport', desc:'Golf Masters / Grand Slam / Paris Master' },
+      { step:3, salle:3, file:'salle-3.html', frame:'FRAMES_SALLE3/frame_071.jpg', amb:'clair', name:'Dyptique 006', desc:'CROWN / ROLEX typographiques' },
+      { step:4, salle:4, file:'salle-4.html', frame:'FRAMES_SALLE4/frame_121.jpg', amb:'sombre', name:'Swiss Made / Perpetual Planet', desc:'Dyptique 005 — V rouge / planète' },
+      { step:5, salle:5, file:'salle-5.html', frame:'FRAMES_SALLE5/frame_121.jpg', amb:'sombre', name:'Datejust / Submariner / Tennis', desc:'Tryptique glossy' },
+      { step:6, salle:7, file:'salle-7.html', frame:'FRAMES_SALLE7/frame_121.jpg', amb:'sombre', name:'Techno', desc:'Daytona / arc-en-ciel / Crown bleu' },
+      { step:7, salle:6, file:'salle-6.html', frame:'FRAMES_SALLE6/frame_097.jpg', amb:'clair', name:'Musique — 4 affiches', desc:'Perpetual Planet / The Crown / study / Crown bleu' },
+      { step:8, salle:2, file:'salle-2.html', frame:'FRAMES_SALLE2/frame_121.jpg', amb:'clair', name:'Tryptique 003', desc:'The Crown / cercle noir / signes colorés' },
+      { step:9, salle:9, file:'salle-9.html', frame:'FRAMES_SALLE9/frame_121.jpg', amb:'clair', name:'Milgauss', desc:'Milgauss / The Rolex Crown (N&B)' }
     ];
     var g = document.getElementById('grid');
     ROOMS.forEach(function(r){
       var a = document.createElement('a');
       a.className = 'card'; a.href = r.file;
+      var dot = r.amb === 'sombre' ? '#1b1f24' : '#e7ebf0';
       a.innerHTML =
-        '<div class="thumb-wrap"><span class="badge">'+r.n+'</span><img loading="lazy" src="'+r.frame+'" alt="Salle '+r.n+'"></div>'+
-        '<div class="meta"><div class="name">Salle '+r.n+' — '+r.name+'</div><div class="desc">'+r.desc+'</div><div class="file">'+r.file+'</div></div>';
+        '<div class="thumb-wrap"><span class="badge">'+r.step+'</span><img loading="lazy" src="'+r.frame+'" alt="Etape '+r.step+'"></div>'+
+        '<div class="meta"><div class="name"><span class="amb" style="background:'+dot+'"></span>'+r.step+'. '+r.name+'</div>'+
+        '<div class="desc">'+r.desc+'</div><div class="file">salle d\'origine : n°'+r.salle+' · '+r.file+'</div></div>';
       g.appendChild(a);
     });
   </script>
