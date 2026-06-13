@@ -689,6 +689,19 @@
       50%       { transform: rotate(-90deg) translateX(-6px); opacity: 1.00; }
     }
 
+    /* ── Indice de survol : petit rond (remplace la flèche) ── */
+    #frame-single-arrow img { display: none; }
+    #frame-single-arrow {
+      width: 9px; height: 9px; margin-left: -4.5px;
+      border-radius: 50%;
+      background: #0c0c0c;
+      animation: dotPulse 2.4s ease-in-out infinite;
+    }
+    @keyframes dotPulse {
+      0%, 100% { opacity: 0.45; transform: scale(0.8); }
+      50%      { opacity: 1;    transform: scale(1.18); }
+    }
+
     /* ── Lightbox poster ───────────────────────────────────────────── */
     #poster-lightbox {
       position: fixed;
@@ -894,7 +907,7 @@
       will-change: transform;
     }
     #room-transition.cover { pointer-events: auto; }
-    #room-transition .rt-crown { width: clamp(54px, 6vw, 84px); height: auto; opacity: 0.92; }
+    #room-transition .rt-crown { width: clamp(42px, 4.6vw, 64px); height: auto; opacity: 0.92; }
     /* Couverture immédiate à l'arrivée (avant le 1er paint) — masque le chargement */
     html[data-roomenter] #room-transition { transform: translateX(0) !important; transition: none !important; }
   </style>
