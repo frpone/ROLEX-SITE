@@ -650,6 +650,7 @@
     /* Zone invisible cliquable au-dessus de chaque affiche dans la frame */
     .poster-zone {
       position: absolute;
+      z-index: 6;
       cursor: pointer;
       /* Pas de background : la frame vidéo reste visible en dessous */
     }
@@ -733,6 +734,9 @@
     #lb-prev { left: 12px; }
     #lb-next { right: 12px; }
     #lb-prev:hover, #lb-next:hover { color: rgba(255,255,255,0.85); }
+    /* Carrousel d'affiches : cliquable UNIQUEMENT lightbox ouvert (sinon il capte les clics aux bords) */
+    #lb-prev, #lb-next { pointer-events: none; }
+    #poster-lightbox.open #lb-prev, #poster-lightbox.open #lb-next { pointer-events: auto; }
 
     /* Sur desktop large, les flèches nav sont discrètes mais présentes */
     @media (min-width: 769px) {
@@ -853,23 +857,32 @@
     #next-room-btn:hover .nr-arrow { filter: none; }
 
     /* ── Flèches latérales de navigation entre salles ── */
-    /* Bandes latérales cliquables : zone large sur tout le bord, à l'écart des affiches */
-    .room-side-arrow {
-      position: absolute; top: 50%; transform: translateY(-50%);
-      box-sizing: content-box;
-      width: clamp(26px, 2.4vw, 40px); height: auto;
-      padding: 24vh clamp(8px, 1vw, 18px);
-      z-index: 12; cursor: pointer; user-select: none;
+    /* Zones de navigation salle : moitié gauche / droite, plein hauteur, SOUS les affiches.
+       Clic sur une affiche = zoom (z-index supérieur) ; clic sur le mur = changement de salle. */
+    .room-nav-zone {
+      position: absolute; top: 0; bottom: 0;
+      width: 32%;
+      border: 0; background: transparent; cursor: pointer;
+      -webkit-appearance: none; appearance: none;
+      display: flex; align-items: center;
+      padding: 0 clamp(14px, 2vw, 44px);
+      z-index: 3;
       opacity: 0; pointer-events: none;
-      filter: brightness(0) invert(1) drop-shadow(0 2px 14px rgba(0,0,0,0.55));
-      transition: opacity .45s ease .2s, transform .2s ease;
+      transition: opacity .45s ease .2s;
     }
-    #frame-overlay.visible .room-side-arrow { opacity: 0.85; pointer-events: auto; }
-    .room-side-arrow:hover { opacity: 1; }
-    #room-arrow-left  { left: 0; }
-    #room-arrow-right { right: 0; }
-    #room-arrow-left:hover  { transform: translateY(-50%) translateX(-4px); }
-    #room-arrow-right:hover { transform: translateY(-50%) translateX(4px); }
+    .room-nav-zone:focus { outline: none; }
+    #room-nav-left  { left: 0;  justify-content: flex-start; }
+    #room-nav-right { right: 0; justify-content: flex-end; }
+    #frame-overlay.visible .room-nav-zone { opacity: 1; pointer-events: auto; }
+    .room-nav-arrow {
+      width: clamp(26px, 2.4vw, 40px); height: auto; display: block;
+      opacity: 0.82;
+      filter: brightness(0) invert(1) drop-shadow(0 2px 14px rgba(0,0,0,0.55));
+      transition: opacity .2s ease, transform .2s ease;
+    }
+    .room-nav-zone:hover .room-nav-arrow { opacity: 1; }
+    #room-nav-left:hover  .room-nav-arrow { transform: translateX(-4px); }
+    #room-nav-right:hover .room-nav-arrow { transform: translateX(4px); }
     /* Overlay de transition entre salles */
     #room-transition { position: fixed; inset: 0; z-index: 9998; background: #0a0a0a; opacity: 0; pointer-events: none; transition: opacity 0.6s ease; }
     #room-transition.active { opacity: 1; pointer-events: auto; }
@@ -996,11 +1009,13 @@
       </div>
 
       <!-- Bouton salle suivante -->
-      <!-- Flèches latérales : salle précédente / suivante -->
-      <img id="room-arrow-left" class="room-side-arrow" data-target="salle-8.html" alt="Previous room"
-        src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20DROITE-.png" />
-      <img id="room-arrow-right" class="room-side-arrow" data-target="salle-4.html" alt="Next room"
-        src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20GAUCHE-.png" />
+      <!-- Zones de navigation salle : moitié gauche / droite, sous les affiches -->
+      <button id="room-nav-left" class="room-nav-zone" data-target="salle-8.html" aria-label="Previous room">
+        <img class="room-nav-arrow" src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20DROITE-.png" alt="" />
+      </button>
+      <button id="room-nav-right" class="room-nav-zone" data-target="salle-4.html" aria-label="Next room">
+        <img class="room-nav-arrow" src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20GAUCHE-.png" alt="" />
+      </button>
 
       <div id="next-room-btn" data-next="salle-4.html">
         <span class="nr-label">Next Room</span>
@@ -1855,7 +1870,7 @@
       }
       var btn = document.getElementById('next-room-btn');
       if (btn) btn.addEventListener('click', function(e){ e.stopPropagation(); goTo(btn.getAttribute('data-next')); });
-      ['room-arrow-left','room-arrow-right'].forEach(function(id){
+      ['room-nav-left','room-nav-right'].forEach(function(id){
         var a = document.getElementById(id);
         if (a) a.addEventListener('click', function(e){ e.stopPropagation(); goTo(a.getAttribute('data-target')); });
       });
