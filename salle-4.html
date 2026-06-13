@@ -794,13 +794,12 @@
       max-height: 88vh;
       max-width: 72vw;
       width: auto; height: auto;
-      /* Cadre métal biseauté façon galerie (cohérent avec les cadres argent de la salle) */
+      /* Cadre "bois peint" avec reflets glossy (zones brillantes / zones mates) */
+      border: clamp(13px, 1.4vw, 22px) solid #5f646c;
+      border-image: linear-gradient(115deg, #3c4046 0%, #9298a1 8%, #ccd0d7 12%, #686d75 22%, #383c42 40%, #b0b6bf 52%, #d6dae0 56%, #565b63 70%, #3e4248 88%, #8c919a 100%) 1;
       box-shadow:
-        0 0 0 1px rgba(0,0,0,0.65),
-        0 0 0 4px #a2a8b0,
-        0 0 0 11px #5f656d,
-        0 0 0 13px #2b2f35,
-        0 0 0 14px rgba(0,0,0,0.7),
+        inset 0 0 0 2px rgba(0,0,0,0.55),
+        0 0 0 1px rgba(0,0,0,0.7),
         30px 38px 85px -22px rgba(0,0,0,0.95);
       -webkit-user-drag: none;
     }
