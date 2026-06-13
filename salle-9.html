@@ -825,6 +825,35 @@
       opacity: 0 !important;
     }
 
+  
+    /* ── Bouton vers la salle suivante (apparaît avec l'overlay des affiches) ── */
+    #next-room-btn {
+      position: absolute; left: 50%; bottom: 5.5%;
+      transform: translateX(-50%) translateY(10px);
+      display: flex; align-items: center; gap: 14px;
+      padding: clamp(11px, 1.1vw, 15px) clamp(20px, 2.2vw, 30px);
+      background: rgba(12,14,16,0.46);
+      -webkit-backdrop-filter: blur(9px); backdrop-filter: blur(9px);
+      border: 1px solid rgba(255,255,255,0.40);
+      border-radius: 999px;
+      cursor: pointer; user-select: none; z-index: 9;
+      opacity: 0; pointer-events: none;
+      transition: opacity .5s ease .25s, transform .5s ease .25s, background .2s, border-color .2s;
+    }
+    #frame-overlay.visible #next-room-btn { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(0); }
+    #next-room-btn .nr-label {
+      font-family: var(--ff-display, 'sweet-sans-pro','Helvetica Neue',Arial,sans-serif);
+      color: #fff; font-size: clamp(11px, 1.05vw, 14px); font-weight: 600;
+      letter-spacing: 0.30em; text-transform: uppercase; white-space: nowrap;
+      text-shadow: 0 1px 10px rgba(0,0,0,0.35);
+    }
+    #next-room-btn .nr-arrow { width: clamp(15px,1.4vw,19px); height: auto; display: block; filter: brightness(0) invert(1); }
+    #next-room-btn:hover { background: rgba(255,255,255,0.95); border-color: #fff; }
+    #next-room-btn:hover .nr-label { color: #0b1116; text-shadow: none; }
+    #next-room-btn:hover .nr-arrow { filter: none; }
+    /* Overlay de transition entre salles */
+    #room-transition { position: fixed; inset: 0; z-index: 9998; background: #0a0a0a; opacity: 0; pointer-events: none; transition: opacity 0.6s ease; }
+    #room-transition.active { opacity: 1; pointer-events: auto; }
   </style>
 </head>
 <body>
@@ -947,7 +976,15 @@
         <img src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20GAUCHE-.png" alt="" />
       </div>
 
+      <!-- Bouton salle suivante -->
+      <div id="next-room-btn" data-next="salle-7.html">
+        <span class="nr-label">Enter the next room</span>
+        <img class="nr-arrow" src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20DROITE-.png" alt="" />
+      </div>
     </div><!-- /frame-overlay -->
+
+    <!-- Transition entre salles -->
+    <div id="room-transition"></div>
 
     <!-- Lightbox affiche -->
     <div id="poster-lightbox">
@@ -1782,6 +1819,20 @@
         }
       });
     }
+  </script>
+  <script>
+    (function initNextRoom(){
+      var btn = document.getElementById('next-room-btn');
+      var trans = document.getElementById('room-transition');
+      if (!btn || !trans) return;
+      btn.addEventListener('click', function(e){
+        e.stopPropagation();
+        var url = btn.getAttribute('data-next');
+        if (!url) return;
+        trans.classList.add('active');      // fondu au noir 0.6s
+        setTimeout(function(){ window.location.href = url; }, 600);
+      });
+    })();
   </script>
 </body>
 </html>
