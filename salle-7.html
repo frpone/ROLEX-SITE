@@ -963,6 +963,9 @@
     .dock-item:hover { opacity: 1; transform: translateY(-9px); border-color: #b69256; }
     .dock-item.is-current { opacity: 1; border-color: #b69256; box-shadow: inset 0 0 0 1px #b69256; }
     body.lb-open #room-dock, body.lb-open #room-dock-tab { display: none; }
+    /* === MODE TOUJOURS VISIBLE (test) : le dock reste affiché dès que les affiches sont là === */
+    #frame-overlay.visible ~ #room-dock { transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: auto; }
+    #room-dock-tab { display: none !important; }
   </style>
   <script>(function(){try{var d=sessionStorage.getItem("roomDir");if(d)document.documentElement.setAttribute("data-roomenter",d);}catch(e){}})();</script>
 </head>
