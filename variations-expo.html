@@ -883,9 +883,20 @@
     #room-nav-left:hover  .room-nav-arrow { transform: translateX(-4px); }
     #room-nav-right:hover .room-nav-arrow { transform: translateX(4px); }
     /* Overlay de transition entre salles */
-    #room-transition { position: fixed; inset: 0; z-index: 9998; background: #0a0a0a; opacity: 0; pointer-events: none; transition: opacity 0.6s ease; }
-    #room-transition.active { opacity: 1; pointer-events: auto; }
+    /* Transition latérale entre salles — wipe "mur de galerie" directionnel (pas de fondu) */
+    #room-transition {
+      position: fixed; inset: 0; z-index: 9998;
+      background: #f4f5f7;
+      pointer-events: none;
+      transform: translateX(100%);
+      transition: transform 0.55s cubic-bezier(0.76, 0, 0.24, 1);
+      will-change: transform;
+    }
+    #room-transition.cover { pointer-events: auto; }
+    /* Couverture immédiate à l'arrivée (avant le 1er paint) — masque le chargement */
+    html[data-roomenter] #room-transition { transform: translateX(0) !important; transition: none !important; }
   </style>
+  <script>(function(){try{var d=sessionStorage.getItem("roomDir");if(d)document.documentElement.setAttribute("data-roomenter",d);}catch(e){}})();</script>
 </head>
 <body>
 
@@ -1878,17 +1889,43 @@
         (function initRoomNav(){
       var trans = document.getElementById('room-transition');
       if (!trans) return;
-      function goTo(url){
-        if (!url) return;
-        trans.classList.add('active');
-        setTimeout(function(){ window.location.href = url; }, 600);
+      var EASE = 'transform 0.55s cubic-bezier(0.76,0,0.24,1)';
+
+      // ── Arrivée : si on vient d'une transition, le mur couvre déjà → on le fait sortir ──
+      var enterDir = null;
+      try { enterDir = sessionStorage.getItem('roomDir'); } catch(e){}
+      if (enterDir) {
+        try { sessionStorage.removeItem('roomDir'); } catch(e){}
+        trans.style.transition = 'none';
+        trans.style.transform = 'translateX(0)';
+        trans.classList.add('cover');
+        document.documentElement.removeAttribute('data-roomenter');
+        setTimeout(function(){
+          trans.style.transition = EASE;
+          trans.style.transform = (enterDir === 'next') ? 'translateX(-100%)' : 'translateX(100%)';
+        }, 320);
+        setTimeout(function(){ trans.classList.remove('cover'); }, 900);
       }
+
+      // ── Départ : le mur entre depuis le côté, couvre, puis on navigue ──
+      function goTo(url, dir){
+        if (!url) return;
+        try { sessionStorage.setItem('roomDir', dir); } catch(e){}
+        trans.style.transition = 'none';
+        trans.style.transform = (dir === 'next') ? 'translateX(100%)' : 'translateX(-100%)';
+        trans.offsetWidth; // reflow
+        trans.style.transition = EASE;
+        trans.classList.add('cover');
+        trans.style.transform = 'translateX(0)';
+        setTimeout(function(){ window.location.href = url; }, 540);
+      }
+
       var btn = document.getElementById('next-room-btn');
-      if (btn) btn.addEventListener('click', function(e){ e.stopPropagation(); goTo(btn.getAttribute('data-next')); });
-      ['room-nav-left','room-nav-right'].forEach(function(id){
-        var a = document.getElementById(id);
-        if (a) a.addEventListener('click', function(e){ e.stopPropagation(); goTo(a.getAttribute('data-target')); });
-      });
+      if (btn) btn.addEventListener('click', function(e){ e.stopPropagation(); goTo(btn.getAttribute('data-next'), 'next'); });
+      var L = document.getElementById('room-nav-left');
+      if (L) L.addEventListener('click', function(e){ e.stopPropagation(); goTo(L.getAttribute('data-target'), 'prev'); });
+      var R = document.getElementById('room-nav-right');
+      if (R) R.addEventListener('click', function(e){ e.stopPropagation(); goTo(R.getAttribute('data-target'), 'next'); });
     })();
   </script>
 </body>
