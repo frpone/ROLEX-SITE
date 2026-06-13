@@ -47,7 +47,7 @@
 <body>
   <header>
     <h1>Chemin de fer — The Rolex Crown Exhibition</h1>
-    <div class="sub">Parcours : 1 · 8 · 3 │ 4 · 5 · 7 │ 6 · 2 · 9 — début → fin de chaque salle</div>
+    <div class="sub">Parcours (finale sombre) : 1 · 8 · 3 · 4 · 6 · 2 · 5 · 9 · 7 — début → fin de chaque salle</div>
   </header>
 
   <div class="strip" id="strip"></div>
@@ -61,11 +61,11 @@
       { step:2, salle:8, file:'salle-8.html',        dir:'FRAMES_SALLE8',  d:1,  f:121, amb:'clair',  name:'Sport' },
       { step:3, salle:3, file:'salle-3.html',        dir:'FRAMES_SALLE3',  d:13, f:71,  amb:'clair',  name:'Dyptique 006' },
       { step:4, salle:4, file:'salle-4.html',        dir:'FRAMES_SALLE4',  d:1,  f:121, amb:'sombre', name:'Swiss Made / Perpetual Planet' },
-      { step:5, salle:5, file:'salle-5.html',        dir:'FRAMES_SALLE5',  d:1,  f:121, amb:'sombre', name:'Datejust / Submariner / Tennis' },
-      { step:6, salle:7, file:'salle-7.html',        dir:'FRAMES_SALLE7',  d:1,  f:121, amb:'sombre', name:'Techno' },
-      { step:7, salle:6, file:'salle-6.html',        dir:'FRAMES_SALLE6',  d:1,  f:97,  amb:'clair',  name:'Musique — 4 affiches' },
-      { step:8, salle:2, file:'salle-2.html',        dir:'FRAMES_SALLE2',  d:31, f:121, amb:'clair',  name:'Tryptique 003' },
-      { step:9, salle:9, file:'salle-9.html',        dir:'FRAMES_SALLE9',  d:1,  f:121, amb:'clair',  name:'Milgauss' }
+      { step:5, salle:6, file:'salle-6.html',        dir:'FRAMES_SALLE6',  d:1,  f:97,  amb:'clair',  name:'Musique — 4 affiches' },
+      { step:6, salle:2, file:'salle-2.html',        dir:'FRAMES_SALLE2',  d:31, f:121, amb:'clair',  name:'Tryptique 003' },
+      { step:7, salle:5, file:'salle-5.html',        dir:'FRAMES_SALLE5',  d:1,  f:121, amb:'sombre', name:'Datejust / Submariner / Tennis' },
+      { step:8, salle:9, file:'salle-9.html',        dir:'FRAMES_SALLE9',  d:1,  f:121, amb:'clair',  name:'Milgauss' },
+      { step:9, salle:7, file:'salle-7.html',        dir:'FRAMES_SALLE7',  d:1,  f:121, amb:'sombre', name:'Techno — FINALE' }
     ];
     var strip = document.getElementById('strip');
     ROOMS.forEach(function(r){
