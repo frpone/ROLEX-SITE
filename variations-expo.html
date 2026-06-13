@@ -931,7 +931,7 @@
     #frame-overlay.visible ~ #room-dock-tab { opacity: 1; pointer-events: auto; }
     #room-dock {
       position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%) translateY(160%);
-      z-index: 59; display: flex; gap: 9px; align-items: flex-end;
+      z-index: 59; display: none; gap: 9px; align-items: flex-end;
       padding: 11px 13px;
       background: rgba(12,12,14,0.55);
       -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
@@ -963,7 +963,7 @@
     .dock-item.is-current:hover { transform: scale(1.12) translateY(-6px); }
     body.lb-open #room-dock, body.lb-open #room-dock-tab { display: none; }
     /* === MODE TOUJOURS VISIBLE (test) : le dock reste affiché dès que les affiches sont là === */
-    #frame-overlay.visible ~ #room-dock { transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: auto; }
+    #frame-overlay.visible ~ #room-dock { display: flex; transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: auto; }
     #room-dock-tab { display: none !important; }
   </style>
   <script>(function(){try{var d=sessionStorage.getItem("roomDir");if(d)document.documentElement.setAttribute("data-roomenter",d);}catch(e){}})();</script>
@@ -1175,15 +1175,15 @@
       <!-- Dock chemin de fer : navigation directe entre salles -->
       <div id="room-dock-tab"><span class="chev"></span><span>All&nbsp;Rooms</span></div>
       <div id="room-dock">
-        <a class="dock-item is-current" href="variations-expo.html" data-idx="0"><img src="THUMBS/thumb_variations-expo.jpg" alt="Room I"><span class="dnum">I</span></a>
-        <a class="dock-item" href="salle-8.html" data-idx="1"><img src="THUMBS/thumb_salle-8.jpg" alt="Room II"><span class="dnum">II</span></a>
-        <a class="dock-item" href="salle-3.html" data-idx="2"><img src="THUMBS/thumb_salle-3.jpg" alt="Room III"><span class="dnum">III</span></a>
-        <a class="dock-item" href="salle-4.html" data-idx="3"><img src="THUMBS/thumb_salle-4.jpg" alt="Room IV"><span class="dnum">IV</span></a>
-        <a class="dock-item" href="salle-6.html" data-idx="4"><img src="THUMBS/thumb_salle-6.jpg" alt="Room V"><span class="dnum">V</span></a>
-        <a class="dock-item" href="salle-2.html" data-idx="5"><img src="THUMBS/thumb_salle-2.jpg" alt="Room VI"><span class="dnum">VI</span></a>
-        <a class="dock-item" href="salle-5.html" data-idx="6"><img src="THUMBS/thumb_salle-5.jpg" alt="Room VII"><span class="dnum">VII</span></a>
-        <a class="dock-item" href="salle-9.html" data-idx="7"><img src="THUMBS/thumb_salle-9.jpg" alt="Room VIII"><span class="dnum">VIII</span></a>
-        <a class="dock-item" href="salle-7.html" data-idx="8"><img src="THUMBS/thumb_salle-7.jpg" alt="Room IX"><span class="dnum">IX</span></a>
+        <a class="dock-item is-current" href="variations-expo.html" data-idx="0"><img loading="lazy" src="THUMBS/thumb_variations-expo.jpg" alt="Room I"><span class="dnum">I</span></a>
+        <a class="dock-item" href="salle-8.html" data-idx="1"><img loading="lazy" src="THUMBS/thumb_salle-8.jpg" alt="Room II"><span class="dnum">II</span></a>
+        <a class="dock-item" href="salle-3.html" data-idx="2"><img loading="lazy" src="THUMBS/thumb_salle-3.jpg" alt="Room III"><span class="dnum">III</span></a>
+        <a class="dock-item" href="salle-4.html" data-idx="3"><img loading="lazy" src="THUMBS/thumb_salle-4.jpg" alt="Room IV"><span class="dnum">IV</span></a>
+        <a class="dock-item" href="salle-6.html" data-idx="4"><img loading="lazy" src="THUMBS/thumb_salle-6.jpg" alt="Room V"><span class="dnum">V</span></a>
+        <a class="dock-item" href="salle-2.html" data-idx="5"><img loading="lazy" src="THUMBS/thumb_salle-2.jpg" alt="Room VI"><span class="dnum">VI</span></a>
+        <a class="dock-item" href="salle-5.html" data-idx="6"><img loading="lazy" src="THUMBS/thumb_salle-5.jpg" alt="Room VII"><span class="dnum">VII</span></a>
+        <a class="dock-item" href="salle-9.html" data-idx="7"><img loading="lazy" src="THUMBS/thumb_salle-9.jpg" alt="Room VIII"><span class="dnum">VIII</span></a>
+        <a class="dock-item" href="salle-7.html" data-idx="8"><img loading="lazy" src="THUMBS/thumb_salle-7.jpg" alt="Room IX"><span class="dnum">IX</span></a>
       </div>
     </main>
 
