@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Explore the Exhibition — Maquette</title>
+<link rel="preconnect" href="https://use.typekit.net" />
+<link rel="stylesheet" href="https://use.typekit.net/fqu8chv.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300;1,400&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --ff-display: 'sweet-sans-pro','Helvetica Neue',sans-serif; --ff-serif: 'Cormorant Garamond', serif; --gold:#b69256; }
+  html, body { height: 100%; }
+  body {
+    font-family: var(--ff-display);
+    background:
+      radial-gradient(ellipse 90% 70% at 50% 0%, #15151a 0%, #0a0a0c 60%, #060608 100%);
+    color: #eceae6;
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 5vh 0 6vh;
+    overflow-x: hidden;
+  }
+
+  /* En-tête */
+  header { text-align: center; padding: 0 24px; margin-bottom: clamp(28px, 4vh, 52px); }
+  .crown { width: clamp(34px, 3vw, 46px); height: auto; opacity: .95; margin: 0 auto 18px; display:block; }
+  .eyebrow {
+    font-size: clamp(10px, .8vw, 12px); letter-spacing: .42em; text-transform: uppercase;
+    color: var(--gold); display: inline-flex; align-items: center; gap: 14px; margin-bottom: 18px;
+  }
+  .eyebrow::before, .eyebrow::after { content:''; width: 26px; height:1px; background: rgba(182,146,86,.6); }
+  h1 { font-weight: 600; letter-spacing: .12em; text-transform: uppercase; font-size: clamp(22px, 3vw, 40px); line-height: 1.05; }
+  h1 .it { font-family: var(--ff-serif); font-style: italic; font-weight: 400; text-transform: none; letter-spacing: .01em; }
+  .sub { margin-top: 16px; font-size: clamp(12px, 1vw, 15px); color: rgba(236,234,230,.5); font-weight: 300; letter-spacing: .02em; }
+
+  /* Chemin de fer */
+  .strip {
+    display: flex; gap: clamp(14px, 1.6vw, 26px);
+    padding: 10px clamp(24px, 6vw, 96px);
+    overflow-x: auto; scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .strip::-webkit-scrollbar { display: none; }
+
+  .card {
+    position: relative; flex: 0 0 auto;
+    width: clamp(230px, 24vw, 340px); aspect-ratio: 16 / 10;
+    border-radius: 4px; overflow: hidden; text-decoration: none;
+    scroll-snap-align: center;
+    border: 1px solid rgba(255,255,255,.10);
+    box-shadow: 0 18px 50px rgba(0,0,0,.5);
+    transition: transform .45s cubic-bezier(.22,1,.36,1), border-color .3s, box-shadow .3s;
+  }
+  .thumb { position:absolute; inset:0; }
+  .thumb img { width:100%; height:100%; object-fit: cover; display:block; filter: saturate(1.02) brightness(.94); transition: transform .6s cubic-bezier(.22,1,.36,1), filter .3s; }
+  .card-grad { position:absolute; inset:0; background: linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,.62) 100%); }
+  .card-meta { position:absolute; left:0; right:0; bottom:0; padding: 16px 18px; display:flex; align-items:flex-end; justify-content: space-between; }
+  .num { font-family: var(--ff-serif); font-style: italic; font-size: clamp(26px, 2.4vw, 38px); line-height:.9; color:#fff; text-shadow: 0 2px 12px rgba(0,0,0,.6); }
+  .enter { font-size: 9.5px; letter-spacing: .28em; text-transform: uppercase; color: rgba(255,255,255,.0); transition: color .3s; }
+
+  .card:hover { transform: translateY(-6px); border-color: var(--gold); box-shadow: 0 26px 70px rgba(0,0,0,.6); }
+  .card:hover .thumb img { transform: scale(1.06); filter: saturate(1.06) brightness(1); }
+  .card:hover .enter { color: var(--gold); }
+
+  /* Dots */
+  .dots { display:flex; gap: 9px; justify-content:center; margin-top: clamp(22px, 3.5vh, 40px); }
+  .dot { width:6px; height:6px; border-radius:50%; background: rgba(255,255,255,.20); transition: all .3s; }
+  .dot.on { background: var(--gold); transform: scale(1.25); }
+
+  .hint { text-align:center; margin-top: 18px; font-size: 10px; letter-spacing:.24em; text-transform:uppercase; color: rgba(236,234,230,.28); }
+</style>
+</head>
+<body>
+  <header>
+    <svg class="crown" viewBox="0 0 1920 1920" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g><path transform="matrix(1,0,0,-1,959.4926,1546.1266)" d="M0 0C176.025 0 318.742-44.445 318.742-99.201 318.742-154.031 176.025-198.293 0-198.293-176.061-198.293-318.78-154.031-318.78-99.201-318.78-44.445-176.061 0 0 0M-697.585 888.138C-688.878 888.138-680.393 889.501-672.318 891.562L-382.938-81.932H-382.864C-350.562-190.633-190.725-273.044 1.637-273.044 194.036-273.044 353.835-190.633 386.175-81.932H386.25L675.407 890.789C682.476 889.243 689.92 888.138 697.511 888.138 753.704 888.138 799.293 933.209 799.293 988.961 799.293 1044.417 753.704 1089.561 697.511 1089.561 641.392 1089.561 595.693 1044.417 595.693 988.961 595.693 948.86 619.398 914.429 653.523 898.265L318.296 187.172 372.218 1145.311H374.564C430.609 1145.311 476.197 1190.311 476.197 1245.876 476.197 1301.516 430.609 1346.551 374.564 1346.551 318.296 1346.551 272.744 1301.516 272.744 1245.876 272.744 1199.958 303.893 1161.44 346.17 1149.251L123.105 212.728 15.592 1244.844C64.865 1251.952 102.712 1293.746 102.712 1344.451 102.712 1399.906 57.161 1445.127 1.078 1445.127-55.189 1445.127-100.703 1399.906-100.703 1344.451-100.703 1293.635-62.447 1251.584-12.989 1244.808L-120.352 214.532-342.969 1149.068C-300.136 1161.035-268.615 1199.7-268.615 1245.876-268.615 1301.516-314.24 1346.551-370.433 1346.551-426.552 1346.551-472.14 1301.516-472.14 1245.876-472.14 1190.311-426.552 1145.311-370.433 1145.311H-368.981L-315.095 187.577-650.993 899.516C-618.281 916.234-595.842 949.929-595.842 988.961-595.842 1044.417-641.356 1089.561-697.585 1089.561-753.706 1089.561-799.257 1044.417-799.257 988.961-799.257 933.209-753.706 888.138-697.585 888.138" fill="#b69256"/></g></svg>
+    <div class="eyebrow">The Exhibition</div>
+    <h1>Explore the <span class="it">Rooms</span></h1>
+    <p class="sub">Neuf salles, une couronne. Choisissez votre entrée.</p>
+  </header>
+
+  <nav class="strip">
+      <a class="card" href="variations-expo.html" data-room="I">
+        <div class="thumb"><img loading="lazy" src="FRAMES_INTRO2/frame_143.jpg" alt="Room I" /></div>
+        <div class="card-grad"></div>
+        <div class="card-meta"><span class="num">I</span><span class="enter">View room</span></div>
+      </a>
+      <a class="card" href="salle-8.html" data-room="II">
+        <div class="thumb"><img loading="lazy" src="FRAMES_SALLE8/frame_121.jpg" alt="Room II" /></div>
+        <div class="card-grad"></div>
+        <div class="card-meta"><span class="num">II</span><span class="enter">View room</span></div>
+      </a>
+      <a class="card" href="salle-3.html" data-room="III">
+        <div class="thumb"><img loading="lazy" src="FRAMES_SALLE3/frame_071.jpg" alt="Room III" /></div>
+        <div class="card-grad"></div>
+        <div class="card-meta"><span class="num">III</span><span class="enter">View room</span></div>
+      </a>
+      <a class="card" href="salle-4.html" data-room="IV">
+        <div class="thumb"><img loading="lazy" src="FRAMES_SALLE4/frame_121.jpg" alt="Room IV" /></div>
+        <div class="card-grad"></div>
+        <div class="card-meta"><span class="num">IV</span><span class="enter">View room</span></div>
+      </a>
+      <a class="card" href="salle-6.html" data-room="V">
+        <div class="thumb"><img loading="lazy" src="FRAMES_SALLE6/frame_097.jpg" alt="Room V" /></div>
+        <div class="card-grad"></div>
+        <div class="card-meta"><span class="num">V</span><span class="enter">View room</span></div>
+      </a>
+      <a class="card" href="salle-2.html" data-room="VI">
+        <div class="thumb"><img loading="lazy" src="FRAMES_SALLE2/frame_121.jpg" alt="Room VI" /></div>
+        <div class="card-grad"></div>
+        <div class="card-meta"><span class="num">VI</span><span class="enter">View room</span></div>
+      </a>
+      <a class="card" href="salle-5.html" data-room="VII">
+        <div class="thumb"><img loading="lazy" src="FRAMES_SALLE5/frame_121.jpg" alt="Room VII" /></div>
+        <div class="card-grad"></div>
+        <div class="card-meta"><span class="num">VII</span><span class="enter">View room</span></div>
+      </a>
+      <a class="card" href="salle-9.html" data-room="VIII">
+        <div class="thumb"><img loading="lazy" src="FRAMES_SALLE9/frame_121.jpg" alt="Room VIII" /></div>
+        <div class="card-grad"></div>
+        <div class="card-meta"><span class="num">VIII</span><span class="enter">View room</span></div>
+      </a>
+      <a class="card" href="salle-7.html" data-room="IX">
+        <div class="thumb"><img loading="lazy" src="FRAMES_SALLE7/frame_121.jpg" alt="Room IX" /></div>
+        <div class="card-grad"></div>
+        <div class="card-meta"><span class="num">IX</span><span class="enter">View room</span></div>
+      </a>
+  </nav>
+
+  <div class="dots">
+<span class="dot on"></span>
+<span class="dot"></span>
+<span class="dot"></span>
+<span class="dot"></span>
+<span class="dot"></span>
+<span class="dot"></span>
+<span class="dot"></span>
+<span class="dot"></span>
+<span class="dot"></span>
+  </div>
+  <div class="hint">Faites glisser · cliquez une salle pour y entrer</div>
+
+  <script>
+    // dots suivent le scroll (mockup)
+    var strip = document.querySelector('.strip');
+    var dots = [].slice.call(document.querySelectorAll('.dot'));
+    var cards = [].slice.call(document.querySelectorAll('.card'));
+    strip.addEventListener('scroll', function(){
+      var mid = strip.scrollLeft + strip.clientWidth/2;
+      var best=0, bd=1e9;
+      cards.forEach(function(c,i){ var x=c.offsetLeft + c.offsetWidth/2; var dd=Math.abs(x-mid); if(dd<bd){bd=dd;best=i;} });
+      dots.forEach(function(d,i){ d.classList.toggle('on', i===best); });
+    });
+  </script>
+</body>
+</html>
