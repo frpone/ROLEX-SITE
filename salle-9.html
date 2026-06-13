@@ -889,11 +889,13 @@
       position: fixed; inset: 0; z-index: 9998;
       background: #f4f5f7;
       pointer-events: none;
+      display: flex; align-items: center; justify-content: center;
       transform: translateX(100%);
-      transition: transform 0.55s cubic-bezier(0.76, 0, 0.24, 1);
+      transition: transform 0.42s cubic-bezier(0.76, 0, 0.24, 1);
       will-change: transform;
     }
     #room-transition.cover { pointer-events: auto; }
+    #room-transition .rt-crown { width: clamp(54px, 6vw, 84px); height: auto; opacity: 0.92; }
     /* Couverture immédiate à l'arrivée (avant le 1er paint) — masque le chargement */
     html[data-roomenter] #room-transition { transform: translateX(0) !important; transition: none !important; }
   </style>
@@ -1035,7 +1037,19 @@
     </div><!-- /frame-overlay -->
 
     <!-- Transition entre salles -->
-    <div id="room-transition"></div>
+    <div id="room-transition">
+      <svg class="rt-crown" viewBox="0 0 100 72" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <g fill="#b69256">
+          <path d="M4,52 L10,18 L20,41 L30,11 L40,41 L50,7 L60,41 L70,11 L80,41 L90,18 L96,52 Z"/>
+          <rect x="6" y="50" width="88" height="13" rx="2.5"/>
+          <circle cx="10" cy="18" r="5.5"/>
+          <circle cx="30" cy="11" r="5.5"/>
+          <circle cx="50" cy="7" r="5.5"/>
+          <circle cx="70" cy="11" r="5.5"/>
+          <circle cx="90" cy="18" r="5.5"/>
+        </g>
+      </svg>
+    </div>
 
     <!-- Lightbox affiche -->
     <div id="poster-lightbox">
@@ -1521,6 +1535,7 @@
             resizeCanvas();
             renderFrame(FRAME_START);
             if (loader) { loader.style.opacity = '0'; loader.style.display = 'none'; }
+            window.__roomReady = true;
             positionScrollHint();
             if (onFirstFrameReady) onFirstFrameReady();
             if (!started) {
@@ -1875,7 +1890,7 @@
         (function initRoomNav(){
       var trans = document.getElementById('room-transition');
       if (!trans) return;
-      var EASE = 'transform 0.55s cubic-bezier(0.76,0,0.24,1)';
+      var EASE = 'transform 0.42s cubic-bezier(0.76,0,0.24,1)';
 
       // ── Arrivée : si on vient d'une transition, le mur couvre déjà → on le fait sortir ──
       var enterDir = null;
@@ -1886,11 +1901,17 @@
         trans.style.transform = 'translateX(0)';
         trans.classList.add('cover');
         document.documentElement.removeAttribute('data-roomenter');
-        setTimeout(function(){
-          trans.style.transition = EASE;
-          trans.style.transform = (enterDir === 'next') ? 'translateX(-100%)' : 'translateX(100%)';
-        }, 320);
-        setTimeout(function(){ trans.classList.remove('cover'); }, 900);
+        var t0 = performance.now();
+        (function waitReady(){
+          var el = performance.now() - t0;
+          if ((window.__roomReady && el >= 280) || el >= 1500) {
+            trans.style.transition = EASE;
+            trans.style.transform = (enterDir === 'next') ? 'translateX(-100%)' : 'translateX(100%)';
+            setTimeout(function(){ trans.classList.remove('cover'); }, 480);
+          } else {
+            setTimeout(waitReady, 40);
+          }
+        })();
       }
 
       // ── Départ : le mur entre depuis le côté, couvre, puis on navigue ──
@@ -1903,7 +1924,7 @@
         trans.style.transition = EASE;
         trans.classList.add('cover');
         trans.style.transform = 'translateX(0)';
-        setTimeout(function(){ window.location.href = url; }, 540);
+        setTimeout(function(){ window.location.href = url; }, 440);
       }
 
       var btn = document.getElementById('next-room-btn');
