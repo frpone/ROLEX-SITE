@@ -1505,6 +1505,10 @@
 
         function showPosterArrows() {
           if (overlay && !overlay.classList.contains('visible')) overlay.classList.add('visible');
+          // Affiches affichées : neutralise les CTA "Click to Enter" de l'affiche-titre,
+          // sinon leurs boutons captent les clics aux bords (gauche/droite) et bloquent la nav salle.
+          var sa = document.getElementById('scene-affiche');
+          if (sa) sa.style.pointerEvents = 'none';
         }
 
         function hidePosterArrows() {
