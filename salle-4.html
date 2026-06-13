@@ -794,8 +794,14 @@
       max-height: 88vh;
       max-width: 72vw;
       width: auto; height: auto;
-      /* Affiches très sombres : fin liseré net qui cerne l'affiche pour la détacher du fond noir */
-      box-shadow: 0 0 0 1.5px rgba(255,255,255,0.32), 10px 13px 34px -8px rgba(255,255,255,0.10), -6px -16px 48px -12px rgba(0,0,0,0.8);
+      /* Cadre métal biseauté façon galerie (cohérent avec les cadres argent de la salle) */
+      box-shadow:
+        0 0 0 1px rgba(0,0,0,0.65),
+        0 0 0 4px #a2a8b0,
+        0 0 0 11px #5f656d,
+        0 0 0 13px #2b2f35,
+        0 0 0 14px rgba(0,0,0,0.7),
+        30px 38px 85px -22px rgba(0,0,0,0.95);
       -webkit-user-drag: none;
     }
 
