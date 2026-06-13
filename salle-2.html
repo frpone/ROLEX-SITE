@@ -913,6 +913,47 @@
     #room-transition .rt-crown { width: clamp(42px, 4.6vw, 64px); height: auto; opacity: 0.92; }
     /* Couverture immédiate à l'arrivée (avant le 1er paint) — masque le chargement */
     html[data-roomenter] #room-transition { transform: translateX(0) !important; transition: none !important; }
+
+    /* ── Dock chemin de fer (révélé quand la souris descend en bas, façon Dock macOS) ── */
+    #next-room-btn { display: none !important; }   /* remplacé par le dock + flèches latérales */
+    #room-dock-tab {
+      position: fixed; left: 50%; bottom: 6px; transform: translateX(-50%);
+      width: 32px; height: 3px; border-radius: 3px; background: rgba(180,180,185,0.40);
+      z-index: 57; pointer-events: none; transition: opacity .3s;
+    }
+    #room-dock {
+      position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%) translateY(150%);
+      z-index: 59; display: flex; gap: 7px; align-items: flex-end;
+      padding: 9px 11px;
+      background: rgba(12,12,14,0.55);
+      -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      box-shadow: 0 16px 50px rgba(0,0,0,0.45);
+      max-width: 94vw; overflow-x: auto; scrollbar-width: none;
+      transition: transform .42s cubic-bezier(.22,1,.36,1), opacity .42s ease;
+      opacity: 0; pointer-events: none;
+    }
+    #room-dock::-webkit-scrollbar { display: none; }
+    #room-dock.open { transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: auto; }
+    #room-dock.open + #room-dock-tab, #room-dock.open ~ #room-dock-tab { opacity: 0; }
+    .dock-item {
+      position: relative; flex: 0 0 auto;
+      width: clamp(58px, 5.6vw, 80px); aspect-ratio: 16/10;
+      border-radius: 4px; overflow: hidden; cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.14); opacity: .6;
+      transition: transform .28s cubic-bezier(.22,1,.36,1), opacity .28s, border-color .28s;
+    }
+    .dock-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .dock-item .dnum {
+      position: absolute; bottom: 1px; right: 4px;
+      font-family: var(--ff-serif,'Cormorant Garamond',serif); font-style: italic;
+      font-size: 9px; line-height: 1; color: rgba(255,255,255,0.9);
+      text-shadow: 0 1px 4px rgba(0,0,0,0.75);
+    }
+    .dock-item:hover { opacity: 1; transform: translateY(-8px); border-color: #b69256; }
+    .dock-item.is-current { opacity: 1; border-color: #b69256; box-shadow: inset 0 0 0 1px #b69256; }
+    body.lb-open #room-dock, body.lb-open #room-dock-tab { display: none; }
   </style>
   <script>(function(){try{var d=sessionStorage.getItem("roomDir");if(d)document.documentElement.setAttribute("data-roomenter",d);}catch(e){}})();</script>
 </head>
@@ -1119,7 +1160,21 @@
       </div>
     </div>
 
-  </main>
+  
+      <!-- Dock chemin de fer : navigation directe entre salles -->
+      <div id="room-dock-tab"></div>
+      <div id="room-dock">
+        <a class="dock-item" href="variations-expo.html" data-idx="0"><img src="THUMBS/thumb_variations-expo.jpg" alt="Room I"><span class="dnum">I</span></a>
+        <a class="dock-item" href="salle-8.html" data-idx="1"><img src="THUMBS/thumb_salle-8.jpg" alt="Room II"><span class="dnum">II</span></a>
+        <a class="dock-item" href="salle-3.html" data-idx="2"><img src="THUMBS/thumb_salle-3.jpg" alt="Room III"><span class="dnum">III</span></a>
+        <a class="dock-item" href="salle-4.html" data-idx="3"><img src="THUMBS/thumb_salle-4.jpg" alt="Room IV"><span class="dnum">IV</span></a>
+        <a class="dock-item" href="salle-6.html" data-idx="4"><img src="THUMBS/thumb_salle-6.jpg" alt="Room V"><span class="dnum">V</span></a>
+        <a class="dock-item is-current" href="salle-2.html" data-idx="5"><img src="THUMBS/thumb_salle-2.jpg" alt="Room VI"><span class="dnum">VI</span></a>
+        <a class="dock-item" href="salle-5.html" data-idx="6"><img src="THUMBS/thumb_salle-5.jpg" alt="Room VII"><span class="dnum">VII</span></a>
+        <a class="dock-item" href="salle-9.html" data-idx="7"><img src="THUMBS/thumb_salle-9.jpg" alt="Room VIII"><span class="dnum">VIII</span></a>
+        <a class="dock-item" href="salle-7.html" data-idx="8"><img src="THUMBS/thumb_salle-7.jpg" alt="Room IX"><span class="dnum">IX</span></a>
+      </div>
+    </main>
 
   <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/loaders/SVGLoader.js"></script>
@@ -1949,6 +2004,44 @@
       if (L) L.addEventListener('click', function(e){ e.stopPropagation(); goTo(L.getAttribute('data-target'), 'prev'); });
       var R = document.getElementById('room-nav-right');
       if (R) R.addEventListener('click', function(e){ e.stopPropagation(); goTo(R.getAttribute('data-target'), 'next'); });
+    })();
+  </script>
+  <script>
+    (function initRoomDock(){
+      var dock = document.getElementById('room-dock');
+      var trans = document.getElementById('room-transition');
+      if (!dock) return;
+      var curEl = dock.querySelector('.is-current');
+      var current = curEl ? parseInt(curEl.getAttribute('data-idx'), 10) : -1;
+      var hideT;
+      function open(){ if (document.body.classList.contains('lb-open')) return; clearTimeout(hideT); dock.classList.add('open'); }
+      function scheduleClose(){ clearTimeout(hideT); hideT = setTimeout(function(){ dock.classList.remove('open'); }, 420); }
+      document.addEventListener('mousemove', function(e){
+        if (document.body.classList.contains('lb-open')) return;
+        if (e.clientY > window.innerHeight - 72) open();
+        else if (e.clientY < window.innerHeight - 175 && !dock.matches(':hover')) scheduleClose();
+      });
+      dock.addEventListener('mouseenter', open);
+      dock.addEventListener('mouseleave', scheduleClose);
+      [].slice.call(dock.querySelectorAll('.dock-item')).forEach(function(item){
+        item.addEventListener('click', function(e){
+          e.preventDefault();
+          if (item.classList.contains('is-current')) { dock.classList.remove('open'); return; }
+          var url = item.getAttribute('href');
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var dir = (current < 0 || idx >= current) ? 'next' : 'prev';
+          try { sessionStorage.setItem('roomDir', dir); } catch(e){}
+          if (trans) {
+            trans.style.transition = 'none';
+            trans.style.transform = (dir === 'next') ? 'translateX(100%)' : 'translateX(-100%)';
+            trans.offsetWidth;
+            trans.style.transition = 'transform 0.42s cubic-bezier(0.76,0,0.24,1)';
+            trans.classList.add('cover');
+            trans.style.transform = 'translateX(0)';
+          }
+          setTimeout(function(){ window.location.href = url; }, 440);
+        });
+      });
     })();
   </script>
 </body>
