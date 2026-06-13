@@ -1602,8 +1602,12 @@
         }
 
         function startWhenFrame0Ready() {
+          startWhenFrame0Ready._n = (startWhenFrame0Ready._n || 0) + 1;
           var f0 = _frames[FRAME_START];
-          if (f0 && f0.complete && f0.naturalWidth) {
+          // Attendre que TOUTES les frames soient décodées avant de lancer le scroll
+          // (repli ~6s) -> plus aucun décodage synchrone pendant le scrub = pas d'à-coups
+          var _enough = (_framesReady >= FRAMES_COUNT) || (startWhenFrame0Ready._n > 200);
+          if (f0 && f0.complete && f0.naturalWidth && _enough) {
             resizeCanvas();
             renderFrame(FRAME_START);
             if (loader) { loader.style.opacity = '0'; loader.style.display = 'none'; }
