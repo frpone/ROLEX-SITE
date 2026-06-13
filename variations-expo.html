@@ -1484,6 +1484,24 @@
       // État initial
       updateCrownSequence(0);
 
+      // Boucle depuis la dernière salle : arriver directement sur l'affiche-titre (saute l'intro couronne)
+      try {
+        if (sessionStorage.getItem('landOnTitle') === '1') {
+          sessionStorage.removeItem('landOnTitle');
+          var _goTitle = function() {
+            ScrollTrigger.refresh();
+            var _endY = (crownST && crownST.end) ? crownST.end : 7600;
+            if (lenis) lenis.scrollTo(_endY, { immediate: true, force: true });
+            ScrollTrigger.update();
+            updateCrownSequence(1);
+            _renderActive = false;
+            sceneAffiche.style.pointerEvents = 'auto';
+          };
+          requestAnimationFrame(function() { requestAnimationFrame(_goTitle); });
+          setTimeout(_goTitle, 350);
+        }
+      } catch (e) {}
+
       window.addEventListener('resize', function() {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();

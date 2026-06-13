@@ -2010,6 +2010,8 @@
       function goTo(url, dir){
         if (!url) return;
         try { sessionStorage.setItem('roomDir', dir); } catch(e){}
+        // Boucle finale → arriver sur l'affiche-titre de l'expo (pas l'intro couronne)
+        try { if (url.indexOf('variations-expo') !== -1) sessionStorage.setItem('landOnTitle', '1'); } catch(e){}
         trans.style.transition = 'none';
         trans.style.transform = (dir === 'next') ? 'translateX(100%)' : 'translateX(-100%)';
         trans.offsetWidth; // reflow
