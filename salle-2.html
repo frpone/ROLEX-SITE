@@ -966,7 +966,8 @@
     .dock-item.is-current:hover { transform: scale(1.12) translateY(-6px); }
     body.lb-open #room-dock, body.lb-open #room-dock-tab { display: none; }
     /* === Dock révélé au survol du bas : présent (display:flex) aux affiches, affiché via .open === */
-    #frame-overlay.at-end ~ #room-dock { display: flex; transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: auto; }
+    #frame-overlay.at-end ~ #room-dock { display: flex; transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: auto; animation: dockIn .45s cubic-bezier(.22,1,.36,1); }
+    @keyframes dockIn { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
   </style>
   <script>(function(){try{var d=sessionStorage.getItem("roomDir");if(d)document.documentElement.setAttribute("data-roomenter",d);}catch(e){}})();</script>
 </head>
@@ -1620,9 +1621,9 @@
         function startWhenFrame0Ready() {
           startWhenFrame0Ready._n = (startWhenFrame0Ready._n || 0) + 1;
           var f0 = _frames[FRAME_START];
-          // Démarrage rapide : un petit buffer de frames décodées suffit (repli ~1s)
-          var _buf = Math.min(FRAMES_COUNT, FRAME_START + 24);
-          var _enough = (_framesReady >= _buf) || (startWhenFrame0Ready._n > 33);
+          // Buffer de frames décodées avant de lancer le scroll (fluidité/rapidité, repli ~2.4s)
+          var _buf = Math.min(FRAMES_COUNT, FRAME_START + 45);
+          var _enough = (_framesReady >= _buf) || (startWhenFrame0Ready._n > 80);
           if (f0 && f0.complete && f0.naturalWidth && _enough) {
             resizeCanvas();
             renderFrame(FRAME_START);
