@@ -929,7 +929,7 @@
     }
     #room-dock-tab .chev { width: 7px; height: 7px; border-left: 1.5px solid currentColor; border-top: 1.5px solid currentColor; transform: rotate(45deg); margin-top: 3px; }
     #room-dock-tab:hover { background: rgba(255,255,255,0.94); color: #0b0b0c; border-color: #fff; }
-    #frame-overlay.visible ~ #room-dock-tab { display: flex; opacity: 1; pointer-events: auto; }
+    #frame-overlay.at-end ~ #room-dock-tab { display: flex; opacity: 1; pointer-events: auto; }
     #room-dock {
       position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%) translateY(160%);
       z-index: 59; display: none; gap: 9px; align-items: flex-end;
@@ -964,7 +964,7 @@
     .dock-item.is-current:hover { transform: scale(1.12) translateY(-6px); }
     body.lb-open #room-dock, body.lb-open #room-dock-tab { display: none; }
     /* === Dock révélé au survol du bas : présent (display:flex) aux affiches, affiché via .open === */
-    #frame-overlay.visible ~ #room-dock { display: flex; }
+    #frame-overlay.at-end ~ #room-dock { display: flex; }
   </style>
   <script>(function(){try{var d=sessionStorage.getItem("roomDir");if(d)document.documentElement.setAttribute("data-roomenter",d);}catch(e){}})();</script>
 </head>
@@ -1608,6 +1608,9 @@
 
           if (progress >= 0.985) showPosterArrows();
           else                   hidePosterArrows();
+          // Chemin de fer : uniquement à la toute dernière frame
+          if (progress >= 0.999) { if (overlay) overlay.classList.add('at-end'); }
+          else { if (overlay) overlay.classList.remove('at-end'); }
 
           _introRafId = requestAnimationFrame(tick);
         }
@@ -2027,7 +2030,7 @@
       var curEl = dock.querySelector('.is-current');
       var current = curEl ? parseInt(curEl.getAttribute('data-idx'), 10) : -1;
       var hideT;
-      function ready(){ return overlay && overlay.classList.contains('visible') && !document.body.classList.contains('lb-open'); }
+      function ready(){ return overlay && overlay.classList.contains('at-end') && !document.body.classList.contains('lb-open'); }
       function open(){ if (!ready()) return; clearTimeout(hideT); dock.classList.add('open'); if (tab){ tab.style.opacity='0'; tab.style.pointerEvents='none'; } }
       function close(){ dock.classList.remove('open'); if (tab){ tab.style.opacity=''; tab.style.pointerEvents=''; } }
       function scheduleClose(){ clearTimeout(hideT); hideT = setTimeout(close, 420); }
