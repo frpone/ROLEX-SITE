@@ -800,41 +800,41 @@
     }
 
 
-    /* Cartel — panneau d'infos à droite, sans cadre (typo Cormorant) */
+    /* Cartel — bas-droite, sans cadre (Cormorant italique), écarté de l'affiche */
     #poster-lb-meta {
       position: absolute;
-      right: 5%; top: 50%; transform: translateY(-50%);
-      width: min(290px, 24vw);
-      text-align: left;
+      right: 3.5%; bottom: 7%;
+      width: min(300px, 26vw);
+      text-align: right;
       z-index: 5;
       pointer-events: none;
       transition: opacity 0.35s ease;
     }
     #poster-lb-title {
-      font-family: var(--ff-display);
-      font-style: normal; font-weight: 600;
-      font-size: 22px; line-height: 1.2; letter-spacing: 0.01em;
+      font-family: var(--ff-serif, 'Cormorant Garamond', serif);
+      font-style: italic; font-weight: 500;
+      font-size: 27px; line-height: 1.1;
       color: #fff;
     }
     #poster-lb-desc {
-      font-family: var(--ff-display);
-      font-style: normal; font-weight: 300;
-      font-size: 13.5px; line-height: 1.7; letter-spacing: 0.012em;
-      color: rgba(255,255,255,0.62);
-      margin-top: 14px;
+      font-family: var(--ff-serif, 'Cormorant Garamond', serif);
+      font-style: italic; font-weight: 400;
+      font-size: 15px; line-height: 1.5;
+      color: rgba(255,255,255,0.72);
+      margin-top: 11px;
     }
-    #poster-lb-rule { width: 38px; height: 1px; background: #c2a161; margin: 22px 0 16px; }
+    #poster-lb-rule { width: 36px; height: 1px; background: #c2a161; margin: 18px 0 14px auto; }
     #poster-lb-specs {
       font-family: var(--ff-display);
-      font-size: 10px; font-weight: 400;
+      font-size: 9.5px; font-weight: 400;
       letter-spacing: 0.24em; text-transform: uppercase;
       color: rgba(255,255,255,0.5); line-height: 2;
     }
     #poster-lb-copy {
       font-family: var(--ff-display);
-      font-size: 10px; font-weight: 400;
+      font-size: 9.5px; font-weight: 400;
       letter-spacing: 0.22em; text-transform: uppercase;
-      color: #c2a161; margin-top: 20px;
+      color: #c2a161; margin-top: 18px;
     }
     #poster-lightbox.zoomed #poster-lb-meta { opacity: 0; }
 
