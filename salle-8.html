@@ -798,43 +798,46 @@
     }
 
 
-    /* Meta — petit overlay en haut à droite, z-index au-dessus de l'image */
+    /* Cartel discret — bas-droite, petites capitales sweet-sans, plus lisible */
     #poster-lb-meta {
       position: absolute;
-      top: 104px; right: 32px;
+      right: 40px; bottom: 9%;
       text-align: right;
-      max-width: 180px;
+      max-width: 195px;
       z-index: 5;
-      pointer-events: auto;
       pointer-events: none;
-    }
-    #poster-lb-eyebrow {
-      font-family: var(--ff-display);
-      font-size: 7px; font-weight: 400;
-      letter-spacing: 0.40em; text-transform: uppercase;
-      color: rgba(255,255,255,0.28);
-      margin-bottom: 8px;
+      text-shadow: 0 1px 10px rgba(0,0,0,0.45);
+      transition: opacity 0.35s ease;
     }
     #poster-lb-title {
       font-family: var(--ff-display);
-      font-size: 10px; font-weight: 500;
-      letter-spacing: 0.18em; text-transform: uppercase;
-      color: rgba(255,255,255,0.72);
-      margin-bottom: 5px;
-    }
-    #poster-lb-specs {
-      font-family: var(--ff-display);
-      font-size: 8px; font-weight: 400;
-      letter-spacing: 0.28em; text-transform: uppercase;
-      color: rgba(255,255,255,0.35);
-      margin-bottom: 10px;
+      font-size: 13px; font-weight: 700;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: #ffffff;
+      margin-bottom: 12px;
     }
     #poster-lb-desc {
       font-family: var(--ff-display);
-      font-size: 9px; font-weight: 300;
-      line-height: 1.75;
-      color: rgba(255,255,255,0.42);
+      font-size: 13px; font-weight: 400;
+      line-height: 1.65;
+      color: rgba(255,255,255,0.78);
+      margin-bottom: 15px;
     }
+    #poster-lb-rule { width: 44px; height: 1px; background: rgba(255,255,255,0.55); margin: 0 0 15px auto; }
+    #poster-lb-specs {
+      font-family: var(--ff-display);
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: rgba(255,255,255,0.72); line-height: 1.95;
+      margin-bottom: 14px;
+    }
+    #poster-lb-copy {
+      font-family: var(--ff-display);
+      font-size: 9px; font-weight: 500;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: rgba(255,255,255,0.6);
+    }
+    #poster-lightbox.zoomed #poster-lb-meta { opacity: 0; }
 
     /* Transition de sortie du poster */
     #scene-affiche.leaving {
@@ -1118,10 +1121,11 @@
       <button id="lb-prev" aria-label="Affiche précédente">&#8249;</button>
       <button id="lb-next" aria-label="Affiche suivante">&#8250;</button>
       <div id="poster-lb-meta">
-        <div id="poster-lb-eyebrow">François Peyranne · 2026</div>
         <div id="poster-lb-title"></div>
-        <div id="poster-lb-specs"></div>
         <div id="poster-lb-desc"></div>
+        <div id="poster-lb-rule"></div>
+        <div id="poster-lb-specs"></div>
+        <div id="poster-lb-copy">© François Peyranne</div>
       </div>
       <div id="poster-lb-img-wrap">
         <div id="poster-lb-img-scroll">
@@ -1818,6 +1822,7 @@
         function applyTransform() {
           lbScroll.style.transform = 'translate(' + _tx + 'px,' + _ty + 'px) scale(' + _scale + ')';
           lightbox.style.cursor = _scale > 1 ? (_dragging ? 'grabbing' : 'grab') : 'zoom-in';
+          lightbox.classList.toggle('zoomed', _scale > 1.01);
         }
 
         function clampPan() {
