@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Maquette — Cartel d'affiche (3 propositions)</title>
+<link rel="preconnect" href="https://use.typekit.net" />
+<link rel="stylesheet" href="https://use.typekit.net/fqu8chv.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap" rel="stylesheet" />
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  :root{ --ff:'sweet-sans-pro','Helvetica Neue',Arial,sans-serif; --serif:'Cormorant Garamond',serif; --gold:#c2a161; }
+  body{ background:rgba(0,0,0,0.96); min-height:100vh; font-family:var(--ff); color:#fff; overflow:hidden; }
+
+  /* affiche centrée (simulation lightbox) */
+  #poster{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; }
+  #poster img{ max-height:88vh; max-width:60vw; box-shadow:0 30px 90px rgba(0,0,0,.6); }
+
+  /* sélecteur de proposition */
+  #picker{ position:fixed; top:18px; left:50%; transform:translateX(-50%); z-index:50; display:flex; gap:8px; }
+  #picker button{ font-family:var(--ff); font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:#bbb;
+    background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.18); border-radius:999px; padding:8px 16px; cursor:pointer; transition:.2s; }
+  #picker button.on{ background:#fff; color:#0b0b0c; border-color:#fff; }
+
+  .cartel{ display:none; }
+  body[data-prop="A"] .cartel.A{ display:block; }
+  body[data-prop="B"] .cartel.B{ display:block; }
+  body[data-prop="C"] .cartel.C{ display:block; }
+
+  /* ============ PROPOSITION A — Cartel bas-centre (label de musée) ============ */
+  .A{ position:fixed; left:50%; bottom:5.5%; transform:translateX(-50%); width:min(640px,80vw); text-align:center; z-index:40; }
+  .A .t{ font-family:var(--serif); font-style:italic; font-weight:500; font-size:38px; line-height:1.05; color:#fff; }
+  .A .rule{ width:46px; height:2px; background:var(--gold); margin:16px auto 14px; }
+  .A .by{ font-size:12px; letter-spacing:.34em; text-transform:uppercase; color:var(--gold); margin-bottom:7px; }
+  .A .specs{ font-size:11px; letter-spacing:.26em; text-transform:uppercase; color:rgba(255,255,255,.62); }
+  .A .desc{ font-family:var(--serif); font-style:italic; font-size:17px; line-height:1.5; color:rgba(255,255,255,.8); margin-top:14px; }
+
+  /* ============ PROPOSITION B — Bloc bas-gauche éditorial ============ */
+  .B{ position:fixed; left:5%; bottom:7%; width:min(440px,42vw); text-align:left; z-index:40; }
+  .B .by{ font-size:11px; letter-spacing:.34em; text-transform:uppercase; color:var(--gold); margin-bottom:14px; }
+  .B .t{ font-family:var(--serif); font-style:italic; font-weight:500; font-size:54px; line-height:.98; color:#fff; margin-bottom:18px; }
+  .B .specs{ font-size:12px; font-weight:600; letter-spacing:.2em; text-transform:uppercase; color:#fff; margin-bottom:6px; }
+  .B .specs span{ color:rgba(255,255,255,.5); font-weight:400; }
+  .B .desc{ font-size:14px; line-height:1.65; color:rgba(255,255,255,.6); max-width:380px; margin-top:14px; font-weight:300; }
+
+  /* ============ PROPOSITION C — Panneau encadré à droite ============ */
+  .C{ position:fixed; right:4%; top:50%; transform:translateY(-50%); width:300px; z-index:40;
+      background:rgba(18,18,20,.55); -webkit-backdrop-filter:blur(16px); backdrop-filter:blur(16px);
+      border:1px solid rgba(255,255,255,.12); border-left:2px solid var(--gold); border-radius:4px; padding:30px 28px; }
+  .C .by{ font-size:10px; letter-spacing:.32em; text-transform:uppercase; color:var(--gold); margin-bottom:16px; }
+  .C .t{ font-family:var(--ff); font-weight:700; font-size:22px; line-height:1.1; letter-spacing:.01em; color:#fff; margin-bottom:18px; }
+  .C .rule{ width:34px; height:1px; background:rgba(255,255,255,.25); margin-bottom:16px; }
+  .C .lab{ font-size:9px; letter-spacing:.28em; text-transform:uppercase; color:rgba(255,255,255,.4); margin-bottom:3px; }
+  .C .val{ font-size:13px; font-weight:500; color:rgba(255,255,255,.85); margin-bottom:14px; }
+  .C .desc{ font-family:var(--serif); font-style:italic; font-size:16px; line-height:1.5; color:rgba(255,255,255,.7); margin-top:6px; }
+</style>
+</head>
+<body data-prop="A">
+
+  <div id="poster"><img src="AFFICHES_JPEG_SITE/DYPTIQUE_001_HD_B.webp" alt="" /></div>
+
+  <!-- A -->
+  <div class="cartel A">
+    <div class="t">Cosmograph Daytona — Engine of Time</div>
+    <div class="rule"></div>
+    <div class="by">François Peyranne · 2026</div>
+    <div class="specs">100 × 140 cm · Tirage Lambda contrecollé sous Diasec</div>
+    <div class="desc">A dynamic interpretation of the crown as a symbol of speed, force and mechanical precision.</div>
+  </div>
+
+  <!-- B -->
+  <div class="cartel B">
+    <div class="by">Selected Artwork · 2026</div>
+    <div class="t">Cosmograph Daytona<br>— Engine of Time</div>
+    <div class="specs">François Peyranne</div>
+    <div class="specs">100 × 140 cm <span>· Tirage Lambda sous Diasec</span></div>
+    <div class="desc">A dynamic interpretation of the crown as a symbol of speed, force and mechanical precision.</div>
+  </div>
+
+  <!-- C -->
+  <div class="cartel C">
+    <div class="by">François Peyranne · 2026</div>
+    <div class="t">Cosmograph Daytona — Engine of Time</div>
+    <div class="rule"></div>
+    <div class="lab">Format</div>
+    <div class="val">100 × 140 cm</div>
+    <div class="lab">Technique</div>
+    <div class="val">Tirage Lambda contrecollé sous Diasec</div>
+    <div class="desc">A dynamic interpretation of the crown as a symbol of speed, force and mechanical precision.</div>
+  </div>
+
+  <div id="picker">
+    <button data-p="A" class="on">Proposition A</button>
+    <button data-p="B">Proposition B</button>
+    <button data-p="C">Proposition C</button>
+  </div>
+
+  <script>
+    var btns=[].slice.call(document.querySelectorAll('#picker button'));
+    btns.forEach(function(b){ b.addEventListener('click',function(){
+      document.body.setAttribute('data-prop', b.getAttribute('data-p'));
+      btns.forEach(function(x){x.classList.toggle('on', x===b);});
+    });});
+  </script>
+</body>
+</html>
