@@ -932,7 +932,7 @@
     }
     #room-dock-tab .chev { width: 7px; height: 7px; border-left: 1.5px solid currentColor; border-top: 1.5px solid currentColor; transform: rotate(45deg); margin-top: 3px; }
     #room-dock-tab:hover { background: rgba(255,255,255,0.94); color: #0b0b0c; border-color: #fff; }
-    #frame-overlay.at-end ~ #room-dock-tab { display: none; }
+    #frame-overlay.at-end ~ #room-dock-tab { display: flex; opacity: 1; pointer-events: auto; }
     #room-dock {
       position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%) translateY(160%);
       z-index: 59; display: none; gap: 9px; align-items: flex-end;
@@ -967,7 +967,7 @@
     .dock-item.is-current:hover { transform: scale(1.12) translateY(-6px); }
     body.lb-open #room-dock, body.lb-open #room-dock-tab { display: none; }
     /* === Dock révélé au survol du bas : présent (display:flex) aux affiches, affiché via .open === */
-    #frame-overlay.at-end ~ #room-dock { display: flex; transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: auto; animation: dockIn .45s cubic-bezier(.22,1,.36,1); }
+    #frame-overlay.at-end ~ #room-dock { display: flex; }
     @keyframes dockIn { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
   </style>
   <script>(function(){try{var d=sessionStorage.getItem("roomDir");if(d)document.documentElement.setAttribute("data-roomenter",d);}catch(e){}})();</script>
