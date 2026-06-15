@@ -801,7 +801,7 @@
     /* Meta — petit overlay en haut à droite, z-index au-dessus de l'image */
     #poster-lb-meta {
       position: absolute;
-      top: 68px; right: 32px;
+      top: 104px; right: 32px;
       text-align: right;
       max-width: 180px;
       z-index: 5;
@@ -1061,10 +1061,7 @@
     <div id="frame-overlay">
 
       <!-- Affiche gauche — DYPTIQUE 008 A (Golf Masters, vert) -->
-      <div class="poster-zone" id="zone-a"
-        data-title="Golf Masters"
-        data-specs="40 cm × 60 cm"
-        data-desc="Edition limitée — Tirage numéroté et signé par l'artiste."
+      <div class="poster-zone" data-title="Rolex Golf Masters" data-desc="A refined tribute to golf, where the crown emerges from the rhythm, precision and quiet mastery of the game." data-specs="100 × 140 cm" data-medium="Tirage giclée sur papier Hahnemühle" id="zone-a"
         data-src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/DYPTIQUE_008_HD_A.webp"
         data-arrow="27%"
         data-index="0"
@@ -1073,10 +1070,7 @@
       </div>
 
       <!-- Affiche centre — DYPTIQUE 002 A (Grand Slam équestre, blanc/or) -->
-      <div class="poster-zone" id="zone-b"
-        data-title="Grand Slam of Show Jumping"
-        data-specs="40 cm × 60 cm"
-        data-desc="Edition limitée — Tirage numéroté et signé par l'artiste."
+      <div class="poster-zone" data-title="Rolex Grand Slam of Show Jumping" data-desc="Elegance over the obstacle." data-specs="100 × 140 cm" data-medium="Gaufrage &amp; dorure sur papier coton" id="zone-b"
         data-src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/DYPTIQUE_002_HD_A.webp"
         data-arrow="51%"
         data-index="1"
@@ -1085,10 +1079,7 @@
       </div>
 
       <!-- Affiche droite — DYPTIQUE 008 B (Paris Master, bleu/tennis) -->
-      <div class="poster-zone" id="zone-c"
-        data-title="Paris Master"
-        data-specs="40 cm × 60 cm"
-        data-desc="Edition limitée — Tirage numéroté et signé par l'artiste."
+      <div class="poster-zone" data-title="Rolex Paris Masters" data-desc="Mastering the line." data-specs="100 × 140 cm" data-medium="Impression pigmentaire sur Dibond, Diasec" id="zone-c"
         data-src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_HD/DYPTIQUE_008_HD_B.webp"
         data-arrow="76%"
         data-index="2"
@@ -1126,6 +1117,12 @@
       <button id="poster-lb-close" aria-label="Fermer">×</button>
       <button id="lb-prev" aria-label="Affiche précédente">&#8249;</button>
       <button id="lb-next" aria-label="Affiche suivante">&#8250;</button>
+      <div id="poster-lb-meta">
+        <div id="poster-lb-eyebrow">François Peyranne · 2026</div>
+        <div id="poster-lb-title"></div>
+        <div id="poster-lb-specs"></div>
+        <div id="poster-lb-desc"></div>
+      </div>
       <div id="poster-lb-img-wrap">
         <div id="poster-lb-img-scroll">
           <img id="poster-lb-img" src="" alt="" />
@@ -1784,6 +1781,14 @@
           var zone = zones[idx];
           currentZoneIdx = idx;
           lbImg.src = zone.getAttribute('data-src') || '';
+          (function(){
+            var _t=document.getElementById('poster-lb-title');
+            var _s=document.getElementById('poster-lb-specs');
+            var _d=document.getElementById('poster-lb-desc');
+            if(_t) _t.textContent = zone.getAttribute('data-title')||'';
+            if(_s){ var _dim=zone.getAttribute('data-specs')||'', _med=zone.getAttribute('data-medium')||''; _s.textContent=[_dim,_med].filter(Boolean).join('   ·   '); }
+            if(_d) _d.textContent = zone.getAttribute('data-desc')||'';
+          })();
           resetZoom();
           lightbox.classList.add('open');
           document.body.classList.add('lb-open');
