@@ -918,7 +918,7 @@
     /* ── Dock chemin de fer (révélé quand la souris descend en bas, façon Dock macOS) ── */
     #next-room-btn { display: none !important; }   /* remplacé par le dock + flèches latérales */
     #room-dock-tab {
-      position: fixed; left: 50%; bottom: 12px; transform: translateX(-50%);
+      position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%);
       z-index: 57; display: none; align-items: center; gap: 8px;
       padding: 7px 16px; border-radius: 999px;
       background: rgba(12,12,14,0.42);
@@ -1073,7 +1073,7 @@
       </div>
 
       <!-- Affiche centre — TRYPTIQUE_003_HD_B_ -->
-      <div class="poster-zone" data-title="Interference" data-desc="An optical field of vibrating lines from which the crown quietly surfaces." data-specs="80 × 120 cm" data-medium="Sérigraphie deux tons sur papier d'art" id="zone-b"
+      <div class="poster-zone" data-title="Mirage" data-desc="An optical field of vibrating lines from which the crown quietly surfaces." data-specs="80 × 120 cm" data-medium="Sérigraphie deux tons sur papier d'art" id="zone-b"
         data-src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/TRYPTIQUE_003_HD_B_.webp"
         data-arrow="50%"
         data-index="1"
@@ -1097,7 +1097,7 @@
 
       <!-- Bouton salle suivante -->
       <!-- Zones de navigation salle : moitié gauche / droite, sous les affiches -->
-      <button id="room-nav-left" class="room-nav-zone" data-target="salle-7.html" aria-label="Previous room">
+      <button id="room-nav-left" class="room-nav-zone" data-target="variations-expo.html" aria-label="Previous room">
         <img class="room-nav-arrow" src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20DROITE-.png" alt="" />
       </button>
       <button id="room-nav-right" class="room-nav-zone" data-target="salle-8.html" aria-label="Next room">
@@ -2036,6 +2036,7 @@
       function goTo(url, dir){
         if (!url) return;
         try { sessionStorage.setItem('roomDir', dir); } catch(e){}
+        try { if (url.indexOf('variations-expo') !== -1) sessionStorage.setItem('landOnTitle', '1'); } catch(e){}
         trans.style.transition = 'none';
         trans.style.transform = (dir === 'next') ? 'translateX(100%)' : 'translateX(-100%)';
         trans.offsetWidth; // reflow
@@ -2069,8 +2070,8 @@
       function scheduleClose(){ clearTimeout(hideT); hideT = setTimeout(close, 420); }
       document.addEventListener('mousemove', function(e){
         if (!ready()) { return; }
-        if (e.clientY > window.innerHeight - 80) open();
-        else if (e.clientY < window.innerHeight - 185 && !dock.matches(':hover')) scheduleClose();
+        if (e.clientY > window.innerHeight - 130) open();
+        else if (e.clientY < window.innerHeight - 240 && !dock.matches(':hover')) scheduleClose();
       });
       dock.addEventListener('mouseenter', open);
       dock.addEventListener('mouseleave', scheduleClose);

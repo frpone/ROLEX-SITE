@@ -918,7 +918,7 @@
     /* ── Dock chemin de fer (révélé quand la souris descend en bas, façon Dock macOS) ── */
     #next-room-btn { display: none !important; }   /* remplacé par le dock + flèches latérales */
     #room-dock-tab {
-      position: fixed; left: 50%; bottom: 12px; transform: translateX(-50%);
+      position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%);
       z-index: 57; display: none; align-items: center; gap: 8px;
       padding: 7px 16px; border-radius: 999px;
       background: rgba(12,12,14,0.42);
@@ -2043,8 +2043,8 @@
       function scheduleClose(){ clearTimeout(hideT); hideT = setTimeout(close, 420); }
       document.addEventListener('mousemove', function(e){
         if (!ready()) { return; }
-        if (e.clientY > window.innerHeight - 80) open();
-        else if (e.clientY < window.innerHeight - 185 && !dock.matches(':hover')) scheduleClose();
+        if (e.clientY > window.innerHeight - 130) open();
+        else if (e.clientY < window.innerHeight - 240 && !dock.matches(':hover')) scheduleClose();
       });
       dock.addEventListener('mouseenter', open);
       dock.addEventListener('mouseleave', scheduleClose);
