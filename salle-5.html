@@ -712,6 +712,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      padding-right: 13vw;
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.4s ease;
@@ -800,30 +801,30 @@
     }
 
 
-    /* Cartel — bas-droite, sans cadre (Cormorant italique), écarté de l'affiche */
+    /* Cartel — bas-droite, sans cadre (typo bâton), écarté de l'affiche */
     #poster-lb-meta {
       position: absolute;
-      right: 3.5%; bottom: 7%;
-      width: min(300px, 26vw);
-      text-align: right;
+      right: 4.5%; bottom: 8%;
+      width: min(300px, 22vw);
+      text-align: left;
       z-index: 5;
       pointer-events: none;
       transition: opacity 0.35s ease;
     }
     #poster-lb-title {
-      font-family: var(--ff-serif, 'Cormorant Garamond', serif);
-      font-style: italic; font-weight: 500;
-      font-size: 27px; line-height: 1.1;
+      font-family: var(--ff-display);
+      font-weight: 700; font-size: 20px; line-height: 1.2;
+      letter-spacing: 0.06em; text-transform: uppercase;
       color: #fff;
     }
     #poster-lb-desc {
-      font-family: var(--ff-serif, 'Cormorant Garamond', serif);
-      font-style: italic; font-weight: 400;
-      font-size: 15px; line-height: 1.5;
-      color: rgba(255,255,255,0.72);
-      margin-top: 11px;
+      font-family: var(--ff-display);
+      font-weight: 300; font-size: 13px; line-height: 1.7;
+      letter-spacing: 0.015em;
+      color: rgba(255,255,255,0.6);
+      margin-top: 15px;
     }
-    #poster-lb-rule { width: 36px; height: 1px; background: #c2a161; margin: 18px 0 14px auto; }
+    #poster-lb-rule { width: 36px; height: 1px; background: #c2a161; margin: 20px 0 15px; }
     #poster-lb-specs {
       font-family: var(--ff-display);
       font-size: 9.5px; font-weight: 400;
