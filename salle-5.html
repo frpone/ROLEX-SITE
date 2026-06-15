@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="https://use.typekit.net/fqu8chv.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300;1,400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap" rel="stylesheet" />
 
   <style>
     :root {
@@ -800,43 +800,43 @@
     }
 
 
-    /* Meta — petit overlay en haut à droite, z-index au-dessus de l'image */
+    /* Cartel — panneau d'infos à droite, sans cadre (typo Cormorant) */
     #poster-lb-meta {
       position: absolute;
-      top: 104px; right: 32px;
-      text-align: right;
-      max-width: 180px;
+      right: 5%; top: 50%; transform: translateY(-50%);
+      width: min(290px, 24vw);
+      text-align: left;
       z-index: 5;
-      pointer-events: auto;
       pointer-events: none;
-    }
-    #poster-lb-eyebrow {
-      font-family: var(--ff-display);
-      font-size: 7px; font-weight: 400;
-      letter-spacing: 0.40em; text-transform: uppercase;
-      color: rgba(255,255,255,0.28);
-      margin-bottom: 8px;
+      transition: opacity 0.35s ease;
     }
     #poster-lb-title {
-      font-family: var(--ff-display);
-      font-size: 10px; font-weight: 500;
-      letter-spacing: 0.18em; text-transform: uppercase;
-      color: rgba(255,255,255,0.72);
-      margin-bottom: 5px;
-    }
-    #poster-lb-specs {
-      font-family: var(--ff-display);
-      font-size: 8px; font-weight: 400;
-      letter-spacing: 0.28em; text-transform: uppercase;
-      color: rgba(255,255,255,0.35);
-      margin-bottom: 10px;
+      font-family: var(--ff-serif, 'Cormorant Garamond', serif);
+      font-style: italic; font-weight: 500;
+      font-size: 30px; line-height: 1.08;
+      color: #fff;
     }
     #poster-lb-desc {
-      font-family: var(--ff-display);
-      font-size: 9px; font-weight: 300;
-      line-height: 1.75;
-      color: rgba(255,255,255,0.42);
+      font-family: var(--ff-serif, 'Cormorant Garamond', serif);
+      font-style: italic; font-weight: 400;
+      font-size: 16.5px; line-height: 1.5;
+      color: rgba(255,255,255,0.74);
+      margin-top: 13px;
     }
+    #poster-lb-rule { width: 38px; height: 1px; background: #c2a161; margin: 22px 0 16px; }
+    #poster-lb-specs {
+      font-family: var(--ff-display);
+      font-size: 10px; font-weight: 400;
+      letter-spacing: 0.24em; text-transform: uppercase;
+      color: rgba(255,255,255,0.5); line-height: 2;
+    }
+    #poster-lb-copy {
+      font-family: var(--ff-display);
+      font-size: 10px; font-weight: 400;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: #c2a161; margin-top: 20px;
+    }
+    #poster-lightbox.zoomed #poster-lb-meta { opacity: 0; }
 
     /* Transition de sortie du poster */
     #scene-affiche.leaving {
@@ -1120,10 +1120,11 @@
       <button id="lb-prev" aria-label="Affiche précédente">&#8249;</button>
       <button id="lb-next" aria-label="Affiche suivante">&#8250;</button>
       <div id="poster-lb-meta">
-        <div id="poster-lb-eyebrow">François Peyranne · 2026</div>
         <div id="poster-lb-title"></div>
-        <div id="poster-lb-specs"></div>
         <div id="poster-lb-desc"></div>
+        <div id="poster-lb-rule"></div>
+        <div id="poster-lb-specs"></div>
+        <div id="poster-lb-copy">© François Peyranne</div>
       </div>
       <div id="poster-lb-img-wrap">
         <div id="poster-lb-img-scroll">
@@ -1820,6 +1821,7 @@
         function applyTransform() {
           lbScroll.style.transform = 'translate(' + _tx + 'px,' + _ty + 'px) scale(' + _scale + ')';
           lightbox.style.cursor = _scale > 1 ? (_dragging ? 'grabbing' : 'grab') : 'zoom-in';
+          lightbox.classList.toggle('zoomed', _scale > 1.01);
         }
 
         function clampPan() {
