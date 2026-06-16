@@ -129,7 +129,12 @@
       position: fixed; top: 0; left: 0; right: 0; z-index: 50;
       padding: 22px 36px;
       display: flex; justify-content: space-between; align-items: center;
-      mix-blend-mode: difference; color: white;
+      color: #ffffff;
+    }
+    .site-header::before {
+      content: ''; position: absolute; left: 0; right: 0; top: 0; height: 120px;
+      pointer-events: none; z-index: -1;
+      background: linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0) 100%);
     }
     /* Lightbox ouverte : le header ne doit pas intercepter les clics du fond noir */
     body.lb-open .site-header { pointer-events: none; }
