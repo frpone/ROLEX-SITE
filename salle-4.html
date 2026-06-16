@@ -773,9 +773,9 @@
     @media (max-width: 768px) {
       /* On mobile, seule l'affiche centrale est visible dans le canvas (cover centré)
          Zones A et C sont hors écran, on les masque */
-      #zone-a, #zone-c { display: none !important; }
-      /* Zone B repositionnée pour couvrir la zone centrale visible ~7%-92% de l'écran */
-      #zone-b {
+      #zone-b { display: none !important; }
+      /* Affiche de gauche : couvre l'écran (le cadrage finit dessus sur mobile) */
+      #zone-a {
         left: 5% !important;
         width: 90% !important;
       }
@@ -1555,6 +1555,11 @@
         var HINT_SOURCE_X = 0.515;
         var HINT_SOURCE_Y = 0.925;
 
+        var MOBILE_FX = 0.375; // salle-4 : centre de l'affiche de gauche (left 28% + width 19%/2)
+        function coverFx() {
+          if (window.innerWidth > 768) return 0.5;
+          return 0.5 + (MOBILE_FX - 0.5) * getProgress();
+        }
         function getCoverRect() {
           var img = _frames[currentFrame] || _frames[0];
           if (!img || !img.naturalWidth) return null;
@@ -1563,7 +1568,7 @@
           var iw = img.naturalWidth, ih = img.naturalHeight;
           var scale = Math.max(cw / iw, ch / ih);
           var dw = iw * scale, dh = ih * scale;
-          var dx = Math.round((cw - dw) / 2);
+          var dx = (dw > cw) ? Math.max(cw - dw, Math.min(0, Math.round(cw / 2 - coverFx() * dw))) : Math.round((cw - dw) / 2);
           var dy = Math.round((ch - dh) / 2);
           // Convertit pixels canvas → pixels CSS
           return { x: dx / dpr, y: dy / dpr, w: dw / dpr, h: dh / dpr };
@@ -1596,7 +1601,7 @@
           var iw = img.naturalWidth, ih = img.naturalHeight;
           var scale = Math.max(cw / iw, ch / ih);
           var dw = iw * scale, dh = ih * scale;
-          var dx = Math.round((cw - dw) / 2);
+          var dx = (dw > cw) ? Math.max(cw - dw, Math.min(0, Math.round(cw / 2 - coverFx() * dw))) : Math.round((cw - dw) / 2);
           var dy = Math.round((ch - dh) / 2);
           ctx.clearRect(0, 0, cw, ch);
           ctx.drawImage(img, dx, dy, dw, dh);
