@@ -137,9 +137,10 @@
       background: linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0) 100%);
     }
     /* Lightbox ouverte : le header ne doit pas intercepter les clics du fond noir */
-    body.lb-open .site-header { pointer-events: none; }
+    body.lb-open .site-header { pointer-events: none; color: #fff; }
+    body.lb-open .site-header::before { display: none; }
     .site-logo {
-      font-size: 10px; font-weight: 500;
+      font-size: 11px; font-weight: 700;
       letter-spacing: 0.22em; text-transform: uppercase;
     }
     .site-nav { display: flex; gap: 32px; }
@@ -149,6 +150,9 @@
       transition: opacity 0.2s;
     }
     .site-nav a:hover { opacity: 0.55; }
+    .site-back { display: inline-flex; align-items: center; gap: 8px; }
+    .site-back .back-arrow { display: inline-block; transition: transform 0.2s ease; }
+    .site-back:hover .back-arrow { transform: translateX(-3px); }
 
     main { position: relative; z-index: 2; pointer-events: none; }
     main a, main button, main .p-btn { pointer-events: auto; }
@@ -992,7 +996,7 @@
   <header class="site-header">
     <div class="site-logo">François Peyranne × Rolex</div>
     <nav class="site-nav">
-      <a href="#">Home</a><a href="#">Works</a><a href="#">About</a><a href="#">Contact</a>
+      <a class="site-back" href="https://francoispeyranne-rolex.com/#showreel"><span class="back-arrow">&#8592;</span> Retour au site</a>
     </nav>
   </header>
 
