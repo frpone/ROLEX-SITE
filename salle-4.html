@@ -982,6 +982,29 @@
     /* === Dock révélé au survol du bas : présent (display:flex) aux affiches, affiché via .open === */
     #frame-overlay.at-end ~ #room-dock { display: flex; }
     @keyframes dockIn { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+    /* ===== Responsive mobile (ajout) : header + cartel ===== */
+    @media (max-width: 768px) {
+      .site-header { padding: 16px 18px; }
+      .site-logo { font-size: 8px; letter-spacing: 0.10em; }
+      .site-nav { gap: 14px; }
+      .site-nav a { font-size: 8px; letter-spacing: 0.10em; }
+      .site-back { gap: 6px; }
+      /* Affiche zoom un peu plus petite pour laisser place au cartel dessous */
+      #poster-lb-img { max-height: 58vh; max-width: 88vw; }
+      /* Cartel sous l'affiche, pleine largeur, centré */
+      #poster-lb-meta {
+        right: auto; left: 0; bottom: 3.5%;
+        width: 100%; max-width: none;
+        text-align: center; padding: 0 24px;
+        text-shadow: 0 1px 10px rgba(0,0,0,0.5);
+      }
+      #poster-lb-title { font-size: 12px; margin-bottom: 8px; }
+      #poster-lb-desc { font-size: 12px; line-height: 1.5; margin-bottom: 10px; }
+      #poster-lb-rule { margin: 12px auto; }
+      #poster-lb-specs { font-size: 8.5px; margin-bottom: 8px; }
+      #poster-lb-copy { font-size: 8.5px; }
+    }
   </style>
   <script>(function(){try{var d=sessionStorage.getItem("roomDir");if(d)document.documentElement.setAttribute("data-roomenter",d);}catch(e){}})();</script>
 </head>
