@@ -142,7 +142,10 @@
     .site-logo {
       font-size: 11px; font-weight: 700;
       letter-spacing: 0.22em; text-transform: uppercase;
+      color: inherit; text-decoration: none; cursor: pointer;
+      transition: opacity 0.2s;
     }
+    .site-logo:hover { opacity: 0.55; }
     .site-nav { display: flex; gap: 32px; }
     .site-nav a {
       font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
@@ -995,9 +998,9 @@
   <div id="canvas-container"></div>
 
   <header class="site-header">
-    <div class="site-logo">François Peyranne × Rolex</div>
+    <a class="site-logo" href="https://francoispeyranne-rolex.com">François Peyranne × Rolex</a>
     <nav class="site-nav">
-      <a class="site-back" href="https://francoispeyranne-rolex.com/#showreel"><span class="back-arrow">&#8592;</span> Retour au site</a>
+      <a class="site-back" href="https://francoispeyranne-rolex.com"><span class="back-arrow">&#8592;</span> Retour au site</a>
     </nav>
   </header>
 
