@@ -1557,8 +1557,8 @@
 
         var MOBILE_FX = 0.375; // salle-4 : centre de l'affiche de gauche (left 28% + width 19%/2)
         function coverFx() {
-          if (window.innerWidth > 768) return 0.5;
-          return 0.5 + (MOBILE_FX - 0.5) * getProgress();
+          // mobile : cadrage constant sur l'affiche cible (dès le départ), desktop inchangé
+          return (window.innerWidth > 768) ? 0.5 : MOBILE_FX;
         }
         function getCoverRect() {
           var img = _frames[currentFrame] || _frames[0];
