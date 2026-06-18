@@ -770,14 +770,9 @@
 
     /* ── Responsive mobile : overlay affiches ── */
     @media (max-width: 768px) {
-      /* On mobile, seule l'affiche centrale est visible dans le canvas (cover centré)
-         Zones A et C sont hors écran, on les masque */
-      #zone-a, #zone-c { display: none !important; }
-      /* Zone B repositionnée pour couvrir la zone centrale visible ~7%-92% de l'écran */
-      #zone-b {
-        left: 5% !important;
-        width: 90% !important;
-      }
+      /* 2 affiches centrées : chacune tappable (puis swipe dans le zoom) */
+      #zone-a { left: 5% !important; width: 43% !important; }
+      #zone-b { left: 52% !important; width: 43% !important; }
       /* Flèche centrée en mobile */
       #frame-single-arrow { left: 50% !important; }
     }

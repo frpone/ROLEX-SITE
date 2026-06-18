@@ -770,7 +770,9 @@
 
     /* ── Responsive mobile : overlay affiches ── */
     @media (max-width: 768px) {
-      /* Salle à 4 affiches — on garde les 4 zones visibles (pas de masquage) */
+      /* 4 affiches : on cadre la 2e (zone-b), seule tappable -> zoom -> swipe */
+      #zone-a, #zone-c, #zone-d { display: none !important; }
+      #zone-b { left: 5% !important; width: 90% !important; }
       #frame-single-arrow { display: none; }
     }
 
@@ -1564,6 +1566,10 @@
         var HINT_SOURCE_X = 0.50;
         var HINT_SOURCE_Y = 0.925;
 
+        var MOBILE_FX = 0.422; // salle-6 : centre de la 2e affiche (The Rolex Crown)
+        function coverFx() {
+          return (window.innerWidth > 768) ? 0.5 : MOBILE_FX;
+        }
         function getCoverRect() {
           var img = _frames[currentFrame] || _frames[0];
           if (!img || !img.naturalWidth) return null;
@@ -1572,7 +1578,7 @@
           var iw = img.naturalWidth, ih = img.naturalHeight;
           var scale = Math.max(cw / iw, ch / ih);
           var dw = iw * scale, dh = ih * scale;
-          var dx = Math.round((cw - dw) / 2);
+          var dx = (dw > cw) ? Math.max(cw - dw, Math.min(0, Math.round(cw / 2 - coverFx() * dw))) : Math.round((cw - dw) / 2);
           var dy = Math.round((ch - dh) / 2);
           // Convertit pixels canvas → pixels CSS
           return { x: dx / dpr, y: dy / dpr, w: dw / dpr, h: dh / dpr };
@@ -1605,7 +1611,7 @@
           var iw = img.naturalWidth, ih = img.naturalHeight;
           var scale = Math.max(cw / iw, ch / ih);
           var dw = iw * scale, dh = ih * scale;
-          var dx = Math.round((cw - dw) / 2);
+          var dx = (dw > cw) ? Math.max(cw - dw, Math.min(0, Math.round(cw / 2 - coverFx() * dw))) : Math.round((cw - dw) / 2);
           var dy = Math.round((ch - dh) / 2);
           ctx.clearRect(0, 0, cw, ch);
           ctx.drawImage(img, dx, dy, dw, dh);
