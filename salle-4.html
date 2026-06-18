@@ -773,12 +773,9 @@
     @media (max-width: 768px) {
       /* On mobile, seule l'affiche centrale est visible dans le canvas (cover centré)
          Zones A et C sont hors écran, on les masque */
-      #zone-b { display: none !important; }
-      /* Affiche de gauche : couvre l'écran (le cadrage finit dessus sur mobile) */
-      #zone-a {
-        left: 5% !important;
-        width: 90% !important;
-      }
+      /* Mobile : les 2 affiches centrees et entieres, chacune tappable (puis swipe) */
+      #zone-a { left: 5% !important; width: 43% !important; }
+      #zone-b { left: 52% !important; width: 43% !important; }
       /* Flèche centrée en mobile */
       #frame-single-arrow { left: 50% !important; }
     }
@@ -1555,7 +1552,7 @@
         var HINT_SOURCE_X = 0.515;
         var HINT_SOURCE_Y = 0.925;
 
-        var MOBILE_FX = 0.375; // salle-4 : centre de l'affiche de gauche (left 28% + width 19%/2)
+        var MOBILE_FX = 0.52; // salle-4 : centre de l'affiche de gauche (left 28% + width 19%/2)
         function coverFx() {
           // mobile : cadrage constant sur l'affiche cible (dès le départ), desktop inchangé
           return (window.innerWidth > 768) ? 0.5 : MOBILE_FX;
