@@ -1724,6 +1724,18 @@
         }
         (function initMobileBrowse(){
           if (window.__mbInit) return; window.__mbInit = true;
+          // Mobile : on oublie le scroll → un tap fait avancer l'animation
+          if (_isMobile()) {
+            var sh = document.getElementById('scroll-hint');
+            if (sh) sh.textContent = 'Touchez pour entrer';
+          }
+          // Quand le chemin de fer s'ouvre/ferme, masque/réaffiche la barre du bas
+          var _dock = document.getElementById('room-dock');
+          if (_dock && window.MutationObserver) {
+            new MutationObserver(function(){
+              document.body.classList.toggle('dock-open', _dock.classList.contains('open'));
+            }).observe(_dock, { attributes: true, attributeFilter: ['class'] });
+          }
           var el = overlay || canvas;
           if (!el) return;
           var sx = 0, sy = 0, moved = false;
@@ -1738,6 +1750,8 @@
           }, { passive: false });
           el.addEventListener('touchend', function(e){
             if (!_isMobile() || !_atEnd) return;
+            // Si le chemin de fer est ouvert, un tap (hors dock) le referme
+            if (_dock && _dock.classList.contains('open')) { _dock.classList.remove('open'); return; }
             var dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
             if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)) {
               if (dx < 0) _gotoPoster(_curPoster + 1); else _gotoPoster(_curPoster - 1);
@@ -2210,19 +2224,26 @@
         padding: 52px 14px 22px; overflow-y: auto; -webkit-overflow-scrolling: touch;
       }
       #poster-lb-img-wrap{ flex: 0 0 auto; display: flex; align-items: center; justify-content: center; width: 100%; }
-      #poster-lb-img{ max-height: 62vh; max-width: 90vw; width: auto; height: auto; }
+      #poster-lb-img{ max-height: 56vh; max-width: 90vw; width: auto; height: auto; }
       #poster-lb-meta{
         position: static !important; transform: none !important;
         right: auto; left: auto; bottom: auto; top: auto;
-        width: 100%; max-width: none; text-align: center; padding: 14px 18px 0;
-        margin-top: 4px; text-shadow: none; opacity: 1;
+        width: 100%; max-width: none; text-align: center; padding: 30px 18px 0;
+        margin-top: 0; text-shadow: none; opacity: 1;
       }
-      #poster-lb-title{ font-size: 10.5px; letter-spacing: .14em; }
-      #poster-lb-desc{ font-size: 10.5px; }
-      #poster-lb-specs{ font-size: 8px; }
-      #poster-lb-copy{ font-size: 8px; }
-      #poster-lb-rule{ margin: 8px auto 9px; }
+      #poster-lb-title{ font-size: 9px; letter-spacing: .13em; }
+      #poster-lb-desc{ font-size: 9px; }
+      #poster-lb-specs{ font-size: 7px; }
+      #poster-lb-copy{ font-size: 7px; margin-top: 11px; }
+      #poster-lb-rule{ margin: 7px auto 8px; }
       #poster-lightbox.zoomed #poster-lb-meta{ opacity: 0; }
+
+      /* Tap pour avancer : on retire le chevron "scroll" */
+      #scroll-hint .scroll-enter-arrow{ display: none !important; }
+      /* Flèches ‹ › de la lightbox inutiles sur mobile (on swipe) */
+      #lb-prev, #lb-next{ display: none !important; }
+      /* Chemin de fer ouvert → la barre du bas disparaît (plus de chevauchement) */
+      body.dock-open #mobile-bar{ display: none !important; }
     }
   </style>
 
