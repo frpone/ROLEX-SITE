@@ -770,9 +770,9 @@
 
     /* ── Responsive mobile : overlay affiches ── */
     @media (max-width: 768px) {
-      /* 2 affiches centrées : chacune tappable (puis swipe dans le zoom) */
-      #zone-a { left: 5% !important; width: 43% !important; }
-      #zone-b { left: 52% !important; width: 43% !important; }
+      /* Mobile : on finit sur l'affiche de gauche (plein pot), tap -> zoom -> swipe */
+      #zone-b { display: none !important; }
+      #zone-a { left: 5% !important; width: 90% !important; }
       /* Flèche centrée en mobile */
       #frame-single-arrow { left: 50% !important; }
     }
@@ -1549,6 +1549,11 @@
         var HINT_SOURCE_X = 0.50;
         var HINT_SOURCE_Y = 0.925;
 
+        var MOBILE_FX_START = 0.515, MOBILE_FX_END = 0.365;
+        function coverFx() {
+          if (window.innerWidth > 768) return 0.5;
+          return MOBILE_FX_START + (MOBILE_FX_END - MOBILE_FX_START) * getProgress();
+        }
         function getCoverRect() {
           var img = _frames[currentFrame] || _frames[0];
           if (!img || !img.naturalWidth) return null;
@@ -1557,7 +1562,7 @@
           var iw = img.naturalWidth, ih = img.naturalHeight;
           var scale = Math.max(cw / iw, ch / ih);
           var dw = iw * scale, dh = ih * scale;
-          var dx = Math.round((cw - dw) / 2);
+          var dx = (dw > cw) ? Math.max(cw - dw, Math.min(0, Math.round(cw / 2 - coverFx() * dw))) : Math.round((cw - dw) / 2);
           var dy = Math.round((ch - dh) / 2);
           // Convertit pixels canvas → pixels CSS
           return { x: dx / dpr, y: dy / dpr, w: dw / dpr, h: dh / dpr };
@@ -1590,7 +1595,7 @@
           var iw = img.naturalWidth, ih = img.naturalHeight;
           var scale = Math.max(cw / iw, ch / ih);
           var dw = iw * scale, dh = ih * scale;
-          var dx = Math.round((cw - dw) / 2);
+          var dx = (dw > cw) ? Math.max(cw - dw, Math.min(0, Math.round(cw / 2 - coverFx() * dw))) : Math.round((cw - dw) / 2);
           var dy = Math.round((ch - dh) / 2);
           ctx.clearRect(0, 0, cw, ch);
           ctx.drawImage(img, dx, dy, dw, dh);
