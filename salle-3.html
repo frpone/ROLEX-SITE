@@ -1554,6 +1554,17 @@
           if (window.innerWidth > 768) return 0.5;
           return MOBILE_FX_START + (MOBILE_FX_END - MOBILE_FX_START) * getProgress();
         }
+
+        // ── Navigation mobile : balade le long du mur (swipe) + tap affiche ──
+        var _atEnd = false, _browseFx = null, _curPoster = 0;
+        // Centre horizontal de chaque affiche sur la frame de FIN (fraction 0..1)
+        var MPOSTERS = [{ idx: 0, fx: 0.367 }, { idx: 1, fx: 0.660 }];
+        var MSTART = 0;  // atterrit sur l'affiche de gauche
+        function _isMobile(){ return window.innerWidth <= 768; }
+        function effFx(){
+          if (_isMobile() && _atEnd && _browseFx != null) return _browseFx;
+          return coverFx();
+        }
         function getCoverRect() {
           var img = _frames[currentFrame] || _frames[0];
           if (!img || !img.naturalWidth) return null;
@@ -1595,7 +1606,7 @@
           var iw = img.naturalWidth, ih = img.naturalHeight;
           var scale = Math.max(cw / iw, ch / ih);
           var dw = iw * scale, dh = ih * scale;
-          var dx = (dw > cw) ? Math.max(cw - dw, Math.min(0, Math.round(cw / 2 - coverFx() * dw))) : Math.round((cw - dw) / 2);
+          var dx = (dw > cw) ? Math.max(cw - dw, Math.min(0, Math.round(cw / 2 - effFx() * dw))) : Math.round((cw - dw) / 2);
           var dy = Math.round((ch - dh) / 2);
           ctx.clearRect(0, 0, cw, ch);
           ctx.drawImage(img, dx, dy, dw, dh);
@@ -1636,9 +1647,16 @@
 
           if (progress >= 0.985) showPosterArrows();
           else                   hidePosterArrows();
-          // Chemin de fer : uniquement à la toute dernière frame
-          if (progress >= 0.999) { if (overlay) overlay.classList.add('at-end'); }
-          else { if (overlay) overlay.classList.remove('at-end'); }
+          // Chemin de fer + navigation mobile : uniquement à la toute dernière frame
+          if (progress >= 0.999) {
+            if (overlay) overlay.classList.add('at-end');
+            if (!_atEnd) { _atEnd = true; _curPoster = MSTART; _browseFx = MPOSTERS[MSTART].fx; }
+            document.body.classList.add('mb-end');
+          } else {
+            if (overlay) overlay.classList.remove('at-end');
+            if (_atEnd) { _atEnd = false; _browseFx = null; }
+            document.body.classList.remove('mb-end');
+          }
 
           _introRafId = requestAnimationFrame(tick);
         }
@@ -1679,6 +1697,55 @@
 
         window.removeEventListener('resize', resizeCanvas);
         window.addEventListener('resize', resizeCanvas);
+
+        // ── Balade mobile : swipe = affiche suivante/précédente (snap), tap = ouvre ──
+        function _tweenBrowse(target){
+          var from = (_browseFx == null) ? target : _browseFx, t0 = null, dur = 300;
+          function step(ts){
+            if (t0 == null) t0 = ts;
+            var p = Math.min(1, (ts - t0) / dur);
+            var e = p < 0.5 ? 2*p*p : 1 - Math.pow(-2*p+2, 2)/2;
+            _browseFx = from + (target - from) * e;
+            renderFrame(FRAMES_COUNT - 1);
+            if (p < 1) requestAnimationFrame(step);
+          }
+          requestAnimationFrame(step);
+        }
+        function _gotoPoster(i){
+          i = Math.max(0, Math.min(MPOSTERS.length - 1, i));
+          if (i === _curPoster) return;
+          _curPoster = i;
+          _tweenBrowse(MPOSTERS[i].fx);
+        }
+        function _openPoster(i){
+          var pz = document.querySelectorAll('.poster-zone');
+          var zi = MPOSTERS[i] ? MPOSTERS[i].idx : i;
+          if (pz[zi]) pz[zi].click();
+        }
+        (function initMobileBrowse(){
+          if (window.__mbInit) return; window.__mbInit = true;
+          var el = overlay || canvas;
+          if (!el) return;
+          var sx = 0, sy = 0, moved = false;
+          el.addEventListener('touchstart', function(e){
+            if (!_isMobile() || !_atEnd) return;
+            sx = e.touches[0].clientX; sy = e.touches[0].clientY; moved = false;
+          }, { passive: true });
+          el.addEventListener('touchmove', function(e){
+            if (!_isMobile() || !_atEnd) return;
+            var dx = e.touches[0].clientX - sx, dy = e.touches[0].clientY - sy;
+            if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) { moved = true; e.preventDefault(); }
+          }, { passive: false });
+          el.addEventListener('touchend', function(e){
+            if (!_isMobile() || !_atEnd) return;
+            var dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+            if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)) {
+              if (dx < 0) _gotoPoster(_curPoster + 1); else _gotoPoster(_curPoster - 1);
+            } else if (!moved && Math.abs(dx) < 12 && Math.abs(dy) < 12) {
+              _openPoster(_curPoster);
+            }
+          }, { passive: true });
+        })();
 
         function goToEnd() {
           if (!lenis) return;
@@ -2105,168 +2172,75 @@
     })();
   </script>
 
-  <!-- ═══════════════════════════════════════════════════════════════
-       MODE MOBILE — salle explorable (image fixe + pinch/pan + tap).
-       Remplace le walkthrough scroll (paysage mal adapté au portrait).
-       Prototype salle-3. Réutilise openLightbox via .poster-zone.click().
-       ═══════════════════════════════════════════════════════════════ -->
+  <!-- ═══ MOBILE : barre du bas + cartel robuste + suppression flèches latérales ═══ -->
   <style>
-    #mobile-room{ display:none; }
-    @media (max-width:768px){
-      /* On coupe le walkthrough scroll (frames paysage = compression + saccade) */
-      #phase-expo, #intro2-fixed, #intro2-canvas, #scroll-hint,
-      #frame-overlay, #room-dock, #room-dock-tab, #intro2-spacer { display:none !important; }
-      html, body { overflow:hidden !important; height:100% !important; }
+    @media (max-width: 768px){
+      /* plus de flèches latérales (conflit avec les doigts) */
+      .room-nav-zone { display: none !important; }
+      #frame-single-arrow { display: none !important; }
+      /* les zones d'affiche ne captent pas le tap : géré par swipe/tap global */
+      .poster-zone { pointer-events: none !important; }
+      /* l'overlay capte le tactile une fois en bout de course */
+      #frame-overlay.at-end { pointer-events: auto !important; }
+      /* le dock-tab desktop est remplacé par la barre du bas */
+      #room-dock-tab { display: none !important; }
 
-      #mobile-room{
-        display:block; position:fixed; inset:0; z-index:40;
-        background:#e7e9ea; overflow:hidden;
-        touch-action:none; -webkit-user-select:none; user-select:none;
+      /* Barre du bas : All Rooms + Next Room (apparaît à la dernière frame) */
+      #mobile-bar { display: none; }
+      body.mb-end #mobile-bar{
+        display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 58;
+        gap: 10px; justify-content: center;
+        padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
+        background: linear-gradient(to top, rgba(244,245,247,.96), rgba(244,245,247,0));
       }
-      #mr-stage{ position:absolute; left:0; top:0; transform-origin:0 0; will-change:transform; }
-      #mr-stage img{ display:block; width:100%; height:100%; pointer-events:none; -webkit-user-drag:none; }
-      .mr-zone{ position:absolute; }
-      .mr-zone::after{
-        content:''; position:absolute; left:50%; top:50%; width:9px; height:9px;
-        transform:translate(-50%,-50%); border-radius:50%;
-        background:rgba(11,17,22,.6); box-shadow:0 0 0 7px rgba(11,17,22,.10);
-        animation:mrPulse 2.2s ease-in-out infinite;
+      body.lb-open #mobile-bar { display: none !important; }
+      #mobile-bar button{
+        flex: 1 1 0; max-width: 200px;
+        font-family: 'sweet-sans-pro','Helvetica Neue',Arial,sans-serif;
+        font-size: 11px; letter-spacing: .16em; text-transform: uppercase; font-weight: 600;
+        color: #0b1116; background: rgba(255,255,255,.92);
+        border: 1px solid rgba(11,17,22,.20); border-radius: 999px; padding: 13px 10px;
       }
-      @keyframes mrPulse{ 0%,100%{opacity:.55} 50%{opacity:1} }
+      #mb-next { background: #0b1116; color: #fff; border-color: #0b1116; }
 
-      #mr-hint{
-        position:fixed; left:0; right:0; bottom:24px; text-align:center; z-index:42;
-        font-family:'sweet-sans-pro','Helvetica Neue',Arial,sans-serif;
-        font-size:9.5px; letter-spacing:.2em; text-transform:uppercase;
-        color:rgba(11,17,22,.55); pointer-events:none; transition:opacity .5s ease;
+      /* Cartel plein écran : affiche en haut, texte SOUS l'affiche, jamais par-dessus.
+         Colonne défilable = robuste sur tous les iPhones (SE, mini, Plus, Pro Max…). */
+      #poster-lightbox{
+        flex-direction: column; justify-content: flex-start; align-items: center;
+        padding: 52px 14px 22px; overflow-y: auto; -webkit-overflow-scrolling: touch;
       }
-      .mr-navbtn{
-        position:fixed; top:50%; transform:translateY(-50%); z-index:43;
-        width:48px; height:48px; border:0; background:transparent; padding:0;
-        display:flex; align-items:center; justify-content:center;
+      #poster-lb-img-wrap{ flex: 0 0 auto; display: flex; align-items: center; justify-content: center; width: 100%; }
+      #poster-lb-img{ max-height: 62vh; max-width: 90vw; width: auto; height: auto; }
+      #poster-lb-meta{
+        position: static !important; transform: none !important;
+        right: auto; left: auto; bottom: auto; top: auto;
+        width: 100%; max-width: none; text-align: center; padding: 14px 18px 0;
+        margin-top: 4px; text-shadow: none; opacity: 1;
       }
-      .mr-navbtn img{ width:32px; height:auto; display:block;
-        filter:brightness(0) drop-shadow(0 1px 5px rgba(0,0,0,.25)); opacity:.7; }
-      #mr-nav-left{ left:2px; } #mr-nav-right{ right:2px; }
-      body.lb-open #mobile-room, body.lb-open #mr-hint, body.lb-open .mr-navbtn{ display:none !important; }
-
-      /* Cartel en plein écran : affiche en haut, texte dessous (plus de chevauchement) */
-      #poster-lightbox{ flex-direction:column; justify-content:center; gap:16px; padding:64px 16px 24px; }
-      #poster-lb-img-wrap{ flex:0 0 auto; }
-      #poster-lb-img{ max-height:60vh; max-width:90vw; }
-      #poster-lb-meta{ position:static; right:auto; left:auto; bottom:auto; transform:none;
-        width:100%; max-width:none; text-align:center; padding:0 20px; text-shadow:none; }
-      #poster-lb-rule{ margin:9px auto 11px; }
+      #poster-lb-title{ font-size: 10.5px; letter-spacing: .14em; }
+      #poster-lb-desc{ font-size: 10.5px; }
+      #poster-lb-specs{ font-size: 8px; }
+      #poster-lb-copy{ font-size: 8px; }
+      #poster-lb-rule{ margin: 8px auto 9px; }
+      #poster-lightbox.zoomed #poster-lb-meta{ opacity: 0; }
     }
   </style>
 
-  <div id="mobile-room" aria-hidden="true">
-    <div id="mr-stage">
-      <img src="./FRAMES_SALLE3/frame_071.jpg" alt="Salle III" decoding="async" />
-      <div class="mr-zone" data-idx="0" data-l="0.258" data-t="0.204" data-w="0.219" data-h="0.511"
-           style="left:25.8%;top:20.4%;width:21.9%;height:51.1%"></div>
-      <div class="mr-zone" data-idx="1" data-l="0.551" data-t="0.204" data-w="0.219" data-h="0.511"
-           style="left:55.1%;top:20.4%;width:21.9%;height:51.1%"></div>
-    </div>
-    <button id="mr-nav-left" class="mr-navbtn" aria-label="Salle précédente"><img src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20DROITE-.png" alt="" /></button>
-    <button id="mr-nav-right" class="mr-navbtn" aria-label="Salle suivante"><img src="https://raw.githubusercontent.com/frpone/ROLEX-SITE/main/AFFICHES_JPEG_SITE/CROIX%20GAUCHE-.png" alt="" /></button>
-    <div id="mr-hint">Pincez pour explorer · touchez une affiche</div>
+  <div id="mobile-bar" aria-hidden="true">
+    <button id="mb-allrooms" type="button">All Rooms</button>
+    <button id="mb-next" type="button">Next Room</button>
   </div>
 
   <script>
-    (function initMobileRoom(){
-      var mq = window.matchMedia('(max-width:768px)');
-      var room = document.getElementById('mobile-room');
-      if(!room) return;
-      var stage = document.getElementById('mr-stage');
-      var hint  = document.getElementById('mr-hint');
-      var zones = [].slice.call(room.querySelectorAll('.mr-zone'));
-      var pzones= [].slice.call(document.querySelectorAll('.poster-zone'));
-      var RATIO = 2560/1468;
-
-      var W0=0, H0=0, scale=1, tx=0, ty=0, sMin=0.4, sMax=3.2;
-      // Vue de départ : centrée sur l'affiche blanche (gauche) — pincer pour dézoomer
-      var INIT_CX=0.367, INIT_CY=0.46;
-
-      function layout(){
-        var vw=window.innerWidth, vh=window.innerHeight;
-        H0=vh; W0=Math.round(vh*RATIO);
-        stage.style.width=W0+'px'; stage.style.height=H0+'px';
-        sMin=Math.min(1, vw/W0);            // dézoom = voir tout le mur
-        scale=1;
-        tx=vw/2 - INIT_CX*W0*scale;
-        ty=vh/2 - INIT_CY*H0*scale;
-        clamp(); apply();
-      }
-      function clamp(){
-        var vw=window.innerWidth, vh=window.innerHeight, cw=W0*scale, ch=H0*scale;
-        tx = (cw<=vw) ? (vw-cw)/2 : Math.max(vw-cw, Math.min(0, tx));
-        ty = (ch<=vh) ? (vh-ch)/2 : Math.max(vh-ch, Math.min(0, ty));
-      }
-      function apply(){ stage.style.transform='translate('+tx+'px,'+ty+'px) scale('+scale+')'; }
-
-      var startDist=0, startScale=1, startMid=null, startTx=0, startTy=0;
-      var moved=false, downX=0, downY=0, downT=0;
-      function dist(a,b){ return Math.hypot(a.x-b.x, a.y-b.y); }
-      function mid(a,b){ return {x:(a.x+b.x)/2, y:(a.y+b.y)/2}; }
-      function pt(t){ return {x:t.clientX, y:t.clientY}; }
-
-      room.addEventListener('touchstart', function(e){
-        if(e.touches.length===1){
-          downX=e.touches[0].clientX; downY=e.touches[0].clientY; downT=Date.now();
-          moved=false; startDist=0; startTx=tx; startTy=ty;
-        } else if(e.touches.length===2){
-          var a=pt(e.touches[0]), b=pt(e.touches[1]);
-          startDist=dist(a,b); startScale=scale; startMid=mid(a,b); startTx=tx; startTy=ty; moved=true;
-        }
-      }, {passive:false});
-
-      room.addEventListener('touchmove', function(e){
-        e.preventDefault();
-        if(e.touches.length===1 && startDist===0){
-          var ddx=e.touches[0].clientX-downX, ddy=e.touches[0].clientY-downY;
-          if(Math.abs(ddx)+Math.abs(ddy)>8) moved=true;
-          tx=startTx+ddx; ty=startTy+ddy; clamp(); apply();
-          if(moved && hint) hint.style.opacity='0';
-        } else if(e.touches.length===2){
-          var a=pt(e.touches[0]), b=pt(e.touches[1]);
-          var d=dist(a,b), m=mid(a,b);
-          var ns=Math.max(sMin, Math.min(sMax, startScale*(d/(startDist||d))));
-          var sx=(startMid.x-startTx)/startScale, sy=(startMid.y-startTy)/startScale;
-          scale=ns; tx=m.x - sx*scale; ty=m.y - sy*scale; clamp(); apply();
-          if(hint) hint.style.opacity='0';
-        }
-      }, {passive:false});
-
-      room.addEventListener('touchend', function(e){
-        if(e.touches.length===0){
-          if(!moved && startDist===0 && (Date.now()-downT)<320) hitTest(downX, downY);
-          startDist=0;
-        } else if(e.touches.length===1){
-          downX=e.touches[0].clientX; downY=e.touches[0].clientY;
-          startTx=tx; startTy=ty; startDist=0; moved=true;
-        }
+    (function initMobileBar(){
+      var ar = document.getElementById('mb-allrooms');
+      var nx = document.getElementById('mb-next');
+      if (ar) ar.addEventListener('click', function(){
+        var t = document.getElementById('room-dock-tab'); if (t) t.click();
       });
-
-      function hitTest(px,py){
-        var sx=(px-tx)/scale, sy=(py-ty)/scale, fx=sx/W0, fy=sy/H0;
-        for(var i=0;i<zones.length;i++){
-          var z=zones[i],
-              l=+z.dataset.l, t=+z.dataset.t, w=+z.dataset.w, h=+z.dataset.h;
-          if(fx>=l && fx<=l+w && fy>=t && fy<=t+h){
-            var idx=+z.dataset.idx;
-            if(pzones[idx]) pzones[idx].click();
-            return;
-          }
-        }
-      }
-
-      var nl=document.getElementById('mr-nav-left'), nr=document.getElementById('mr-nav-right');
-      if(nl) nl.addEventListener('click', function(){ var r=document.getElementById('room-nav-left'); if(r) r.click(); });
-      if(nr) nr.addEventListener('click', function(){ var r=document.getElementById('room-nav-right'); if(r) r.click(); });
-
-      if(mq.matches){ layout(); setTimeout(function(){ if(hint) hint.style.opacity='0'; }, 4500); }
-      window.addEventListener('resize', function(){ if(mq.matches) layout(); });
+      if (nx) nx.addEventListener('click', function(){
+        var r = document.getElementById('room-nav-right'); if (r) r.click();
+      });
     })();
   </script>
 </body>
