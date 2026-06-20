@@ -1307,36 +1307,41 @@
         undefined, function() { console.warn('HDR failed'); }
       );
 
-      var sd = new THREE.SVGLoader().parse(CROWN_SVG);
-      var shapes = THREE.SVGLoader.createShapes(sd.paths[0]);
+      // ★★★ SALLE NORMALE : on saute la construction de la couronne 3D (lourde / fait ramer mobile).
+      //     crownGroup (Group vide) et crownBaseScale restent DÉFINIS pour ne rien casser plus bas.
       var crownGroup = new THREE.Group();
       var crownMaterials = [];
-      shapes.forEach(function(shape) {
-        var geom = new THREE.ExtrudeGeometry(shape, {
-          depth: 70, bevelEnabled: true, bevelThickness: 24, bevelSize: 12,
-          bevelSegments: 20, curveSegments: 48, steps: 1
+      var crownBaseScale = 1;
+      if (false) {
+        var sd = new THREE.SVGLoader().parse(CROWN_SVG);
+        var shapes = THREE.SVGLoader.createShapes(sd.paths[0]);
+        shapes.forEach(function(shape) {
+          var geom = new THREE.ExtrudeGeometry(shape, {
+            depth: 70, bevelEnabled: true, bevelThickness: 24, bevelSize: 12,
+            bevelSegments: 20, curveSegments: 48, steps: 1
+          });
+          geom.center();
+          var mat = new THREE.MeshPhysicalMaterial({
+            color: new THREE.Color(0x365549), metalness: 0, roughness: 0.0,
+            transmission: 0.78, thickness: 2.5, ior: 1.6,
+            clearcoat: 1.0, clearcoatRoughness: 0.0, envMapIntensity: 2.5,
+            attenuationColor: new THREE.Color(0x6e9485), attenuationDistance: 0.8,
+            iridescence: 0.15, iridescenceIOR: 1.25,
+            specularIntensity: 2.2, reflectivity: 0.75,
+            transparent: true, opacity: 1, side: THREE.DoubleSide
+          });
+          crownMaterials.push(mat);
+          crownGroup.add(new THREE.Mesh(geom, mat));
         });
-        geom.center();
-        var mat = new THREE.MeshPhysicalMaterial({
-          color: new THREE.Color(0x365549), metalness: 0, roughness: 0.0,
-          transmission: 0.78, thickness: 2.5, ior: 1.6,
-          clearcoat: 1.0, clearcoatRoughness: 0.0, envMapIntensity: 2.5,
-          attenuationColor: new THREE.Color(0x6e9485), attenuationDistance: 0.8,
-          iridescence: 0.15, iridescenceIOR: 1.25,
-          specularIntensity: 2.2, reflectivity: 0.75,
-          transparent: true, opacity: 1, side: THREE.DoubleSide
-        });
-        crownMaterials.push(mat);
-        crownGroup.add(new THREE.Mesh(geom, mat));
-      });
-      var bbox = new THREE.Box3().setFromObject(crownGroup);
-      crownGroup.position.sub(bbox.getCenter(new THREE.Vector3()));
-      var sz = bbox.getSize(new THREE.Vector3());
-      crownGroup.scale.setScalar(4 / Math.max(sz.x, sz.y));
-      var crownBaseScale = crownGroup.scale.x;
-      crownGroup.rotation.x = Math.PI + 0.18;
-      crownGroup.rotation.y = 0.42;
-      scene.add(crownGroup);
+        var bbox = new THREE.Box3().setFromObject(crownGroup);
+        crownGroup.position.sub(bbox.getCenter(new THREE.Vector3()));
+        var sz = bbox.getSize(new THREE.Vector3());
+        crownGroup.scale.setScalar(4 / Math.max(sz.x, sz.y));
+        crownBaseScale = crownGroup.scale.x;
+        crownGroup.rotation.x = Math.PI + 0.18;
+        crownGroup.rotation.y = 0.42;
+        scene.add(crownGroup);
+      }
 
       // ★★★ FIX BUG : Force les positions/scale/rotation initiales explicitement
       // Évite que les ScrollTrigger scrub interprètent une position bizarre au démarrage
@@ -1368,7 +1373,7 @@
       gsap.registerPlugin(ScrollTrigger);
 
       var canvasContainer = document.getElementById('canvas-container');
-      var _renderActive = true;
+      var _renderActive = false;
 
       // ── Séquence d'images intro2 — 69 frames JPEG ───────────────────────────
       // Architecture Apple-style : chaque frame = un <img> en mémoire RAM.
@@ -1905,6 +1910,24 @@
       document.getElementById('btnEntrerExpo').addEventListener('click', enterExpo);
       document.getElementById('affiche-cta-right').addEventListener('click', enterExpo);
       document.getElementById('affiche-img-wrap').addEventListener('click', enterExpo);
+
+      // ★★★ SALLE NORMALE : on démarre directement sur le mur d'affiches,
+      //     sans intro couronne 3D (comme salle-3.html).
+      (function startRoomDirectly() {
+        if (typeof crownTL !== 'undefined' && crownTL.scrollTrigger) crownTL.scrollTrigger.kill(true);
+        _renderActive = false;
+        var cs = document.getElementById('crown-sequence'); if (cs) cs.style.display = 'none';
+        if (typeof sceneAffiche !== 'undefined' && sceneAffiche) sceneAffiche.style.display = 'none';
+        if (typeof canvasContainer !== 'undefined' && canvasContainer) canvasContainer.style.display = 'none';
+        var bl = document.getElementById('bgLight'); if (bl) bl.style.display = 'none';
+        var bd = document.getElementById('bgDark'); if (bd) bd.style.display = 'none';
+        try { lenis.scrollTo(0, { immediate: true }); } catch (e) {}
+        window.scrollTo(0, 0);
+        initImageSequence(function() {
+          document.getElementById('phase-expo').style.display = 'block';
+          document.getElementById('loader').classList.add('done');
+        });
+      })();
 
       // ═══════════════════════════════════════════════════════════
       //  OVERLAY affiches + lightbox
