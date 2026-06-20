@@ -1373,7 +1373,7 @@
       // ── Séquence d'images intro2 — 69 frames JPEG ───────────────────────────
       // Architecture Apple-style : chaque frame = un <img> en mémoire RAM.
       // Seek = 0ms (drawImage instantané), aucune décompression vidéo.
-      var FRAMES_BASE  = './FRAMES_SALLE8/frame_';
+      var FRAMES_BASE  = './FRAMES_SALLE8_W/frame_';
       var FRAMES_COUNT = 121;
       var _frames      = new Array(FRAMES_COUNT); // Image objects pré-chargées
       var _framesReady = 0;                        // nb de frames chargées
@@ -1395,7 +1395,7 @@
           };
           img.onerror = _ready;
           var n = String(idx + 1).padStart(3, '0');
-          img.src = FRAMES_BASE + n + '.jpg';
+          img.src = FRAMES_BASE + n + '.webp';
           _frames[idx] = img;
         })(_fi);
       }
@@ -1679,8 +1679,8 @@
           startWhenFrame0Ready._n = (startWhenFrame0Ready._n || 0) + 1;
           var f0 = _frames[FRAME_START];
           // Buffer de frames décodées avant de lancer le scroll (fluidité/rapidité, repli ~2.4s)
-          var _buf = Math.min(FRAMES_COUNT, FRAME_START + 45);
-          var _enough = (_framesReady >= _buf) || (startWhenFrame0Ready._n > 80);
+          var _buf = FRAMES_COUNT;
+          var _enough = (_framesReady >= _buf) || (startWhenFrame0Ready._n > 600);
           if (f0 && f0.complete && f0.naturalWidth && _enough) {
             resizeCanvas();
             renderFrame(FRAME_START);
