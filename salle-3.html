@@ -1656,10 +1656,12 @@
             if (overlay) overlay.classList.add('at-end');
             if (!_atEnd) { _atEnd = true; _curPoster = MSTART; _browseFx = MPOSTERS[MSTART].fx; }
             document.body.classList.add('mb-end');
+            document.body.classList.toggle('mb-cannext', _curPoster < MPOSTERS.length - 1);
           } else {
             if (overlay) overlay.classList.remove('at-end');
             if (_atEnd) { _atEnd = false; _browseFx = null; }
             document.body.classList.remove('mb-end');
+            document.body.classList.remove('mb-cannext');
           }
 
           _introRafId = requestAnimationFrame(tick);
@@ -1719,6 +1721,7 @@
           i = Math.max(0, Math.min(MPOSTERS.length - 1, i));
           if (i === _curPoster) return;
           _curPoster = i;
+          document.body.classList.toggle('mb-cannext', _curPoster < MPOSTERS.length - 1);
           _tweenBrowse(MPOSTERS[i].fx);
         }
         function _openPoster(i){
@@ -2255,7 +2258,7 @@
 
   <!-- ═══ MOBILE : barre du bas + cartel robuste + suppression flèches latérales ═══ -->
   <style>
-    #lb-swipe-hint, #lb-zoom-hint{ display: none; }   /* visible uniquement sur mobile */
+    #lb-swipe-hint, #lb-zoom-hint, #room-swipe-hint{ display: none; }   /* visible uniquement sur mobile */
     @media (max-width: 768px){
       /* plus de flèches latérales (conflit avec les doigts) */
       .room-nav-zone { display: none !important; }
@@ -2331,6 +2334,16 @@
       }
       @keyframes lbZoomPulse{ 0%,100%{ opacity: .5; } 50%{ opacity: .95; } }
 
+      /* Flèche de swipe dans la salle (face à l'affiche, avant le zoom) */
+      body.mb-end.mb-cannext #room-swipe-hint{
+        display: block; position: fixed; right: 12px; top: 50%; z-index: 44;
+        color: rgba(17,21,26,.55); font-size: 30px; line-height: 1; font-weight: 300;
+        pointer-events: none; transform: translateY(-50%);
+        text-shadow: 0 1px 6px rgba(255,255,255,.6);
+        animation: lbSwipePulse 1.7s ease-in-out infinite;
+      }
+      body.lb-open #room-swipe-hint, body.dock-open #room-swipe-hint{ display: none !important; }
+
       /* Tap pour avancer : on retire le chevron "scroll" */
       #scroll-hint .scroll-enter-arrow{ display: none !important; }
       /* Flèches ‹ › de la lightbox inutiles sur mobile (on swipe) */
@@ -2343,6 +2356,7 @@
   <div id="mobile-bar" aria-hidden="true">
     <button id="mb-allrooms" type="button">All Rooms</button>
   </div>
+  <div id="room-swipe-hint" aria-hidden="true">&#8250;</div>
 
   <script>
     (function initMobileBar(){
