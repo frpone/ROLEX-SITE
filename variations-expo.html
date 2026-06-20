@@ -1722,7 +1722,7 @@
           startWhenFrame0Ready._n = (startWhenFrame0Ready._n || 0) + 1;
           var f0 = _frames[0];
           // Chargement COMPLET avant lecture (plus de gel au milieu), repli ~18s
-          if (f0 && f0.complete && f0.naturalWidth && ((_framesReady >= FRAMES_COUNT) || startWhenFrame0Ready._n > 600)) {
+          if (f0 && f0.complete && f0.naturalWidth && ((_framesReady >= Math.min(FRAMES_COUNT, 18)) || startWhenFrame0Ready._n > 600)) {
             resizeCanvas();
             renderFrame(0);
             if (loader) { loader.style.opacity = '0'; loader.style.display = 'none'; }
