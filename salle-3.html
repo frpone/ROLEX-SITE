@@ -1951,6 +1951,7 @@
           _scale = 1; _tx = 0; _ty = 0; _dragging = false; _dragMoved = false; _clickDir = 1;
           lbScroll.style.transform = '';
           lightbox.style.cursor = 'zoom-in';
+          lightbox.classList.remove('zoomed');
         }
 
         // Plafond de zoom dynamique : on s'arrête au pixel 1:1 de l'image native.
@@ -1983,6 +1984,7 @@
         // Mousedown → début drag (seulement sur l'image)
         var _mousedownInLb = false;
         lightbox.addEventListener('mousedown', function(e) {
+          if (window.innerWidth <= 768) return;   // mobile : géré par le tactile
           if (e.target === lbClose) return;
           if (!lbScroll.contains(e.target)) return;
           _mousedownInLb = true;
@@ -2001,6 +2003,7 @@
           applyTransform();
         });
         document.addEventListener('mouseup', function(e) {
+          if (window.innerWidth <= 768) return;   // mobile : géré par le tactile
           var wasDrag = _dragMoved;
           var wasInLb = _mousedownInLb;
           _dragging = false; _dragMoved = false; _mousedownInLb = false;
@@ -2040,20 +2043,72 @@
         lightbox.addEventListener('click', function(e) {
           if (e.target === lightbox) closeLightbox();
         });
-        // Swipe tactile — gauche/droite pour naviguer
-        var _touchX0 = null;
-        lightbox.addEventListener('touchstart', function(e) {
-          _touchX0 = e.touches[0].clientX;
+        // ── Tactile mobile : tap = zoom 1↔2x ; swipe (au zoom 1) = affiche suivante avec glissé ──
+        function _mob(){ return window.innerWidth <= 768; }
+        function _tapZoomMobile(px, py){
+          if (_scale > 1.01) { resetZoom(); applyTransform(); return; }  // tap → revient à l'image
+          var cx = px - window.innerWidth/2, cy = py - window.innerHeight/2;
+          _scale = 2;
+          _tx = cx + (_tx - cx) * 2;   // _prev = 1
+          _ty = cy + (_ty - cy) * 2;
+          clampPan(); applyTransform();
+        }
+        var _sliding = false;
+        function _slidePoster(dir){
+          if (_sliding) return; _sliding = true;
+          var w = window.innerWidth;
+          lbScroll.style.transition = 'transform .2s ease, opacity .2s ease';
+          lbScroll.style.transform = 'translateX(' + (dir > 0 ? -w : w) + 'px)';
+          lbScroll.style.opacity = '0';
+          setTimeout(function(){
+            openLightbox((currentZoneIdx + dir + zones.length) % zones.length);  // change image + typo
+            lbScroll.style.transition = 'none';
+            lbScroll.style.transform = 'translateX(' + (dir > 0 ? w : -w) + 'px)';
+            lbScroll.style.opacity = '0';
+            lbScroll.offsetWidth;  // reflow
+            lbScroll.style.transition = 'transform .24s ease, opacity .24s ease';
+            lbScroll.style.transform = 'translateX(0)';
+            lbScroll.style.opacity = '1';
+            setTimeout(function(){ _sliding = false; lbScroll.style.transition = ''; }, 280);
+          }, 200);
+        }
+        var _lx=0, _ly=0, _lmoved=false, _lt0=0, _ltx0=0, _lty0=0;
+        lightbox.addEventListener('touchstart', function(e){
+          if (!_mob() || e.touches.length !== 1 || _sliding) return;
+          _lx = e.touches[0].clientX; _ly = e.touches[0].clientY;
+          _lmoved = false; _lt0 = Date.now(); _ltx0 = _tx; _lty0 = _ty;
+          if (_scale <= 1.01) lbScroll.style.transition = 'none';
         }, { passive: true });
-        lightbox.addEventListener('touchend', function(e) {
-          if (_touchX0 === null) return;
-          var dx = e.changedTouches[0].clientX - _touchX0;
-          _touchX0 = null;
-          if (Math.abs(dx) > 50) {
-            if (dx < 0) openLightbox((currentZoneIdx + 1) % zones.length);
-            else         openLightbox((currentZoneIdx - 1 + zones.length) % zones.length);
+        lightbox.addEventListener('touchmove', function(e){
+          if (!_mob() || e.touches.length !== 1 || _sliding) return;
+          var dx = e.touches[0].clientX - _lx, dy = e.touches[0].clientY - _ly;
+          if (Math.abs(dx) + Math.abs(dy) > 10) _lmoved = true;
+          if (_scale > 1.01) {                       // zoomé → pan de l'image
+            e.preventDefault();
+            _tx = _ltx0 + dx; _ty = _lty0 + dy; clampPan(); applyTransform();
+          } else if (Math.abs(dx) > Math.abs(dy)) {  // zoom 1 → suit le doigt (carousel)
+            e.preventDefault();
+            lbScroll.style.transform = 'translateX(' + dx + 'px)';
           }
-        }, { passive: true });
+        }, { passive: false });
+        lightbox.addEventListener('touchend', function(e){
+          if (!_mob() || _sliding) return;
+          var dx = e.changedTouches[0].clientX - _lx, dy = e.changedTouches[0].clientY - _ly;
+          var onImg = lbScroll.contains(e.target);
+          var tap = !_lmoved && (Date.now() - _lt0) < 300 && Math.abs(dx) < 12 && Math.abs(dy) < 12;
+          if (_scale > 1.01) {                       // zoomé : tap ramène à l'image
+            if (tap) { onImg ? _tapZoomMobile(_lx, _ly) : closeLightbox(); }
+            return;
+          }
+          if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy)) {
+            _slidePoster(dx < 0 ? 1 : -1);            // glissé dynamique
+          } else if (tap) {
+            onImg ? _tapZoomMobile(_lx, _ly) : closeLightbox();
+          } else {                                    // pas assez : retour en place
+            lbScroll.style.transition = 'transform .2s ease';
+            lbScroll.style.transform = 'translateX(0)';
+          }
+        }, { passive: false });
         document.addEventListener('keydown', function(e) {
           if (e.key === 'Escape') closeLightbox();
         });
@@ -2222,7 +2277,9 @@
         color: #0b1116; background: rgba(255,255,255,.92);
         border: 1px solid rgba(11,17,22,.20); border-radius: 999px; padding: 13px 10px;
       }
-      #poster-lb-close{ top: calc(16px + env(safe-area-inset-top)) !important; right: 16px !important; }
+      /* Visualiseur : on masque le header (la croix suffit pour fermer) */
+      body.lb-open .site-header{ display: none !important; }
+      #poster-lb-close{ top: calc(22px + env(safe-area-inset-top)) !important; right: 16px !important; }
 
       /* Cartel plein écran : affiche en haut, texte SOUS l'affiche, jamais par-dessus.
          Colonne défilable = robuste sur tous les iPhones (SE, mini, Plus, Pro Max…). */
@@ -2232,11 +2289,11 @@
         overflow-y: auto; -webkit-overflow-scrolling: touch;
       }
       #poster-lb-img-wrap{ flex: 0 0 auto; display: flex; align-items: center; justify-content: center; width: 100%; }
-      #poster-lb-img{ max-height: 56vh; max-width: 90vw; width: auto; height: auto; }
+      #poster-lb-img{ max-height: 48vh; max-width: 88vw; width: auto; height: auto; }
       #poster-lb-meta{
         position: static !important; transform: none !important;
         right: auto; left: auto; bottom: auto; top: auto;
-        width: 100%; max-width: none; text-align: center; padding: 30px 18px 0;
+        width: 100%; max-width: none; text-align: center; padding: 46px 18px 0;
         margin-top: 0; text-shadow: none; opacity: 1;
       }
       #poster-lb-title{ font-size: 9px; letter-spacing: .13em; }
