@@ -1313,7 +1313,7 @@
       var crownGroup = new THREE.Group();
       var crownMaterials = [];
       var crownBaseScale = 1;
-      if (false) {
+      if (window.innerWidth > 768) {   // ORDI : on construit la couronne 3D ; MOBILE : sautée (trop lourde)
         var sd = new THREE.SVGLoader().parse(CROWN_SVG);
         var shapes = THREE.SVGLoader.createShapes(sd.paths[0]);
         shapes.forEach(function(shape) {
@@ -1374,7 +1374,7 @@
       gsap.registerPlugin(ScrollTrigger);
 
       var canvasContainer = document.getElementById('canvas-container');
-      var _renderActive = false;
+      var _renderActive = (window.innerWidth > 768);   // rendu WebGL couronne : ordi seulement
 
       // ── Séquence d'images intro2 — 69 frames JPEG ───────────────────────────
       // Architecture Apple-style : chaque frame = un <img> en mémoire RAM.
@@ -1917,6 +1917,7 @@
       // ★★★ SALLE NORMALE : on démarre directement sur le mur d'affiches,
       //     sans intro couronne 3D (comme salle-3.html).
       (function startRoomDirectly() {
+        if (window.innerWidth > 768) return;   // ORDI = intro couronne ; MOBILE = salle directe
         if (typeof crownTL !== 'undefined' && crownTL.scrollTrigger) crownTL.scrollTrigger.kill(true);
         _renderActive = false;
         var cs = document.getElementById('crown-sequence'); if (cs) cs.style.display = 'none';
