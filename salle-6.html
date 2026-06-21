@@ -752,12 +752,12 @@
       color: rgba(255,255,255,0.35);
       font-size: 56px; line-height: 1;
       cursor: pointer; z-index: 10;
-      padding: 24px 20px;
+      padding: 36px 30px;
       transition: color 0.2s;
       font-family: var(--ff-display);
     }
-    #lb-prev { left: -60px; }
-    #lb-next { right: -60px; }
+    #lb-prev { left: -78px; }
+    #lb-next { right: -78px; }
     #lb-prev:hover, #lb-next:hover { color: #fff; }
     #poster-lightbox.zoomed #lb-prev, #poster-lightbox.zoomed #lb-next { display: none; }
     /* Carrousel d'affiches : cliquable UNIQUEMENT lightbox ouvert (sinon il capte les clics aux bords) */
@@ -766,7 +766,7 @@
 
     /* Sur desktop large, les flèches nav sont discrètes mais présentes */
     @media (min-width: 769px) {
-      #lb-prev, #lb-next { font-size: 44px; color: rgba(255,255,255,0.85); }
+      #lb-prev, #lb-next { font-size: 52px; color: rgba(255,255,255,0.9); }
     }
 
     /* ── Responsive mobile : overlay affiches ── */
@@ -2274,7 +2274,8 @@
 
   <!-- ═══ MOBILE : barre du bas + cartel robuste + suppression flèches latérales ═══ -->
   <style>
-    #lb-swipe-hint, #lb-zoom-hint, #room-swipe-hint{ display: none; }   /* visible uniquement sur mobile */
+    #lb-swipe-hint, #lb-zoom-hint, #room-swipe-hint{ display: none; }
+    #frame-single-arrow{ display: none !important; }   /* point de survol retiré */   /* visible uniquement sur mobile */
     @media (max-width: 768px){
       /* plus de flèches latérales (conflit avec les doigts) */
       .room-nav-zone { display: none !important; }
