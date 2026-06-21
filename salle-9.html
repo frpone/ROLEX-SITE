@@ -1156,6 +1156,7 @@
         <div id="lb-zoom-hint" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="15.5" y1="15.5" x2="21" y2="21"/></svg></div>
         <div id="lb-swipe-hint" aria-hidden="true">&#8250;</div>
       </div>
+      <div id="poster-lb-dots" aria-hidden="true" style="display:none"></div>
     </div>
 
     <!-- AFFICHE TITRE — fondu après zoom couronne -->
@@ -1887,6 +1888,9 @@
 
         var zones = Array.from(document.querySelectorAll('.poster-zone'));
         var currentZoneIdx = 0;
+        var _dotsBox = document.getElementById('poster-lb-dots');
+        if (_dotsBox) { _dotsBox.innerHTML = ''; zones.forEach(function(){ _dotsBox.appendChild(document.createElement('span')); }); }
+        function _updateDots(i){ if (!_dotsBox) return; var ds = _dotsBox.children; for (var k = 0; k < ds.length; k++) ds[k].className = (k === i ? 'on' : ''); }
 
         // Flèche unique — se déplace sous l'affiche survolée
         zones.forEach(function(zone) {
@@ -1904,6 +1908,7 @@
         function openLightbox(idx) {
           var zone = zones[idx];
           currentZoneIdx = idx;
+          _updateDots(idx);
           lbImg.src = zone.getAttribute('data-src') || '';
           (function(){
             var _t=document.getElementById('poster-lb-title');
@@ -2049,7 +2054,7 @@
         }
         lbClose.addEventListener('click', closeLightbox);
         lightbox.addEventListener('click', function(e) {
-          if (e.target === lightbox) closeLightbox();
+          if (e.target === lightbox && window.innerWidth > 768) closeLightbox();
         });
         // ── Tactile mobile : tap = zoom 1↔2x ; swipe (au zoom 1) = affiche suivante avec glissé ──
         function _mob(){ return window.innerWidth <= 768; }
@@ -2116,14 +2121,14 @@
           var onImg = lbScroll.contains(e.target);
           var tap = !_lmoved && (Date.now() - _lt0) < 300 && Math.abs(dx) < 12 && Math.abs(dy) < 12;
           if (_scale > 1.01) {                       // zoomé : tap ramène à l'image
-            if (tap) { onImg ? _tapZoomMobile(_lx, _ly) : closeLightbox(); }
+            if (tap) { if (onImg) _tapZoomMobile(_lx, _ly); }
             return;
           }
           if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy)) {
             e.preventDefault();                        // tue le click fantome iOS (plus de doublon)
             _slidePoster(dx < 0 ? 1 : -1);            // glissé dynamique
           } else if (tap) {
-            onImg ? _tapZoomMobile(_lx, _ly) : closeLightbox();
+            if (onImg) _tapZoomMobile(_lx, _ly);
           } else {                                    // pas assez : retour en place
             lbScroll.style.transition = 'transform .2s ease';
             lbScroll.style.transform = 'translateX(0)';
@@ -2361,6 +2366,10 @@
       #scroll-hint .scroll-enter-arrow{ display: none !important; }
       /* Flèches ‹ › de la lightbox inutiles sur mobile (on swipe) */
       #lb-prev, #lb-next{ display: none !important; }
+      #poster-lb-dots{ display: flex !important; gap: 8px; justify-content: center; position: fixed; left: 0; right: 0; bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 60; pointer-events: none; }
+      #poster-lb-dots span{ width: 7px; height: 7px; border-radius: 999px; background: rgba(120,120,120,.45); transition: background .2s ease, transform .2s ease; }
+      #poster-lb-dots span.on{ background: #0b1116; transform: scale(1.3); }
+      #poster-lightbox.zoomed #poster-lb-dots{ display: none !important; }
       /* Chemin de fer ouvert → la barre du bas disparaît (plus de chevauchement) */
       body.dock-open #mobile-bar{ display: none !important; }
     }
