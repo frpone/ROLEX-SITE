@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>ROLEX — dernière version</title>
+  <style>
+    html, body { margin: 0; height: 100%; background: #0b0b0c; }
+    .x { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+         font-family: 'Helvetica Neue', Arial, sans-serif; color: #8a8f95;
+         font-size: 11px; letter-spacing: .3em; text-transform: uppercase; }
+  </style>
+</head>
+<body>
+  <div class="x">Chargement…</div>
+  <script>
+    // Redirige toujours vers la dernière version, avec un cache-bust unique à chaque visite
+    location.replace('variations-expo.html?v=' + Date.now());
+  </script>
+</body>
+</html>
