@@ -719,7 +719,7 @@
       position: fixed;
       inset: 0;
       z-index: 200;
-      background: rgba(0, 0, 0, 0.94);
+      background: rgba(0, 0, 0, 1);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -2372,7 +2372,9 @@
   </style>
 
   <div id="mobile-bar" aria-hidden="true">
+    <button id="mb-prev" type="button" aria-label="Salle precedente" style="flex:0 0 54px;max-width:54px;font-size:20px;padding:11px 0;">&#8249;</button>
     <button id="mb-allrooms" type="button">All Rooms</button>
+    <button id="mb-next" type="button" aria-label="Salle suivante" style="flex:0 0 54px;max-width:54px;font-size:20px;padding:11px 0;">&#8250;</button>
   </div>
   <div id="room-swipe-hint" aria-hidden="true">&#8250;</div>
 
@@ -2381,6 +2383,14 @@
       var ar = document.getElementById('mb-allrooms');
       if (ar) ar.addEventListener('click', function(){
         var t = document.getElementById('room-dock-tab'); if (t) t.click();
+      });
+      var mp = document.getElementById('mb-prev');
+      if (mp) mp.addEventListener('click', function(){
+        var L = document.getElementById('room-nav-left'); if (L) L.click();
+      });
+      var mn = document.getElementById('mb-next');
+      if (mn) mn.addEventListener('click', function(){
+        var R = document.getElementById('room-nav-right'); if (R) R.click();
       });
     })();
   </script>
