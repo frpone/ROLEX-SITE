@@ -1680,7 +1680,7 @@
           startWhenFrame0Ready._n = (startWhenFrame0Ready._n || 0) + 1;
           var f0 = _frames[FRAME_START];
           // Buffer de frames décodées avant de lancer le scroll (fluidité/rapidité, repli ~2.4s)
-          var _buf = Math.min(FRAMES_COUNT, 18);  // entrée rapide : on démarre tôt, Cloudflare streame le reste
+          var _buf = FRAMES_COUNT;  // charge tout avant de jouer (pas de saute) ; le prechargement de la salle suivante rend la navigation instantanee
           var _enough = (_framesReady >= _buf) || (startWhenFrame0Ready._n > 600);
           if (f0 && f0.complete && f0.naturalWidth && _enough) {
             resizeCanvas();
