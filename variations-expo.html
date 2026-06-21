@@ -1529,6 +1529,30 @@
       // État initial
       updateCrownSequence(0);
 
+      // ─── MOBILE : sens tactile INVERSÉ pour la couronne (doigt vers le bas = avance) ───
+      // Demande explicite : sur mobile, glisser le doigt vers le bas fait AVANCER l'animation.
+      // Lenis ne lisse pas le tactile (syncTouch=false par défaut) → pas de conflit avec le natif.
+      // Actif uniquement pendant la phase couronne (_renderActive). La phase mur reprend le natif.
+      (function initCrownTouchMobile(){
+        if (window.innerWidth > 768) return;
+        var ty0 = 0, scroll0 = 0, active = false;
+        window.addEventListener('touchstart', function(e){
+          if (!_renderActive || e.touches.length !== 1) { active = false; return; }
+          active = true;
+          ty0 = e.touches[0].clientY;
+          scroll0 = (lenis && typeof lenis.scroll === 'number') ? lenis.scroll : (window.scrollY || 0);
+        }, { passive: true });
+        window.addEventListener('touchmove', function(e){
+          if (!active || !_renderActive) return;
+          e.preventDefault();                          // bloque le scroll natif
+          var dy = e.touches[0].clientY - ty0;         // doigt vers le bas => dy > 0
+          var target = scroll0 + dy * 1.7;             // doigt bas => scroll augmente => AVANCE
+          if (lenis) lenis.scrollTo(target, { immediate: true });
+          else window.scrollTo(0, target);
+        }, { passive: false });
+        window.addEventListener('touchend', function(){ active = false; }, { passive: true });
+      })();
+
       // Boucle depuis la dernière salle : arriver directement sur l'affiche-titre (saute l'intro couronne)
       try {
         if (sessionStorage.getItem('landOnTitle') === '1') {
@@ -2134,11 +2158,20 @@
             lbScroll.style.transition = 'none';
             lbScroll.style.transform = 'translateX(' + (dir > 0 ? w : -w) + 'px)';
             lbScroll.style.opacity = '0';
-            lbScroll.offsetWidth;  // reflow
-            lbScroll.style.transition = 'transform .24s ease, opacity .24s ease';
-            lbScroll.style.transform = 'translateX(0)';
-            lbScroll.style.opacity = '1';
-            setTimeout(function(){ _sliding = false; lbScroll.style.transition = ''; }, 280);
+            var _slideIn = function(){
+              lbScroll.offsetWidth;  // reflow
+              lbScroll.style.transition = 'transform .24s ease, opacity .24s ease';
+              lbScroll.style.transform = 'translateX(0)';
+              lbScroll.style.opacity = '1';
+              setTimeout(function(){ _sliding = false; lbScroll.style.transition = ''; }, 280);
+            };
+            // anti-fantome : on n'anime l'entree qu'une fois la nouvelle affiche chargee
+            if (lbImg.complete && lbImg.naturalWidth) { _slideIn(); }
+            else {
+              var _did = false, _go = function(){ if (_did) return; _did = true; _slideIn(); };
+              lbImg.addEventListener('load', _go, { once: true });
+              setTimeout(_go, 450);
+            }
           }, 200);
         }
         var _lx=0, _ly=0, _lmoved=false, _lt0=0, _ltx0=0, _lty0=0;

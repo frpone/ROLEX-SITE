@@ -2084,11 +2084,20 @@
             lbScroll.style.transition = 'none';
             lbScroll.style.transform = 'translateX(' + (dir > 0 ? w : -w) + 'px)';
             lbScroll.style.opacity = '0';
-            lbScroll.offsetWidth;  // reflow
-            lbScroll.style.transition = 'transform .24s ease, opacity .24s ease';
-            lbScroll.style.transform = 'translateX(0)';
-            lbScroll.style.opacity = '1';
-            setTimeout(function(){ _sliding = false; lbScroll.style.transition = ''; }, 280);
+            var _slideIn = function(){
+              lbScroll.offsetWidth;  // reflow
+              lbScroll.style.transition = 'transform .24s ease, opacity .24s ease';
+              lbScroll.style.transform = 'translateX(0)';
+              lbScroll.style.opacity = '1';
+              setTimeout(function(){ _sliding = false; lbScroll.style.transition = ''; }, 280);
+            };
+            // anti-fantome : on n'anime l'entree qu'une fois la nouvelle affiche chargee
+            if (lbImg.complete && lbImg.naturalWidth) { _slideIn(); }
+            else {
+              var _did = false, _go = function(){ if (_did) return; _did = true; _slideIn(); };
+              lbImg.addEventListener('load', _go, { once: true });
+              setTimeout(_go, 450);
+            }
           }, 200);
         }
         var _lx=0, _ly=0, _lmoved=false, _lt0=0, _ltx0=0, _lty0=0;
