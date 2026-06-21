@@ -2120,6 +2120,7 @@
             return;
           }
           if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy)) {
+            e.preventDefault();                        // tue le click fantome iOS (plus de doublon)
             _slidePoster(dx < 0 ? 1 : -1);            // glissé dynamique
           } else if (tap) {
             onImg ? _tapZoomMobile(_lx, _ly) : closeLightbox();
@@ -2384,7 +2385,8 @@
   (function preloadNextRoom(){
     var DIR="./FRAMES_INTRO2_W/frame_", COUNT=143;
     function go(){ for(var i=1;i<=COUNT;i++){ var im=new Image(); im.decoding="async"; im.src=DIR+String(i).padStart(3,"0")+".webp"; } }
-    if ("requestIdleCallback" in window) requestIdleCallback(go,{timeout:12000}); else setTimeout(go,6000);
+    function whenReady(){ if (window.__roomReady){ if ("requestIdleCallback" in window) requestIdleCallback(go,{timeout:4000}); else setTimeout(go,1500); } else { setTimeout(whenReady,600); } }
+    whenReady();   // precharge la salle suivante seulement une fois la salle courante prete (plus de concurrence)
   })();
   </script>
 </body>
