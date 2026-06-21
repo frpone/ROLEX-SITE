@@ -1262,14 +1262,17 @@
     function initAll() {
       // =============== THREE.JS ===============
       var container = document.getElementById('canvas-container');
+      // MOBILE : flag pour alléger la couronne (GPU/mémoire iOS limités). Desktop inchangé.
+      var _isMob = window.innerWidth <= 768;
+
       var scene = new THREE.Scene();
       var camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 100);
       camera.position.set(0, 0, 12);
       camera.lookAt(0, 0, 0);
 
-      var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+      var renderer = new THREE.WebGLRenderer({ antialias: !_isMob, alpha: true, powerPreference: 'high-performance' });
       renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, _isMob ? 1.5 : 2));
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.3;
       renderer.outputEncoding = THREE.sRGBEncoding;
@@ -1319,10 +1322,17 @@
         shapes.forEach(function(shape) {
           var geom = new THREE.ExtrudeGeometry(shape, {
             depth: 70, bevelEnabled: true, bevelThickness: 24, bevelSize: 12,
-            bevelSegments: 20, curveSegments: 48, steps: 1
+            bevelSegments: _isMob ? 3 : 20, curveSegments: _isMob ? 12 : 48, steps: 1
           });
           geom.center();
-          var mat = new THREE.MeshPhysicalMaterial({
+          // MOBILE : matériau SANS transmission (la réfraction = passe de rendu plein écran
+          // qui fait planter Safari iOS). On garde le vert glossy premium via clearcoat + reflets.
+          var mat = _isMob ? new THREE.MeshPhysicalMaterial({
+            color: new THREE.Color(0x2f5446), metalness: 0.15, roughness: 0.12,
+            clearcoat: 1.0, clearcoatRoughness: 0.05, envMapIntensity: 1.7,
+            specularIntensity: 1.6, reflectivity: 0.7,
+            side: THREE.DoubleSide
+          }) : new THREE.MeshPhysicalMaterial({
             color: new THREE.Color(0x365549), metalness: 0, roughness: 0.0,
             transmission: 0.78, thickness: 2.5, ior: 1.6,
             clearcoat: 1.0, clearcoatRoughness: 0.0, envMapIntensity: 2.5,
@@ -1395,8 +1405,9 @@
             if (bar) bar.style.width = Math.round(_framesReady / FRAMES_COUNT * 100) + '%';
           }
           img.onload = function() {
-            // Pré-décodage hors thread principal → supprime la saccade au 1er scroll
-            if (img.decode) { img.decode().then(_ready).catch(_ready); }
+            // Desktop : pré-décodage hors thread → supprime la saccade au 1er scroll.
+            // MOBILE : PAS de décodage forcé (143 bitmaps 2560px = dépassement mémoire iOS → crash).
+            if (!_isMob && img.decode) { img.decode().then(_ready).catch(_ready); }
             else { _ready(); }
           };
           img.onerror = _ready;
