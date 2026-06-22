@@ -1595,7 +1595,7 @@
           var p = crownST.progress || 0;
           var next = null;
           for (var i = 0; i < STEPS.length; i++) { if (STEPS[i] > p + 0.02) { next = STEPS[i]; break; } }
-          if (next === null) return; // déjà à l'affiche → laisse les CTA "Click to Enter" agir
+          if (next === null) { if (_isMob && typeof enterExpo === 'function') enterExpo(); return; } // fin : un tap entre dans la galerie
           var target = crownST.start + next * (crownST.end - crownST.start);
           lenis.scrollTo(target, { duration: 1.2, easing: function(t) { return 1 - Math.pow(1 - t, 3); } });
         });
@@ -1611,6 +1611,7 @@
 
       var SCROLL_H   = 2500;  // px de scroll total
       var _introRafId = null;
+      var _autoWalkIn = false;  // mobile : la marche d'entrée se joue toute seule jusqu'au mur
 
       function initImageSequence(onFirstFrameReady) {
         if (_introRafId) {
@@ -1760,6 +1761,9 @@
             window.__roomReady = true;
             positionScrollHint();
             if (onFirstFrameReady) onFirstFrameReady();
+            // MOBILE : depuis la couronne, la marche d'entrée se joue automatiquement jusqu'au mur
+            // (plus de "scroll dans le vide" qui bloque). Le tap "Click to Enter" suffit.
+            if (_isMob && _autoWalkIn) { _autoWalkIn = false; setTimeout(function(){ goToEnd(); }, 500); }
             if (!started) {
               started = true;
               _introRafId = requestAnimationFrame(tick);
@@ -1911,6 +1915,8 @@
       //  Entrer dans l'exposition — bouton + clic sur l'affiche
       // ═══════════════════════════════════════════════════════
       function enterExpo() {
+        if (sceneAffiche.classList.contains('leaving')) return;   // idempotent (anti double-appel)
+        if (_isMob) _autoWalkIn = true;   // mobile : la marche d'entrée jouera seule jusqu'au mur
         // 1. Fade-out du poster
         sceneAffiche.classList.add('leaving');
 
@@ -2290,7 +2296,7 @@
         trans.style.transition = EASE;
         trans.classList.add('cover');
         trans.style.transform = 'translateX(0)';
-        setTimeout(function(){ window.location.href = url + (url.indexOf('?') < 0 ? '?' : '&') + 'v=' + Date.now(); }, 440);
+        setTimeout(function(){ window.location.href = url + (url.indexOf('?') < 0 ? '?' : '&') + 'room=1&v=' + Date.now(); }, 440);
       }
 
       var btn = document.getElementById('next-room-btn');
@@ -2339,7 +2345,7 @@
             trans.classList.add('cover');
             trans.style.transform = 'translateX(0)';
           }
-          setTimeout(function(){ window.location.href = url + (url.indexOf('?') < 0 ? '?' : '&') + 'v=' + Date.now(); }, 440);
+          setTimeout(function(){ window.location.href = url + (url.indexOf('?') < 0 ? '?' : '&') + 'room=1&v=' + Date.now(); }, 440);
         });
       });
     })();
