@@ -2217,7 +2217,6 @@
       function goTo(url, dir){
         if (!url) return;
         try { sessionStorage.setItem('roomDir', dir); } catch(e){}
-        try { if (url.indexOf('variations-expo') !== -1) sessionStorage.setItem('landOnTitle', '1'); } catch(e){}
         trans.style.transition = 'none';
         trans.style.transform = (dir === 'next') ? 'translateX(100%)' : 'translateX(-100%)';
         trans.offsetWidth; // reflow
@@ -2265,7 +2264,6 @@
           var idx = parseInt(item.getAttribute('data-idx'), 10);
           var dir = (current < 0 || idx >= current) ? 'next' : 'prev';
           try { sessionStorage.setItem('roomDir', dir); } catch(e){}
-          try { if (url.indexOf('variations-expo') !== -1) sessionStorage.setItem('landOnTitle', '1'); } catch(e){}
           if (trans) {
             trans.style.transition = 'none';
             trans.style.transform = (dir === 'next') ? 'translateX(100%)' : 'translateX(-100%)';
@@ -2396,14 +2394,15 @@
       if (ar) ar.addEventListener('click', function(){
         var t = document.getElementById('room-dock-tab'); if (t) t.click();
       });
+      function _mbNav(navId){
+        var b = document.getElementById(navId);
+        var t = b && b.getAttribute('data-target');
+        if (t) window.location.href = t + (t.indexOf('?') < 0 ? '?' : '&') + 'v=' + Date.now();
+      }
       var mp = document.getElementById('mb-prev');
-      if (mp) mp.addEventListener('click', function(){
-        var L = document.getElementById('room-nav-left'); if (L) L.click();
-      });
+      if (mp) mp.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); _mbNav('room-nav-left'); });
       var mn = document.getElementById('mb-next');
-      if (mn) mn.addEventListener('click', function(){
-        var R = document.getElementById('room-nav-right'); if (R) R.click();
-      });
+      if (mn) mn.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); _mbNav('room-nav-right'); });
       // MOBILE : pas de scroll manuel dans la phase expo / salles (tap-to-continue uniquement).
       // La couronne (phase-expo masquee) garde son scroll. Le visualiseur (lb-open) garde son tactile.
       window.addEventListener('touchmove', function(e){
