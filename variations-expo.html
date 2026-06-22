@@ -2282,7 +2282,7 @@
         trans.style.transition = EASE;
         trans.classList.add('cover');
         trans.style.transform = 'translateX(0)';
-        setTimeout(function(){ window.location.href = url; }, 440);
+        setTimeout(function(){ window.location.href = url + (url.indexOf('?') < 0 ? '?' : '&') + 'v=' + Date.now(); }, 440);
       }
 
       var btn = document.getElementById('next-room-btn');
@@ -2332,7 +2332,7 @@
             trans.classList.add('cover');
             trans.style.transform = 'translateX(0)';
           }
-          setTimeout(function(){ window.location.href = url; }, 440);
+          setTimeout(function(){ window.location.href = url + (url.indexOf('?') < 0 ? '?' : '&') + 'v=' + Date.now(); }, 440);
         });
       });
     })();
