@@ -2395,7 +2395,7 @@
       function _mbNav(navId){
         var b = document.getElementById(navId);
         var t = b && b.getAttribute('data-target');
-        if (t) window.location.href = t + (t.indexOf('?') < 0 ? '?' : '&') + 'v=' + Date.now();
+        if (t) window.location.href = t + (t.indexOf('?') < 0 ? '?' : '&') + 'room=1&v=' + Date.now();
       }
       var mp = document.getElementById('mb-prev');
       if (mp) mp.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); _mbNav('room-nav-left'); });

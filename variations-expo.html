@@ -1940,7 +1940,9 @@
       // ★★★ SALLE NORMALE : on démarre directement sur le mur d'affiches,
       //     sans intro couronne 3D (comme salle-3.html).
       (function startRoomDirectly() {
-        return;   // intro couronne sur TOUS les appareils (plus de salle directe forcee)
+        // Arrivée par les FLÈCHES de room (URL ?room=1) → on saute la couronne et on entre
+        // direct dans Room I comme une room (mur). Dock / QR / accès direct → on garde l'intro couronne.
+        if (location.search.indexOf('room=1') === -1) return;
         if (typeof crownTL !== 'undefined' && crownTL.scrollTrigger) crownTL.scrollTrigger.kill(true);
         _renderActive = false;
         var cs = document.getElementById('crown-sequence'); if (cs) cs.style.display = 'none';
@@ -2453,7 +2455,7 @@
       function _mbNav(navId){
         var b = document.getElementById(navId);
         var t = b && b.getAttribute('data-target');
-        if (t) window.location.href = t + (t.indexOf('?') < 0 ? '?' : '&') + 'v=' + Date.now();
+        if (t) window.location.href = t + (t.indexOf('?') < 0 ? '?' : '&') + 'room=1&v=' + Date.now();
       }
       var mp = document.getElementById('mb-prev');
       if (mp) mp.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); _mbNav('room-nav-left'); });
