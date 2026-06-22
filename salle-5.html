@@ -1024,6 +1024,7 @@
   <header class="site-header">
     <a class="site-logo" href="https://francoispeyranne-rolex.com">François Peyranne × Rolex</a>
     <nav class="site-nav">
+      <a class="site-intro" href="variations-expo.html">Intro</a>
       <a class="site-back" href="https://francoispeyranne-rolex.com"><span class="back-arrow">&#8592;</span> Retour au site</a>
     </nav>
   </header>
@@ -1571,7 +1572,7 @@
         var HINT_SOURCE_Y = 0.925;
 
         // ── Navigation mobile : balade le long du mur (swipe) + tap affiche ──
-        var _atEnd = false, _browseFx = null, _curPoster = 0;
+        var _atEnd = false, _browseFx = null, _curPoster = 0, _locked = false;
         // Centre horizontal de chaque affiche sur la frame de FIN (fraction 0..1)
         var MPOSTERS = [{ idx: 0, fx: 0.252 }, { idx: 1, fx: 0.506 }, { idx: 2, fx: 0.758 }];
         var MSTART = 1;
@@ -1652,6 +1653,7 @@
 
         function tick() {
           var progress = getProgress();
+          if (_isMobile() && _locked) progress = 1;   // verrou mobile : on reste sur le mur (anti-derive scroll/lightbox)
           // Mappe le scroll sur [FRAME_START, dernière frame] — saute le couloir initial
           var idx = FRAME_START + Math.round(progress * (FRAMES_COUNT - 1 - FRAME_START));
           if (progress >= 0.999) idx = FRAMES_COUNT - 1;
@@ -1668,6 +1670,7 @@
           if (progress >= 0.999) {
             if (overlay) overlay.classList.add('at-end');
             if (!_atEnd) { _atEnd = true; _curPoster = MSTART; _browseFx = MPOSTERS[MSTART].fx; }
+            if (_isMobile()) _locked = true;   // une fois le mur atteint sur mobile, on le verrouille
             document.body.classList.add('mb-end');
             document.body.classList.toggle('mb-cannext', _curPoster < MPOSTERS.length - 1);
           } else {
