@@ -1691,6 +1691,7 @@
             window.__roomReady = true;
             positionScrollHint();
             if (onFirstFrameReady) onFirstFrameReady();
+            if (window.innerWidth <= 768) setTimeout(function(){ goToEnd(); }, 450);   // mobile : la salle deroule seule jusqu'aux affiches
             if (!started) {
               started = true;
               _introRafId = requestAnimationFrame(tick);

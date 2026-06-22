@@ -1763,7 +1763,7 @@
             if (onFirstFrameReady) onFirstFrameReady();
             // MOBILE : depuis la couronne, la marche d'entrée se joue automatiquement jusqu'au mur
             // (plus de "scroll dans le vide" qui bloque). Le tap "Click to Enter" suffit.
-            if (_isMob && _autoWalkIn) { _autoWalkIn = false; setTimeout(function(){ goToEnd(); }, 500); }
+            if (window.innerWidth <= 768) setTimeout(function(){ goToEnd(); }, 450);   // mobile : la salle deroule seule jusqu'aux affiches
             if (!started) {
               started = true;
               _introRafId = requestAnimationFrame(tick);
