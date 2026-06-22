@@ -735,15 +735,21 @@
     #poster-lb-close {
       position: absolute;
       top: 48px; right: 40px;
-      font-size: 28px; line-height: 1;
-      background: transparent;
-      border: 0; color: rgba(255,255,255,0.55);
+      width: 42px; height: 42px;
+      display: flex; align-items: center; justify-content: center;
+      background: #ffffff;
+      border: 1.5px solid #0b0b0c;
+      border-radius: 50%;
+      color: #0b0b0c;
       cursor: pointer;
-      font-family: var(--ff-display);
-      transition: color 0.2s;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.28);
+      transition: transform 0.15s ease, background 0.2s ease;
       z-index: 10;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
-    #poster-lb-close:hover { color: rgba(255,255,255,0.9); }
+    #poster-lb-close:hover { transform: scale(1.08); background: #f2f2f2; }
+    #poster-lb-close svg { display: block; pointer-events: none; }
 
     /* Flèches prev/next — navigation entre affiches (mobile + desktop) */
     #lb-prev, #lb-next {
@@ -987,8 +993,8 @@
 
     /* ===== Responsive mobile (ajout) : header + cartel ===== */
     @media (max-width: 768px) {
-      .site-header { padding: 16px 18px; }
-      .site-logo { font-size: 8px; letter-spacing: 0.10em; }
+      .site-header { padding: 14px 16px; background: rgba(255,255,255,0.52); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(0,0,0,0.06); }
+      .site-logo { font-size: 8px; letter-spacing: 0.08em; white-space: nowrap; }
       .site-nav { gap: 14px; }
       .site-nav a { font-size: 8px; letter-spacing: 0.10em; }
       .site-back { gap: 6px; }
@@ -1025,7 +1031,7 @@
     <a class="site-logo" href="https://francoispeyranne-rolex.com">François Peyranne × Rolex</a>
     <nav class="site-nav">
       <a class="site-intro" href="variations-expo.html">Intro</a>
-      <a class="site-back" href="https://francoispeyranne-rolex.com"><span class="back-arrow">&#8592;</span> Retour au site</a>
+      <a class="site-back" href="https://francoispeyranne-rolex.com"><span class="back-arrow">&#8592;</span> Back</a>
     </nav>
   </header>
 
@@ -1156,7 +1162,7 @@
 
     <!-- Lightbox affiche -->
     <div id="poster-lightbox">
-      <button id="poster-lb-close" aria-label="Fermer">×</button>
+      <button id="poster-lb-close" aria-label="Fermer"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#0b0b0c" stroke-width="2.2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button>
       <div id="poster-lb-meta">
         <div id="poster-lb-title"></div>
         <div id="poster-lb-desc"></div>
