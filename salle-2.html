@@ -2324,25 +2324,26 @@
       /* Cartel plein écran : affiche en haut, texte SOUS l'affiche, jamais par-dessus.
          Colonne défilable = robuste sur tous les iPhones (SE, mini, Plus, Pro Max…). */
       #poster-lightbox{
-        flex-direction: column; justify-content: flex-start; align-items: center;
-        padding: calc(44px + env(safe-area-inset-top)) 14px calc(44px + env(safe-area-inset-bottom));
+        flex-direction: column; justify-content: center; align-items: center;
+        padding: calc(38px + env(safe-area-inset-top)) 14px calc(22px + env(safe-area-inset-bottom));
         overflow-y: auto; -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain; touch-action: pan-y;   /* swipe horizontal => carrousel JS, plus de deplacement de page */
       }
-      #poster-lb-img-wrap{ order: 2; margin-top: 30px; }   /* affiche EN DESSOUS du texte, à l'écart */
-      #poster-lb-img{ max-height: 50vh; max-width: 86vw; width: auto; height: auto; }
-      #poster-lb-meta{
-        order: 1;
-        position: static !important; transform: none !important;
-        right: auto; left: auto; bottom: auto; top: auto;
-        width: 100%; max-width: none; text-align: center; padding: 4px 18px 0;
-        margin-top: 0; text-shadow: none; opacity: 1;
-      }
-      #poster-lb-title{ font-size: 9px; letter-spacing: .13em; }
-      #poster-lb-desc{ font-size: 9px; }
-      #poster-lb-specs{ font-size: 7px; }
-      #poster-lb-copy{ font-size: 7px; margin-top: 11px; }
-      #poster-lb-rule{ margin: 7px auto 8px; }
-      #poster-lightbox.zoomed #poster-lb-meta{ opacity: 0; }
+      #poster-lightbox.zoomed{ touch-action: none; }
+      /* TYPO SEPAREE : titre + description EN HAUT, affiche AU MILIEU (plus grande), rule + specs + copyright EN BAS */
+      #poster-lb-meta{ display: contents; }
+      #poster-lb-title{ order: 1; width: 100%; text-align: center; font-size: 11px; letter-spacing: .18em; }
+      #poster-lb-desc{ order: 2; width: 100%; max-width: 32em; margin: 7px auto 0; text-align: center; font-size: 10px; line-height: 1.5; opacity: 1; }
+      #poster-lb-img-wrap{ order: 3; margin: 18px auto; }
+      #poster-lb-img{ max-height: 60vh; max-width: 90vw; width: auto; height: auto; }
+      #poster-lb-rule{ order: 4; margin: 0 auto 9px; }
+      #poster-lb-specs{ order: 5; width: 100%; text-align: center; font-size: 8px; }
+      #poster-lb-copy{ order: 6; width: 100%; text-align: center; font-size: 8px; margin-top: 8px; }
+      #poster-lightbox.zoomed #poster-lb-title,
+      #poster-lightbox.zoomed #poster-lb-desc,
+      #poster-lightbox.zoomed #poster-lb-rule,
+      #poster-lightbox.zoomed #poster-lb-specs,
+      #poster-lightbox.zoomed #poster-lb-copy{ opacity: 0; }
 
       /* Flèche de swipe — ancrée juste au bord droit de l'affiche, centrée verticalement */
       #lb-swipe-hint{
