@@ -1534,8 +1534,8 @@
       // État initial
       updateCrownSequence(0);
 
-      // ─── MOBILE : scroll tactile custom pour la couronne (doigt vers le bas = avance) ───
-      // Demande de FP : glisser le doigt vers le bas fait AVANCER l'animation.
+      // ─── MOBILE : scroll tactile custom pour la couronne (sens STANDARD : doigt haut = avance) ───
+      // Glisser le doigt vers le HAUT fait AVANCER l'animation (convention iOS universelle).
       // Sensibilité élevée + INERTIE (momentum) → défilement rapide et fluide, au lieu du
       // 1:1 sans élan qui obligeait à "scroller pendant des heures".
       // Actif uniquement pendant la phase couronne (_renderActive).
@@ -1557,9 +1557,9 @@
           if (!active || !_renderActive) return;
           e.preventDefault();                          // bloque le scroll natif
           var y = e.touches[0].clientY, now = performance.now();
-          setScroll(scroll0 + (y - ty0) * SENS);       // doigt bas (y augmente) => AVANCE
+          setScroll(scroll0 + (ty0 - y) * SENS);       // doigt vers le HAUT (y diminue) => AVANCE (standard)
           var dt = now - lastT;
-          if (dt > 0) vel = ((y - lastY) * SENS) / dt; // px/ms
+          if (dt > 0) vel = ((lastY - y) * SENS) / dt; // px/ms
           lastY = y; lastT = now;
         }, { passive: false });
         window.addEventListener('touchend', function(){
