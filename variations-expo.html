@@ -99,11 +99,16 @@
     /* =====================================
        LOADER
        ===================================== */
+    /* POSTER-FIRST : le loader ne masque plus le hero. Le fond dégradé + le titre
+       (déjà dans le HTML, opacity:1) s'affichent INSTANTANÉMENT ; la couronne 3D se
+       charge derrière. Loader = juste un indice discret en bas, non bloquant. */
     .loader {
-      position: fixed; inset: 0; z-index: 1000;
-      background: var(--bg-light);
+      position: fixed; left: 0; right: 0; bottom: 0; top: auto; z-index: 1000;
+      background: transparent;
       display: flex; align-items: center; justify-content: center;
-      flex-direction: column; gap: 24px;
+      flex-direction: column; gap: 10px;
+      padding-bottom: calc(34px + env(safe-area-inset-bottom));
+      pointer-events: none;
       transition: opacity 0.8s, visibility 0.8s;
     }
     .loader.done { opacity: 0; visibility: hidden; }
@@ -1576,9 +1581,9 @@
           e.preventDefault();
           advance();
         }, { passive: false });
-        // indice : "tap pour avancer" plutôt que "scroll"
+        // indice : "tap pour avancer" plutôt que "scroll" (intro mobile pilotée au tap)
         var sh = document.getElementById('scroll-hint');
-        if (sh) { var lab = sh.querySelector('.sh-label, span'); if (lab) lab.textContent = 'Tap to continue'; }
+        if (sh) sh.innerHTML = '<span class="scroll-enter-arrow"></span> Tap to continue';
       })();
 
       // Boucle depuis la dernière salle : arriver directement sur l'affiche-titre (saute l'intro couronne)
