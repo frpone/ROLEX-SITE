@@ -2226,6 +2226,7 @@
       function goTo(url, dir){
         if (!url) return;
         try { sessionStorage.setItem('roomDir', dir); } catch(e){}
+        try { if (url.indexOf('variations-expo') !== -1) sessionStorage.setItem('landOnTitle', '1'); } catch(e){}
         trans.style.transition = 'none';
         trans.style.transform = (dir === 'next') ? 'translateX(100%)' : 'translateX(-100%)';
         trans.offsetWidth; // reflow
@@ -2273,6 +2274,7 @@
           var idx = parseInt(item.getAttribute('data-idx'), 10);
           var dir = (current < 0 || idx >= current) ? 'next' : 'prev';
           try { sessionStorage.setItem('roomDir', dir); } catch(e){}
+          try { if (url.indexOf('variations-expo') !== -1) sessionStorage.setItem('landOnTitle', '1'); } catch(e){}
           if (trans) {
             trans.style.transition = 'none';
             trans.style.transform = (dir === 'next') ? 'translateX(100%)' : 'translateX(-100%)';
@@ -2391,9 +2393,9 @@
   </style>
 
   <div id="mobile-bar" aria-hidden="true">
-    <button id="mb-prev" type="button" aria-label="Salle precedente" style="flex:0 0 54px;max-width:54px;font-size:20px;padding:11px 0;">&#8249;</button>
+    <button id="mb-prev" type="button" aria-label="Salle precedente" style="flex:0 0 60px;max-width:60px;font-size:28px;padding:8px 0;line-height:1;font-weight:300;">&#8249;</button>
     <button id="mb-allrooms" type="button">All Rooms</button>
-    <button id="mb-next" type="button" aria-label="Salle suivante" style="flex:0 0 54px;max-width:54px;font-size:20px;padding:11px 0;">&#8250;</button>
+    <button id="mb-next" type="button" aria-label="Salle suivante" style="flex:0 0 60px;max-width:60px;font-size:28px;padding:8px 0;line-height:1;font-weight:300;">&#8250;</button>
   </div>
   <div id="room-swipe-hint" aria-hidden="true">&#8250;</div>
 
@@ -2411,6 +2413,14 @@
       if (mn) mn.addEventListener('click', function(){
         var R = document.getElementById('room-nav-right'); if (R) R.click();
       });
+      // MOBILE : pas de scroll manuel dans la phase expo / salles (tap-to-continue uniquement).
+      // La couronne (phase-expo masquee) garde son scroll. Le visualiseur (lb-open) garde son tactile.
+      window.addEventListener('touchmove', function(e){
+        if (window.innerWidth > 768) return;
+        if (document.body.classList.contains('lb-open')) return;
+        var pe = document.getElementById('phase-expo');
+        if (pe && pe.style.display === 'block') e.preventDefault();
+      }, { passive: false });
     })();
   </script>
   <script>

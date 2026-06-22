@@ -1521,23 +1521,22 @@
         anticipatePin: 1,
         invalidateOnRefresh: true,
 
-        // MOBILE : la couronne est pilotée au TAP (initCrownTapMobile), pas au scroll.
-        // On garde le pin mais on neutralise le pilotage par progress pour ne pas écraser le tween.
+        // Couronne pilotée par le SCROLL (desktop ET mobile) ; le tap est un bonus (scrollTo).
         onUpdate: function(self) {
-          if (!_isMob) updateCrownSequence(self.progress);
+          updateCrownSequence(self.progress);
         },
         onLeave: function() {
-          if (!_isMob) updateCrownSequence(1);
+          updateCrownSequence(1);
           _renderActive = false;
           sceneAffiche.style.pointerEvents = 'auto';
         },
         onEnterBack: function() {
           _renderActive = true;
           sceneAffiche.style.pointerEvents = 'none';
-          if (!_isMob) updateCrownSequence(crownST.progress || 0);
+          updateCrownSequence(crownST.progress || 0);
         },
         onRefresh: function(self) {
-          if (!_isMob) updateCrownSequence(self.progress || 0);
+          updateCrownSequence(self.progress || 0);
         }
       });
 
@@ -1547,45 +1546,9 @@
       // État initial
       updateCrownSequence(0);
 
-      // ─── MOBILE : intro couronne pilotée au TAP, chapitre par chapitre, SENS UNIQUE ───
-      // Demande FP : sur mobile on OUBLIE le scroll. Chaque tap avance d'un chapitre ;
-      // le dernier tap entre dans l'expo (mur). Pas de retour en arrière, pas de scroll à régler.
-      (function initCrownTapMobile(){
-        if (window.innerWidth > 768) return;
-        var STOPS = [0, 0.34, 0.64, 1.0];   // hero → chapitre 1 → chapitre 2 → affiche-titre
-        var step = 0, p = 0, tween = null, entering = false;
-        function advance(){
-          if (entering) return;
-          if (step >= STOPS.length - 1) {             // déjà sur l'affiche-titre → on entre
-            entering = true;
-            if (typeof enterExpo === 'function') enterExpo();
-            return;
-          }
-          step++;
-          var target = STOPS[step];
-          if (tween) tween.kill();
-          var obj = { v: p };
-          tween = gsap.to(obj, { v: target, duration: 1.05, ease: 'power2.inOut',
-            onUpdate: function(){ p = obj.v; updateCrownSequence(p); } });
-        }
-        // pendant la couronne : aucun scroll (on fige), le tap pilote tout
-        window.addEventListener('touchmove', function(e){ if (_renderActive) e.preventDefault(); }, { passive: false });
-        var tx = 0, ty = 0;
-        window.addEventListener('touchstart', function(e){
-          if (e.touches.length === 1) { tx = e.touches[0].clientX; ty = e.touches[0].clientY; }
-        }, { passive: true });
-        window.addEventListener('touchend', function(e){
-          if (!_renderActive) return;
-          var t = e.changedTouches[0];
-          if (Math.abs(t.clientX - tx) > 16 || Math.abs(t.clientY - ty) > 16) return;  // pas un tap
-          if (e.target.closest && e.target.closest('a, button, .site-header, #poster-lightbox')) return;
-          e.preventDefault();
-          advance();
-        }, { passive: false });
-        // indice : "tap pour avancer" plutôt que "scroll" (intro mobile pilotée au tap)
-        var sh = document.getElementById('scroll-hint');
-        if (sh) sh.innerHTML = '<span class="scroll-enter-arrow"></span> Tap to continue';
-      })();
+      // Intro couronne MOBILE = SCROLL (crownST, dégaté ci-dessus) + TAP : le tap/clic est géré
+      // par initCrownClickAdvance() plus bas (avance d'un chapitre via lenis.scrollTo). Les deux
+      // marchent ensemble sans conflit. (Plus de contrôleur tap-only dédié.)
 
       // Boucle depuis la dernière salle : arriver directement sur l'affiche-titre (saute l'intro couronne)
       try {
@@ -2360,6 +2323,7 @@
           var idx = parseInt(item.getAttribute('data-idx'), 10);
           var dir = (current < 0 || idx >= current) ? 'next' : 'prev';
           try { sessionStorage.setItem('roomDir', dir); } catch(e){}
+          try { if (url.indexOf('variations-expo') !== -1) sessionStorage.setItem('landOnTitle', '1'); } catch(e){}
           if (trans) {
             trans.style.transition = 'none';
             trans.style.transform = (dir === 'next') ? 'translateX(100%)' : 'translateX(-100%)';
@@ -2476,9 +2440,9 @@
   </style>
 
   <div id="mobile-bar" aria-hidden="true">
-    <button id="mb-prev" type="button" aria-label="Salle precedente" style="flex:0 0 54px;max-width:54px;font-size:20px;padding:11px 0;">&#8249;</button>
+    <button id="mb-prev" type="button" aria-label="Salle precedente" style="flex:0 0 60px;max-width:60px;font-size:28px;padding:8px 0;line-height:1;font-weight:300;">&#8249;</button>
     <button id="mb-allrooms" type="button">All Rooms</button>
-    <button id="mb-next" type="button" aria-label="Salle suivante" style="flex:0 0 54px;max-width:54px;font-size:20px;padding:11px 0;">&#8250;</button>
+    <button id="mb-next" type="button" aria-label="Salle suivante" style="flex:0 0 60px;max-width:60px;font-size:28px;padding:8px 0;line-height:1;font-weight:300;">&#8250;</button>
   </div>
   <div id="room-swipe-hint" aria-hidden="true">&#8250;</div>
 
@@ -2496,6 +2460,14 @@
       if (mn) mn.addEventListener('click', function(){
         var R = document.getElementById('room-nav-right'); if (R) R.click();
       });
+      // MOBILE : pas de scroll manuel dans la phase expo / salles (tap-to-continue uniquement).
+      // La couronne (phase-expo masquee) garde son scroll. Le visualiseur (lb-open) garde son tactile.
+      window.addEventListener('touchmove', function(e){
+        if (window.innerWidth > 768) return;
+        if (document.body.classList.contains('lb-open')) return;
+        var pe = document.getElementById('phase-expo');
+        if (pe && pe.style.display === 'block') e.preventDefault();
+      }, { passive: false });
     })();
   </script>
   <script>
