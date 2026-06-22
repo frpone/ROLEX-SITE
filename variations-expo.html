@@ -166,7 +166,7 @@
     #crown-sequence {
       position: relative;
       width: 100%;
-      height: 100vh;
+      height: 100dvh;
       overflow: hidden;
     }
     /* Couches superposées dans la section unique */
@@ -294,13 +294,13 @@
 
     /* =====================================
        MANIFESTE — chapitres pinned via ScrollTrigger
-       Chaque chapter = simple 100vh, le pin et la sync
+       Chaque chapter = simple 100dvh, le pin et la sync
        sont faits en JS (plus fiable que sticky avec overflow:hidden)
        ===================================== */
     .chapter {
       position: relative;
       width: 100%;
-      height: 100vh;
+      height: 100dvh;
       padding: 0 60px;
       display: flex;
       align-items: center;
@@ -568,7 +568,7 @@
       position: fixed;
       inset: 0;
       width: 100vw;
-      height: 100vh;
+      height: 100dvh;
       display: block;
       transform: none !important;
       left: 0 !important;
@@ -1306,11 +1306,15 @@
       var dl = new THREE.DirectionalLight(0xffffff, 0.6); dl.position.set(6, 10, 6); scene.add(dl);
       scene.add(new THREE.HemisphereLight(0xffffff, 0xd8d8d8, 0.2));
 
-      new THREE.RGBELoader().load(
-        'https://threejs.org/examples/textures/equirectangular/spot1Lux.hdr',
-        function(t) { t.mapping = THREE.EquirectangularReflectionMapping; scene.environment = pmrem.fromEquirectangular(t).texture; t.dispose(); },
-        undefined, function() { console.warn('HDR failed'); }
-      );
+      // MOBILE : on évite le fetch HDR externe (threejs.org) — l'environnement procédural
+      // (buildEnv via PMREM) suffit pour les reflets ; gain de latence + 1 requête réseau en moins.
+      if (!_isMob) {
+        new THREE.RGBELoader().load(
+          'https://threejs.org/examples/textures/equirectangular/spot1Lux.hdr',
+          function(t) { t.mapping = THREE.EquirectangularReflectionMapping; scene.environment = pmrem.fromEquirectangular(t).texture; t.dispose(); },
+          undefined, function() { console.warn('HDR failed'); }
+        );
+      }
 
       // ★★★ SALLE NORMALE : on saute la construction de la couronne 3D (lourde / fait ramer mobile).
       //     crownGroup (Group vide) et crownBaseScale restent DÉFINIS pour ne rien casser plus bas.
@@ -1383,7 +1387,8 @@
       // ── Séquence d'images intro2 — 69 frames JPEG ───────────────────────────
       // Architecture Apple-style : chaque frame = un <img> en mémoire RAM.
       // Seek = 0ms (drawImage instantané), aucune décompression vidéo.
-      var FRAMES_BASE  = './FRAMES_INTRO2_W/frame_';
+      // MOBILE : jeu d'images léger 1280px (5 Mo au lieu de 13 Mo) → LCP mobile bien plus rapide
+      var FRAMES_BASE  = _isMob ? './FRAMES_INTRO2_M/frame_' : './FRAMES_INTRO2_W/frame_';
       var FRAMES_COUNT = 143;
       var _frames      = new Array(FRAMES_COUNT); // Image objects pré-chargées
       var _framesReady = 0;                        // nb de frames chargées

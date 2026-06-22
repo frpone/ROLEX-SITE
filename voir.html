@@ -2,22 +2,33 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>ROLEX — dernière version</title>
+  <meta name="theme-color" content="#0b0b0c" />
+  <title>François Peyranne × Rolex</title>
+  <!-- Fallback si JavaScript tarde / est désactivé -->
+  <noscript><meta http-equiv="refresh" content="0; url=variations-expo.html" /></noscript>
   <style>
     html, body { margin: 0; height: 100%; background: #0b0b0c; }
-    .x { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
-         font-family: 'Helvetica Neue', Arial, sans-serif; color: #8a8f95;
-         font-size: 11px; letter-spacing: .3em; text-transform: uppercase; }
+    .splash { position: fixed; inset: 0; display: flex; flex-direction: column;
+              align-items: center; justify-content: center; gap: 18px;
+              font-family: 'Helvetica Neue', Arial, sans-serif; color: #e9eaec;
+              text-align: center; padding: 24px; }
+    .splash .brand { font-size: 13px; letter-spacing: .42em; text-transform: uppercase; font-weight: 500; }
+    .splash .sub   { font-size: 10px; letter-spacing: .3em; text-transform: uppercase; color: #7e848b; }
+    .splash .dash  { width: 34px; height: 1px; background: rgba(233,234,236,.4); }
   </style>
 </head>
 <body>
-  <div class="x">Chargement…</div>
+  <div class="splash">
+    <div class="brand">François&nbsp;Peyranne&nbsp;×&nbsp;Rolex</div>
+    <div class="dash"></div>
+    <div class="sub">Variations on a Crown</div>
+  </div>
   <script>
-    // Redirige toujours vers la dernière version, avec un cache-bust unique à chaque visite
+    // Toujours la dernière version (cache-bust unique). Redirection immédiate.
     location.replace('variations-expo.html?v=' + Date.now());
   </script>
 </body>
