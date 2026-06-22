@@ -100,7 +100,7 @@
        LOADER
        ===================================== */
     .loader {
-      position: fixed; inset: 0; z-index: 1000;
+      position: fixed; inset: 0; z-index: 1000; pointer-events: none;
       background: var(--bg-light);
       display: flex; align-items: center; justify-content: center;
       flex-direction: column; gap: 24px;
@@ -2309,6 +2309,7 @@
       }
       body.lb-open #mobile-bar { display: none !important; }
       #mobile-bar button{
+        touch-action: manipulation;
         flex: 1 1 0; max-width: 200px;
         font-family: 'sweet-sans-pro','Helvetica Neue',Arial,sans-serif;
         font-size: 11px; letter-spacing: .16em; text-transform: uppercase; font-weight: 600;
@@ -2387,7 +2388,7 @@
     }
   </style>
 
-  <div id="mobile-bar" aria-hidden="true">
+  <div id="mobile-bar">
     <button id="mb-prev" type="button" aria-label="Salle precedente" style="flex:0 0 46px;width:46px;height:46px;max-width:46px;border-radius:50%;font-size:24px;padding:0;line-height:1;font-weight:300;display:flex;align-items:center;justify-content:center;">&#8249;</button>
     <button id="mb-allrooms" type="button">All Rooms</button>
     <button id="mb-next" type="button" aria-label="Salle suivante" style="flex:0 0 46px;width:46px;height:46px;max-width:46px;border-radius:50%;font-size:24px;padding:0;line-height:1;font-weight:300;display:flex;align-items:center;justify-content:center;">&#8250;</button>
