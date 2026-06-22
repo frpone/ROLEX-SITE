@@ -1306,15 +1306,13 @@
       var dl = new THREE.DirectionalLight(0xffffff, 0.6); dl.position.set(6, 10, 6); scene.add(dl);
       scene.add(new THREE.HemisphereLight(0xffffff, 0xd8d8d8, 0.2));
 
-      // MOBILE : on évite le fetch HDR externe (threejs.org) — l'environnement procédural
-      // (buildEnv via PMREM) suffit pour les reflets ; gain de latence + 1 requête réseau en moins.
-      if (!_isMob) {
-        new THREE.RGBELoader().load(
-          'https://threejs.org/examples/textures/equirectangular/spot1Lux.hdr',
-          function(t) { t.mapping = THREE.EquirectangularReflectionMapping; scene.environment = pmrem.fromEquirectangular(t).texture; t.dispose(); },
-          undefined, function() { console.warn('HDR failed'); }
-        );
-      }
+      // HDR (reflets studio) sur TOUS les appareils : indispensable à la lisibilité de la
+      // couronne en verre. Sans lui, l'env procédural tout blanc la délave → couronne invisible.
+      new THREE.RGBELoader().load(
+        'https://threejs.org/examples/textures/equirectangular/spot1Lux.hdr',
+        function(t) { t.mapping = THREE.EquirectangularReflectionMapping; scene.environment = pmrem.fromEquirectangular(t).texture; t.dispose(); },
+        undefined, function() { console.warn('HDR failed'); }
+      );
 
       // ★★★ SALLE NORMALE : on saute la construction de la couronne 3D (lourde / fait ramer mobile).
       //     crownGroup (Group vide) et crownBaseScale restent DÉFINIS pour ne rien casser plus bas.
@@ -1327,7 +1325,9 @@
         shapes.forEach(function(shape) {
           var geom = new THREE.ExtrudeGeometry(shape, {
             depth: 70, bevelEnabled: true, bevelThickness: 24, bevelSize: 12,
-            bevelSegments: 20, curveSegments: 48, steps: 1
+            // MOBILE : moins de segments = build CPU bien plus rapide (démarrage), rendu quasi identique
+            // (biseaux fins) ; matériau transmission + HDR conservés → même verre.
+            bevelSegments: _isMob ? 6 : 20, curveSegments: _isMob ? 16 : 48, steps: 1
           });
           geom.center();
           var mat = new THREE.MeshPhysicalMaterial({
@@ -1859,8 +1859,8 @@
             if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)) {
               e.preventDefault();   // tue le click fantôme iOS
               if (dx < 0) _gotoPoster(_curPoster + 1); else _gotoPoster(_curPoster - 1);
-            } else if (!moved && Math.abs(dx) < 12 && Math.abs(dy) < 12) {
-              e.preventDefault();   // tue le click fantôme iOS (évite double-ouverture)
+            } else {
+              e.preventDefault();   // tout sauf un swipe horizontal franc = ouverture (fini la zone morte des 10 taps)
               _openPoster(_curPoster);
             }
           }, { passive: false });

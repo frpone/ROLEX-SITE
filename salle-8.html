@@ -1777,8 +1777,8 @@
             if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)) {
               e.preventDefault();   // tue le click fantôme iOS
               if (dx < 0) _gotoPoster(_curPoster + 1); else _gotoPoster(_curPoster - 1);
-            } else if (!moved && Math.abs(dx) < 12 && Math.abs(dy) < 12) {
-              e.preventDefault();   // tue le click fantôme iOS (évite double-ouverture)
+            } else {
+              e.preventDefault();   // tout sauf un swipe horizontal franc = ouverture (fini la zone morte des 10 taps)
               _openPoster(_curPoster);
             }
           }, { passive: false });
