@@ -1515,21 +1515,23 @@
         anticipatePin: 1,
         invalidateOnRefresh: true,
 
+        // MOBILE : la couronne est pilotée au TAP (initCrownTapMobile), pas au scroll.
+        // On garde le pin mais on neutralise le pilotage par progress pour ne pas écraser le tween.
         onUpdate: function(self) {
-          updateCrownSequence(self.progress);
+          if (!_isMob) updateCrownSequence(self.progress);
         },
         onLeave: function() {
-          updateCrownSequence(1);
+          if (!_isMob) updateCrownSequence(1);
           _renderActive = false;
           sceneAffiche.style.pointerEvents = 'auto';
         },
         onEnterBack: function() {
           _renderActive = true;
           sceneAffiche.style.pointerEvents = 'none';
-          updateCrownSequence(crownST.progress || 0);
+          if (!_isMob) updateCrownSequence(crownST.progress || 0);
         },
         onRefresh: function(self) {
-          updateCrownSequence(self.progress || 0);
+          if (!_isMob) updateCrownSequence(self.progress || 0);
         }
       });
 
@@ -1539,45 +1541,44 @@
       // État initial
       updateCrownSequence(0);
 
-      // ─── MOBILE : scroll tactile custom pour la couronne (sens STANDARD : doigt haut = avance) ───
-      // Glisser le doigt vers le HAUT fait AVANCER l'animation (convention iOS universelle).
-      // Sensibilité élevée + INERTIE (momentum) → défilement rapide et fluide, au lieu du
-      // 1:1 sans élan qui obligeait à "scroller pendant des heures".
-      // Actif uniquement pendant la phase couronne (_renderActive).
-      (function initCrownTouchMobile(){
+      // ─── MOBILE : intro couronne pilotée au TAP, chapitre par chapitre, SENS UNIQUE ───
+      // Demande FP : sur mobile on OUBLIE le scroll. Chaque tap avance d'un chapitre ;
+      // le dernier tap entre dans l'expo (mur). Pas de retour en arrière, pas de scroll à régler.
+      (function initCrownTapMobile(){
         if (window.innerWidth > 768) return;
-        var SENS = 3.0;            // 1 px doigt => 3 px de scroll
-        var ty0 = 0, scroll0 = 0, active = false;
-        var lastY = 0, lastT = 0, vel = 0, raf = null;
-        function curScroll(){ return (lenis && typeof lenis.scroll === 'number') ? lenis.scroll : (window.scrollY || 0); }
-        function setScroll(v){ if (lenis) lenis.scrollTo(v, { immediate: true }); else window.scrollTo(0, v); }
-        function stopInertia(){ if (raf) { cancelAnimationFrame(raf); raf = null; } }
+        var STOPS = [0, 0.34, 0.64, 1.0];   // hero → chapitre 1 → chapitre 2 → affiche-titre
+        var step = 0, p = 0, tween = null, entering = false;
+        function advance(){
+          if (entering) return;
+          if (step >= STOPS.length - 1) {             // déjà sur l'affiche-titre → on entre
+            entering = true;
+            if (typeof enterExpo === 'function') enterExpo();
+            return;
+          }
+          step++;
+          var target = STOPS[step];
+          if (tween) tween.kill();
+          var obj = { v: p };
+          tween = gsap.to(obj, { v: target, duration: 1.05, ease: 'power2.inOut',
+            onUpdate: function(){ p = obj.v; updateCrownSequence(p); } });
+        }
+        // pendant la couronne : aucun scroll (on fige), le tap pilote tout
+        window.addEventListener('touchmove', function(e){ if (_renderActive) e.preventDefault(); }, { passive: false });
+        var tx = 0, ty = 0;
         window.addEventListener('touchstart', function(e){
-          if (!_renderActive || e.touches.length !== 1) { active = false; return; }
-          stopInertia(); active = true;
-          ty0 = e.touches[0].clientY; scroll0 = curScroll();
-          lastY = ty0; lastT = performance.now(); vel = 0;
+          if (e.touches.length === 1) { tx = e.touches[0].clientX; ty = e.touches[0].clientY; }
         }, { passive: true });
-        window.addEventListener('touchmove', function(e){
-          if (!active || !_renderActive) return;
-          e.preventDefault();                          // bloque le scroll natif
-          var y = e.touches[0].clientY, now = performance.now();
-          setScroll(scroll0 + (ty0 - y) * SENS);       // doigt vers le HAUT (y diminue) => AVANCE (standard)
-          var dt = now - lastT;
-          if (dt > 0) vel = ((lastY - y) * SENS) / dt; // px/ms
-          lastY = y; lastT = now;
+        window.addEventListener('touchend', function(e){
+          if (!_renderActive) return;
+          var t = e.changedTouches[0];
+          if (Math.abs(t.clientX - tx) > 16 || Math.abs(t.clientY - ty) > 16) return;  // pas un tap
+          if (e.target.closest && e.target.closest('a, button, .site-header, #poster-lightbox')) return;
+          e.preventDefault();
+          advance();
         }, { passive: false });
-        window.addEventListener('touchend', function(){
-          if (!active) return; active = false;
-          var v = vel * 16;                            // px / frame (~60fps)
-          if (Math.abs(v) < 0.6) return;               // pas de flick => pas d'inertie
-          (function glide(){
-            if (!_renderActive) { raf = null; return; }
-            setScroll(curScroll() + v);
-            v *= 0.94;                                 // décélération
-            raf = (Math.abs(v) > 0.4) ? requestAnimationFrame(glide) : null;
-          })();
-        }, { passive: true });
+        // indice : "tap pour avancer" plutôt que "scroll"
+        var sh = document.getElementById('scroll-hint');
+        if (sh) { var lab = sh.querySelector('.sh-label, span'); if (lab) lab.textContent = 'Tap to continue'; }
       })();
 
       // Boucle depuis la dernière salle : arriver directement sur l'affiche-titre (saute l'intro couronne)
