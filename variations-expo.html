@@ -534,7 +534,7 @@
       .poster-img { height: auto; width: min(78vw, 320px); }
       .poster-subtitle { font-size: clamp(7px, 2vw, 10px); }
       .cta-above {
-        display: flex;   /* fiche de fin : petit indice DISCRET "Tap to enter" (option B) */
+        display: none;   /* aucun texte "enter" : Room I s'auto-entre comme les salles */
         opacity: 0.7;
         animation: slideInTop 0.9s cubic-bezier(0.22,1,0.36,1) 0.35s both;
       }
@@ -1530,13 +1530,17 @@
         // Couronne pilotée par le SCROLL (desktop ET mobile) ; le tap est un bonus (scrollTo).
         onUpdate: function(self) {
           updateCrownSequence(self.progress);
+          // MOBILE : en fin de couronne, ENTRÉE AUTOMATIQUE (aucun texte "enter"). Déclencheur
+          // fiable sur progress (onLeave peut rater si le scroll s'arrête pile à la fin).
+          if (_isMob && self.progress >= 0.99 && !_autoEntered) {
+            _autoEntered = true;
+            setTimeout(function(){ if (typeof enterExpo === 'function') enterExpo(); }, 750);
+          }
         },
         onLeave: function() {
           updateCrownSequence(1);
           _renderActive = false;
           sceneAffiche.style.pointerEvents = 'auto';
-          // Option B : la couronne S'ARRÊTE sur la fiche de fin. L'entrée se fait au TAP
-          // (initCrownClickAdvance / CTA affiche) → puis la galerie se déroule seule.
         },
         onEnterBack: function() {
           _renderActive = true;
@@ -1613,6 +1617,7 @@
       var SCROLL_H   = 2500;  // px de scroll total
       var _introRafId = null;
       var _autoWalkIn = false;  // mobile : la marche d'entrée se joue toute seule jusqu'au mur
+      var _autoEntered = false; // mobile : garde pour n'auto-entrer qu'une fois en fin de couronne
 
       function initImageSequence(onFirstFrameReady) {
         if (_introRafId) {
