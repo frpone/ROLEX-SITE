@@ -534,18 +534,16 @@
       .poster-img { height: auto; width: min(78vw, 320px); }
       .poster-subtitle { font-size: clamp(7px, 2vw, 10px); }
       .cta-above {
-        display: none;   /* plus de "Click to Enter" sur mobile : l'entree est automatique */
+        display: flex;   /* fiche de fin : petit indice DISCRET "Tap to enter" (option B) */
+        opacity: 0.7;
         animation: slideInTop 0.9s cubic-bezier(0.22,1,0.36,1) 0.35s both;
       }
       @keyframes slideInTop {
-        from { opacity: 0; transform: translateY(-28px); }
-        to   { opacity: 1; transform: translateY(0); }
+        from { opacity: 0; transform: translateY(-22px); }
+        to   { opacity: 0.7; transform: translateY(0); }
       }
-      .cta-above .enter-label { font-size: 9px; letter-spacing: 0.42em; }
-      .cta-above .enter-arrow {
-        width: clamp(32px, 8vw, 48px);
-        animation: pulseDown 2.2s ease-in-out infinite;
-      }
+      .cta-above .enter-label { font-size: 8px; letter-spacing: 0.34em; font-weight: 500; }
+      .cta-above .enter-arrow { display: none; }   /* pas de grosse flèche */
       @keyframes pulseDown {
         0%,100% { transform: rotate(90deg) translateX(0);   opacity: 0.50; }
         50%      { transform: rotate(90deg) translateX(8px); opacity: 1; }
@@ -1200,7 +1198,7 @@
         <!-- Bloc affiche : poster + subtitle + CTA mobile -->
         <div class="poster-block" id="affiche-img-wrap">
           <div class="cta-above">
-            <span class="enter-label">Click to Enter</span>
+            <span class="enter-label">Tap to enter</span>
             <img class="enter-arrow"
               src="./AFFICHES_JPEG_SITE/CROIX%20GAUCHE-.png"
               alt="" />
@@ -1537,9 +1535,8 @@
           updateCrownSequence(1);
           _renderActive = false;
           sceneAffiche.style.pointerEvents = 'auto';
-          // MOBILE : plus de "Click to Enter" — fin de la couronne → on entre automatiquement
-          // dans la galerie (qui déroule ensuite seule jusqu'au mur).
-          if (_isMob) setTimeout(function(){ if (typeof enterExpo === 'function') enterExpo(); }, 500);
+          // Option B : la couronne S'ARRÊTE sur la fiche de fin. L'entrée se fait au TAP
+          // (initCrownClickAdvance / CTA affiche) → puis la galerie se déroule seule.
         },
         onEnterBack: function() {
           _renderActive = true;
