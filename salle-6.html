@@ -1762,7 +1762,7 @@
           // Mobile : on oublie le scroll → un tap fait avancer l'animation
           if (_isMobile()) {
             var sh = document.getElementById('scroll-hint');
-            if (sh) sh.textContent = 'Click to enter';
+            if (sh) { sh.textContent = ''; sh.style.display = 'none'; }   // salle : animation auto -> plus d'indice 'Click to enter'
             // Plus de scroll manuel : on avance UNIQUEMENT au clic (et pas de retour arrière)
             if (canvas) canvas.addEventListener('touchmove', function(ev){ if (_isMobile()) ev.preventDefault(); }, { passive: false });
           }
