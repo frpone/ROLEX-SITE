@@ -534,13 +534,13 @@
       .poster-img { height: auto; width: min(78vw, 320px); }
       .poster-subtitle { font-size: clamp(7px, 2vw, 10px); }
       .cta-above {
-        display: none;   /* aucun texte "enter" : Room I s'auto-entre comme les salles */
-        opacity: 0.7;
+        display: flex;   /* Room I (fiche-titre) : indice "Tap to enter" — entrée au TAP, pas auto */
+        opacity: 0.85;
         animation: slideInTop 0.9s cubic-bezier(0.22,1,0.36,1) 0.35s both;
       }
       @keyframes slideInTop {
         from { opacity: 0; transform: translateY(-22px); }
-        to   { opacity: 0.7; transform: translateY(0); }
+        to   { opacity: 0.85; transform: translateY(0); }
       }
       .cta-above .enter-label { font-size: 8px; letter-spacing: 0.34em; font-weight: 500; }
       .cta-above .enter-arrow { display: none; }   /* pas de grosse flèche */
@@ -1530,12 +1530,8 @@
         // Couronne pilotée par le SCROLL (desktop ET mobile) ; le tap est un bonus (scrollTo).
         onUpdate: function(self) {
           updateCrownSequence(self.progress);
-          // MOBILE : en fin de couronne, ENTRÉE AUTOMATIQUE (aucun texte "enter"). Déclencheur
-          // fiable sur progress (onLeave peut rater si le scroll s'arrête pile à la fin).
-          if (_isMob && self.progress >= 0.99 && !_autoEntered) {
-            _autoEntered = true;
-            setTimeout(function(){ if (typeof enterExpo === 'function') enterExpo(); }, 750);
-          }
+          // Room I : on N'auto-entre PAS. La couronne s'ARRÊTE sur la fiche de fin (le pin tient,
+          // rien après tant qu'on n'a pas tapé) → on voit le titre → un TAP entre dans la galerie.
         },
         onLeave: function() {
           updateCrownSequence(1);
