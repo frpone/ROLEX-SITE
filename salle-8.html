@@ -1398,6 +1398,7 @@
             _framesReady++;
             var bar = document.getElementById('intro2-loader-bar');
             if (bar) bar.style.width = Math.round(_framesReady / FRAMES_COUNT * 100) + '%';
+            if (_framesReady >= FRAMES_COUNT) window.__roomFullyLoaded = true;
           }
           img.onload = function() {
             // Desktop : pré-décodage hors thread → supprime la saccade au 1er scroll.
@@ -1693,13 +1694,15 @@
           startWhenFrame0Ready._n = (startWhenFrame0Ready._n || 0) + 1;
           var f0 = _frames[FRAME_START];
           // Buffer de frames décodées avant de lancer le scroll (fluidité/rapidité, repli ~2.4s)
-          var _buf = FRAMES_COUNT;  // charge tout avant de jouer (pas de saute) ; le prechargement de la salle suivante rend la navigation instantanee
+          var _buf = Math.min(30, FRAMES_COUNT);  // charge tout avant de jouer (pas de saute) ; le prechargement de la salle suivante rend la navigation instantanee
           var _enough = (_framesReady >= _buf) || (startWhenFrame0Ready._n > 600);
           if (f0 && f0.complete && f0.naturalWidth && _enough) {
             resizeCanvas();
             renderFrame(FRAME_START);
             if (loader) { loader.style.opacity = '0'; loader.style.display = 'none'; }
             window.__roomReady = true;
+            // A : precharge les affiches HD de la salle en fond -> lightbox instantanee au clic
+            if (!window.__postersPreloaded) { window.__postersPreloaded = true; setTimeout(function(){ var _zs = document.querySelectorAll('[data-src]'); for (var _pi = 0; _pi < _zs.length; _pi++) { var _u = _zs[_pi].getAttribute('data-src'); if (_u) { var _im = new Image(); _im.decoding = 'async'; _im.src = _u; } } }, 1200); }
             positionScrollHint();
             if (onFirstFrameReady) onFirstFrameReady();
             if (window.innerWidth <= 768) setTimeout(function(){ goToEnd(); }, 450);   // mobile : la salle deroule seule jusqu'aux affiches
@@ -2440,7 +2443,7 @@
   (function preloadNextRoom(){
     var DIR="./FRAMES_SALLE3_W/frame_", COUNT=71;
     function go(){ for(var i=1;i<=COUNT;i++){ var im=new Image(); im.decoding="async"; im.src=DIR+String(i).padStart(3,"0")+".webp"; } }
-    function whenReady(){ if (window.__roomReady){ if ("requestIdleCallback" in window) requestIdleCallback(go,{timeout:4000}); else setTimeout(go,1500); } else { setTimeout(whenReady,600); } }
+    function whenReady(){ if (window.__roomFullyLoaded){ if ("requestIdleCallback" in window) requestIdleCallback(go,{timeout:4000}); else setTimeout(go,1500); } else { setTimeout(whenReady,600); } }
     whenReady();   // precharge la salle suivante seulement une fois la salle courante prete (plus de concurrence)
   })();
   </script>
