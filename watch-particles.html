@@ -12,22 +12,23 @@
   .stub.top    { background:linear-gradient(180deg,#05070b,#06080c); }
   .stub.bottom { background:linear-gradient(180deg,#06080c,#05070b); }
 
+  /* Fond = le dégradé bleu de la photo d'origine, plein écran */
   #fx-section { position:relative; height:100vh; overflow:hidden;
-    background:radial-gradient(80% 85% at 50% 46%, #0e1420 0%, #080b12 55%, #05070b 100%); }
+    background:#0a0f18 url('./fond_montre.jpg') center center / cover no-repeat; }
   #fx-canvas { position:absolute; inset:0; z-index:2; }
   #fx-canvas canvas { display:block; }
 
   /* Typo qui arrive de gauche et de droite, se cale de part et d'autre de la montre */
   .flank { position:absolute; top:50%; z-index:3; pointer-events:none; opacity:0;
     font-weight:200; letter-spacing:.02em; color:#eef2f7; line-height:1.05;
-    font-size:clamp(30px,4.6vw,62px); white-space:nowrap; }
+    font-size:clamp(30px,4.6vw,62px); white-space:nowrap; text-shadow:0 2px 24px rgba(0,0,0,.5); }
   .flank b { font-weight:600; }
   .flank .sub { display:block; font-size:11px; letter-spacing:.4em; text-transform:uppercase;
-    color:rgba(220,225,235,.55); margin-top:10px; font-weight:400; }
-  #txt-left  { right:63%; text-align:right; }
-  #txt-right { left:63%;  text-align:left; }
+    color:rgba(220,225,235,.6); margin-top:10px; font-weight:400; }
+  #txt-left  { right:71%; text-align:right; }
+  #txt-right { left:71%;  text-align:left; }
   .hint { position:absolute; left:50%; bottom:28px; transform:translateX(-50%); z-index:3;
-    font-size:10px; letter-spacing:.36em; text-transform:uppercase; color:rgba(220,225,235,.4);
+    font-size:10px; letter-spacing:.36em; text-transform:uppercase; color:rgba(220,225,235,.45);
     pointer-events:none; animation:pulse 2.6s ease-in-out infinite; }
   @keyframes pulse { 0%,100%{opacity:.25} 50%{opacity:.7} }
 </style>
@@ -60,7 +61,6 @@
     renderer.setSize(cw(), ch()); renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
     container.appendChild(renderer.domElement);
     var FOV_H = Math.tan((35*Math.PI/180)/2)*12;
-    function halfW(){ return FOV_H*camera.aspect; }
 
     function dotTexture(){
       var s=64,c=document.createElement('canvas'); c.width=c.height=s;
@@ -72,17 +72,13 @@
     }
 
     var SCATTER = 4.6;
-    var points, home, scat, cur, vel, hcol, ccol, N=0;
-    var pointer={x:1e9,y:1e9,active:false};
-    var formP = 0;     // 0 = poussière dispersée ; 1 = montre formée
-    var textP = 0;     // 0 = typo hors champ ; 1 = typo calée
-    var GOLD=[1.0,0.82,0.46];   // teinte de la poussière quand dispersée
+    var points, home, scat, cur, vel, N=0, photoMat=null;
+    var formP = 0, textP = 0;
 
-    function build(positions, colors){
+    function build(positions, colors, img, fr){
       N = positions.length/3; window.__N=N;
       home=new Float32Array(positions); scat=new Float32Array(N*3);
       cur=new Float32Array(N*3); vel=new Float32Array(N*3);
-      hcol=new Float32Array(colors); ccol=new Float32Array(colors);
       for (var i=0;i<N;i++){ var ix=i*3;
         var dx=(Math.random()-0.5),dy=(Math.random()-0.5),dz=(Math.random()-0.5);
         var L=Math.hypot(dx,dy,dz)||1, m=0.4+Math.random()*0.9;
@@ -93,11 +89,22 @@
       }
       var geo=new THREE.BufferGeometry();
       geo.setAttribute('position', new THREE.BufferAttribute(cur,3));
-      geo.setAttribute('color', new THREE.BufferAttribute(ccol,3));
-      var mat=new THREE.PointsMaterial({ size:_isMob?0.11:0.09, map:dotTexture(),
+      geo.setAttribute('color', new THREE.BufferAttribute(colors,3));   // couleurs RÉELLES, fixes (pas de doré)
+      var mat=new THREE.PointsMaterial({ size:_isMob?0.10:0.082, map:dotTexture(),
         vertexColors:true, transparent:true, opacity:1, depthWrite:false, depthTest:false,
         blending:THREE.NormalBlending, sizeAttenuation:true });
-      points=new THREE.Points(geo,mat); scene.add(points);
+      points=new THREE.Points(geo,mat); points.renderOrder=1; scene.add(points);
+
+      // Photo nette détourée alignée (même bbox) — MINI-FONDU final pour la précision
+      var tex=new THREE.Texture(img); tex.needsUpdate=true;
+      tex.minFilter=THREE.LinearFilter; tex.magFilter=THREE.LinearFilter; tex.generateMipmaps=false;
+      tex.wrapS=tex.wrapT=THREE.ClampToEdgeWrapping;
+      tex.repeat.set(fr.maxx-fr.minx, fr.maxy-fr.miny);
+      tex.offset.set(fr.minx, 1-fr.maxy);
+      photoMat=new THREE.MeshBasicMaterial({ map:tex, transparent:true, opacity:0, depthTest:false, depthWrite:false });
+      var plane=new THREE.Mesh(new THREE.PlaneGeometry(fr.wW, fr.hW), photoMat);
+      plane.renderOrder=2; scene.add(plane);
+
       setupScroll(); animate();
     }
 
@@ -112,7 +119,7 @@
         var minx=W,maxx=0,miny=H,maxy=0;
         for (var yy=0;yy<H;yy++){ for (var xx=0;xx<W;xx++){ if(d[(yy*W+xx)*4+3]>60){ if(xx<minx)minx=xx; if(xx>maxx)maxx=xx; if(yy<miny)miny=yy; if(yy>maxy)maxy=yy; } } }
         var bh=(maxy-miny)||1, cxpx=(minx+maxx)/2, cypx=(miny+maxy)/2;
-        var targetH=_isMob?4.6:5.8, s=targetH/bh;
+        var targetH=_isMob?4.2:4.9, s=targetH/bh;
         for (var y=0;y<H;y+=step){
           for (var x=0;x<W;x+=step){
             var k=(y*W+x)*4, alpha=d[k+3];
@@ -120,45 +127,35 @@
               var jx=(Math.random()-0.5)*step, jy=(Math.random()-0.5)*step;
               pos.push((x+jx-cxpx)*s, -(y+jy-cypx)*s, (Math.random()-0.5)*0.4);
               var r=d[k]/255,gg=d[k+1]/255,b=d[k+2]/255;
-              col.push(Math.min(1,0.30+0.85*r), Math.min(1,0.30+0.85*gg), Math.min(1,0.33+0.88*b));
+              col.push(Math.min(1,0.34+0.82*r), Math.min(1,0.34+0.82*gg), Math.min(1,0.37+0.84*b));
             }
           }
         }
         if (!pos.length){ console.error('alpha vide ?'); return; }
-        build(new Float32Array(pos), new Float32Array(col));
+        var fr={ minx:minx/W, maxx:maxx/W, miny:miny/H, maxy:maxy/H, wW:(maxx-minx)*s, hW:(maxy-miny)*s };
+        build(new Float32Array(pos), new Float32Array(col), img, fr);
       };
       img.onerror=function(){ console.error('png fail'); };
       img.src='./montre-detour.png';
     }
 
     function easeOut(t){ t=Math.max(0,Math.min(1,t)); return 1-Math.pow(1-t,3); }
+    function clamp01(t){ return Math.max(0,Math.min(1,t)); }
 
     function setupScroll(){
       gsap.registerPlugin(ScrollTrigger);
       ScrollTrigger.create({ trigger:'#fx-section', start:'center center', end:'+=300%', pin:true, scrub:0.8,
         onUpdate:function(self){
           var p=self.progress;
-          // phase 1 (0 -> 0.62) : la poussière converge, LENTEMENT vers la fin (easeOut)
-          // phase 2 (0.62 -> 1) : la montre RESTE + la typo arrive de gauche/droite
-          formP = easeOut(p/0.62);
-          textP = Math.max(0, Math.min(1, (p-0.64)/0.32));
-          var off=(1-easeOut(textP))*45;       // vw
-          txtL.style.opacity = textP; txtR.style.opacity = textP;
-          txtL.style.transform = 'translateY(-50%) translateX(-'+off+'vw)';
-          txtR.style.transform = 'translateY(-50%) translateX('+off+'vw)';
+          formP = easeOut(p/0.62);                       // converge lentement vers la fin
+          textP = clamp01((p-0.64)/0.32);                // puis la typo arrive
+          var off=(1-easeOut(textP))*45;
+          txtL.style.opacity=textP; txtR.style.opacity=textP;
+          txtL.style.transform='translateY(-50%) translateX(-'+off+'vw)';
+          txtR.style.transform='translateY(-50%) translateX('+off+'vw)';
         }});
     }
 
-    function onMove(e){
-      var r=renderer.domElement.getBoundingClientRect();
-      var px=(e.touches?e.touches[0].clientX:e.clientX)-r.left, py=(e.touches?e.touches[0].clientY:e.clientY)-r.top;
-      pointer.x=(px/r.width*2-1)*halfW(); pointer.y=-(py/r.height*2-1)*FOV_H; pointer.active=true;
-    }
-    window.addEventListener('mousemove',onMove);
-    window.addEventListener('touchmove',onMove,{passive:true});
-    window.addEventListener('mouseout',function(){pointer.active=false;pointer.x=pointer.y=1e9;});
-
-    var R=1.0,R2=R*R,FORCE=0.04,SPRING=0.045,DAMP=0.84, frameCol=0;
     function animate(ts){
       requestAnimationFrame(animate);
       var t=(ts||0)*0.001, f=formP;
@@ -166,24 +163,17 @@
         var tx=scat[ix]+(home[ix]-scat[ix])*f;
         var ty=scat[iy]+(home[iy]-scat[iy])*f;
         var tz=scat[iz]+(home[iz]-scat[iz])*f;
-        var cx=cur[ix],cy=cur[iy],cz=cur[iz];
-        if (pointer.active){ var ax=cx-pointer.x,ay=cy-pointer.y,dd=ax*ax+ay*ay;
-          if (dd<R2){ var dl=Math.sqrt(dd)+1e-4,ff=(1-dl/R)*FORCE; vel[ix]+=ax/dl*ff; vel[iy]+=ay/dl*ff; } }
-        vel[ix]+=(tx-cx)*SPRING; vel[iy]+=(ty-cy)*SPRING; vel[iz]+=(tz-cz)*SPRING;
-        vel[ix]*=DAMP; vel[iy]*=DAMP; vel[iz]*=DAMP;
+        vel[ix]+=(tx-cur[ix])*0.05; vel[iy]+=(ty-cur[iy])*0.05; vel[iz]+=(tz-cur[iz])*0.05;
+        vel[ix]*=0.84; vel[iy]*=0.84; vel[iz]*=0.84;
         cur[ix]+=vel[ix]; cur[iy]+=vel[iy]; cur[iz]+=vel[iz];
       }
       points.geometry.attributes.position.needsUpdate=true;
-      // couleur : or quand dispersé -> chromie réelle de la montre en se formant (maj allégée 1 frame/2)
-      if ((frameCol^=1)===0){
-        for (var j=0;j<N;j++){ var jx=j*3;
-          ccol[jx]  =GOLD[0]+(hcol[jx]  -GOLD[0])*f;
-          ccol[jx+1]=GOLD[1]+(hcol[jx+1]-GOLD[1])*f;
-          ccol[jx+2]=GOLD[2]+(hcol[jx+2]-GOLD[2])*f;
-        }
-        points.geometry.attributes.color.needsUpdate=true;
-      }
-      points.rotation.y = (1-f)*0.5 + Math.sin(t*0.18)*0.05;
+      points.rotation.y = (1-f)*0.45 + Math.sin(t*0.18)*0.04;
+      // MINI-FONDU final : la photo nette n'apparaît qu'à la toute fin (formP 0.82->1) ; les
+      // particules s'estompent un peu pour laisser voir la précision, sans disparaître.
+      var ph = clamp01((f-0.82)/0.18);
+      if (photoMat) photoMat.opacity = ph*0.95;
+      points.material.opacity = 1 - ph*0.6;
       renderer.render(scene,camera);
     }
 
