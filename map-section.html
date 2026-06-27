@@ -37,14 +37,15 @@
     transform:translate(-50%,-50%); z-index:1; pointer-events:none; filter:blur(6px);
     background:radial-gradient(circle, rgba(200,222,245,.22), rgba(160,195,230,.07) 42%, transparent 68%); }
 
-  /* Punchline centrée qui apparaît pendant la traversée */
-  .punch { position:absolute; left:50%; top:53%; transform:translate(-50%,-50%); z-index:3;
-    text-align:center; pointer-events:none; opacity:0; width:92%;
+  /* Punchline en deux morceaux qui arrivent de gauche et de droite */
+  .pword { position:absolute; top:50%; z-index:3; pointer-events:none; opacity:0; white-space:nowrap;
+    font-size:clamp(22px,3.5vw,46px); letter-spacing:.02em; color:#eef2f7;
     text-shadow:0 2px 26px rgba(0,0,0,.6); }
-  .punch .line { font-size:clamp(24px,3.6vw,48px); font-weight:200; letter-spacing:.02em; color:#eef2f7; line-height:1.12; }
-  .punch .line b { font-weight:600; }
-  .punch .sub { display:block; margin-top:14px; font-size:10px; letter-spacing:.42em;
-    text-transform:uppercase; color:rgba(220,225,235,.6); }
+  #punch-left  { right:50.6%; top:60%; text-align:right; font-weight:300; }
+  #punch-right { left:50.6%;  top:60%; text-align:left;  font-weight:600; }
+  .psub { position:absolute; left:50%; top:73%; transform:translateX(-50%); z-index:3; opacity:0;
+    pointer-events:none; font-size:10px; letter-spacing:.42em; text-transform:uppercase;
+    color:rgba(220,225,235,.6); text-shadow:0 2px 18px rgba(0,0,0,.6); }
 
   .scroll-hint { position:absolute; left:50%; bottom:26px; transform:translateX(-50%);
     z-index:3; font-size:10px; letter-spacing:.34em; text-transform:uppercase;
@@ -59,10 +60,9 @@
     <div id="map-bg"></div>
     <div class="crown-glow"></div>
     <div id="crown-canvas"></div>
-    <div class="punch">
-      <div class="line">Crafted in Switzerland. <b>Worn by the world.</b></div>
-      <span class="sub">François Peyranne × Rolex</span>
-    </div>
+    <span class="pword" id="punch-left">One crown.</span>
+    <span class="pword" id="punch-right">Every horizon.</span>
+    <span class="psub" id="punch-sub">François Peyranne × Rolex</span>
     <div class="scroll-hint">scroll</div>
   </section>
 
@@ -79,7 +79,7 @@
     var _isMob = window.innerWidth <= 768;
     var container = document.getElementById('crown-canvas');
     var glow = document.querySelector('.crown-glow');
-    var punch = document.querySelector('.punch');
+    var punchL=document.getElementById('punch-left'), punchR=document.getElementById('punch-right'), punchS=document.getElementById('punch-sub');
     var WIRE = /[?&]wire/i.test(location.search);   // ?wire=1 -> couronne en filaire (test)
     function cw(){ return container.clientWidth  || window.innerWidth; }
     function ch(){ return container.clientHeight || Math.round(window.innerHeight * 0.42); }
@@ -141,27 +141,23 @@
     var shapes = THREE.SVGLoader.createShapes(sd.paths[0]);
     shapes.forEach(function(shape) {
       var geom = new THREE.ExtrudeGeometry(shape, {
-        depth: 70, bevelEnabled: true, bevelThickness: 24, bevelSize: 12,
+        depth: 30, bevelEnabled: true, bevelThickness: 9, bevelSize: 5,
         bevelSegments: WIRE ? 2 : (_isMob ? 6 : 20), curveSegments: WIRE ? 10 : (_isMob ? 16 : 48), steps: 1
       });
       geom.center();
       var mat = WIRE
         ? new THREE.MeshBasicMaterial({ color: 0xd9c08a, wireframe: true, transparent: true, opacity: 0.9 })
-        : new THREE.MeshPhysicalMaterial({
-            color: new THREE.Color(0x365549), metalness: 0, roughness: 0.0,
-            transmission: 0.78, thickness: 2.5, ior: 1.6,
-            clearcoat: 1.0, clearcoatRoughness: 0.0, envMapIntensity: 3.2,
-            attenuationColor: new THREE.Color(0x6e9485), attenuationDistance: 0.8,
-            iridescence: 0.15, iridescenceIOR: 1.25,
-            specularIntensity: 2.2, reflectivity: 0.75,
-            transparent: true, opacity: 1, side: THREE.DoubleSide
+        : new THREE.MeshPhysicalMaterial({   // métal sombre façon texture de la carte
+            color: new THREE.Color(0x9aa7b8), metalness: 1.0, roughness: 0.34,
+            clearcoat: 0.5, clearcoatRoughness: 0.3, envMapIntensity: 1.7,
+            side: THREE.DoubleSide
           });
       crownGroup.add(new THREE.Mesh(geom, mat));
     });
     var bbox = new THREE.Box3().setFromObject(crownGroup);
     crownGroup.position.sub(bbox.getCenter(new THREE.Vector3()));
     var sz = bbox.getSize(new THREE.Vector3());
-    crownGroup.scale.setScalar((_isMob ? 3.4 : 4.6) / Math.max(sz.x, sz.y));
+    crownGroup.scale.setScalar((_isMob ? 2.6 : 3.1) / Math.max(sz.x, sz.y));
     crownBaseScale = crownGroup.scale.x;
     var BASE_RX = Math.PI + 0.18;          // inclinaison droite de la couronne
     crownGroup.rotation.x = BASE_RX;
@@ -199,11 +195,16 @@
         var p = self.progress;                          // 0 → 1
         var edge = visibleHalfWidth() + 2.5;            // hors écran de chaque côté
         crownGroup.position.x = lerp(-edge, edge, p);   // entre à gauche, sort à droite
-        crownGroup.position.y = Math.sin(p * Math.PI) * 0.7;   // léger arc
+        crownGroup.position.y = 1.5 + Math.sin(p * Math.PI) * 0.3;   // survole dans le tiers haut (au-dessus de la typo)
         crownGroup.rotation.y = 0.42 + p * Math.PI * 4; // ~2 tours
         crownGroup.position.z = -Math.sin(p * Math.PI) * 1.2;  // s'éloigne un peu au centre
         if (glow) glow.style.left = (p * 120 - 10) + '%';      // le halo suit la couronne
-        if (punch) punch.style.opacity = Math.max(0, Math.min(1, (p - 0.22) / 0.25));  // la punchline apparaît
+        var a = Math.max(0, Math.min(1, (p - 0.15) / 0.4));
+        var ea = 1 - Math.pow(1 - a, 3);                 // easeOut : la typo arrive de G/D et se cale
+        var off = (1 - ea) * 42;                         // vw hors champ
+        punchL.style.opacity = ea; punchR.style.opacity = ea; punchS.style.opacity = ea;
+        punchL.style.transform = 'translateY(-50%) translateX(-' + off + 'vw)';
+        punchR.style.transform = 'translateY(-50%) translateX(' + off + 'vw)';
       }
     });
 
