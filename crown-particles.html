@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Couronne en poussière d'or — maquette</title>
+<style>
+  html, body { margin:0; padding:0; background:#080a0e; overflow-x:hidden; }
+  .stub { min-height:60vh; display:flex; align-items:center; justify-content:center;
+          font-family:'Helvetica Neue',Arial,sans-serif; font-size:11px; letter-spacing:.28em;
+          text-transform:uppercase; color:#4a525e; }
+  .stub.top    { background:linear-gradient(180deg,#05070a,#080a0e); }
+  .stub.bottom { background:linear-gradient(180deg,#080a0e,#05070a); }
+
+  #fx-section { position:relative; height:100vh; overflow:hidden;
+    background:radial-gradient(70% 62% at 50% 42%, #1c1a14 0%, #0c0e13 46%, #06070a 100%); }
+  #fx-canvas { position:absolute; inset:0; }
+  #fx-canvas canvas { display:block; }
+  .hint { position:absolute; left:50%; bottom:30px; transform:translateX(-50%);
+    font-family:'Helvetica Neue',Arial,sans-serif; font-size:10px; letter-spacing:.36em;
+    text-transform:uppercase; color:rgba(228,205,140,.55); pointer-events:none;
+    animation:pulse 2.6s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:.3} 50%{opacity:.8} }
+</style>
+</head>
+<body>
+  <div class="stub top">↑ hero / menu — la section est plus bas ↓</div>
+
+  <section id="fx-section">
+    <div id="fx-canvas"></div>
+    <div class="hint">bouge la souris sur la couronne</div>
+  </section>
+
+  <div class="stub bottom">↓ section « Works »</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+  <script>
+  (function(){
+    var CROWN_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1920"><g><path transform="matrix(1,0,0,-1,959.4926,1546.1266)" d="M0 0C176.025 0 318.742-44.445 318.742-99.201 318.742-154.031 176.025-198.293 0-198.293-176.061-198.293-318.78-154.031-318.78-99.201-318.78-44.445-176.061 0 0 0M-697.585 888.138C-688.878 888.138-680.393 889.501-672.318 891.562L-382.938-81.932H-382.864C-350.562-190.633-190.725-273.044 1.637-273.044 194.036-273.044 353.835-190.633 386.175-81.932H386.25L675.407 890.789C682.476 889.243 689.92 888.138 697.511 888.138 753.704 888.138 799.293 933.209 799.293 988.961 799.293 1044.417 753.704 1089.561 697.511 1089.561 641.392 1089.561 595.693 1044.417 595.693 988.961 595.693 948.86 619.398 914.429 653.523 898.265L318.296 187.172 372.218 1145.311H374.564C430.609 1145.311 476.197 1190.311 476.197 1245.876 476.197 1301.516 430.609 1346.551 374.564 1346.551 318.296 1346.551 272.744 1301.516 272.744 1245.876 272.744 1199.958 303.893 1161.44 346.17 1149.251L123.105 212.728 15.592 1244.844C64.865 1251.952 102.712 1293.746 102.712 1344.451 102.712 1399.906 57.161 1445.127 1.078 1445.127-55.189 1445.127-100.703 1399.906-100.703 1344.451-100.703 1293.635-62.447 1251.584-12.989 1244.808L-120.352 214.532-342.969 1149.068C-300.136 1161.035-268.615 1199.7-268.615 1245.876-268.615 1301.516-314.24 1346.551-370.433 1346.551-426.552 1346.551-472.14 1301.516-472.14 1245.876-472.14 1190.311-426.552 1145.311-370.433 1145.311H-368.981L-315.095 187.577-650.993 899.516C-618.281 916.234-595.842 949.929-595.842 988.961-595.842 1044.417-641.356 1089.561-697.585 1089.561-753.706 1089.561-799.257 1044.417-799.257 988.961-799.257 933.209-753.706 888.138-697.585 888.138" fill="#000"/></g></svg>';
+
+    var _isMob = window.innerWidth <= 768;
+    var container = document.getElementById('fx-canvas');
+    function cw(){ return container.clientWidth  || window.innerWidth; }
+    function ch(){ return container.clientHeight || window.innerHeight; }
+
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(35, cw()/ch(), 0.1, 100);
+    camera.position.set(0, 0, 12); camera.lookAt(0,0,0);
+    var renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true, powerPreference:'high-performance' });
+    renderer.setSize(cw(), ch());
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    container.appendChild(renderer.domElement);
+
+    var FOV_H = Math.tan((35*Math.PI/180)/2) * 12;       // demi-hauteur visible à z=0
+    function halfH(){ return FOV_H; }
+    function halfW(){ return FOV_H * camera.aspect; }
+
+    // texture ronde douce pour des particules "poudre" (pas des carrés)
+    function dotTexture(){
+      var s=64, c=document.createElement('canvas'); c.width=c.height=s;
+      var g=c.getContext('2d'), grd=g.createRadialGradient(s/2,s/2,0,s/2,s/2,s/2);
+      grd.addColorStop(0,'rgba(255,255,255,1)');
+      grd.addColorStop(0.35,'rgba(255,244,214,0.85)');
+      grd.addColorStop(1,'rgba(255,244,214,0)');
+      g.fillStyle=grd; g.beginPath(); g.arc(s/2,s/2,s/2,0,Math.PI*2); g.fill();
+      var t=new THREE.CanvasTexture(c); return t;
+    }
+
+    var SPREAD = 7.0;            // largeur monde occupée par la couronne échantillonnée
+    var DEPTH  = 0.55;
+    var points, home, cur, vel, N=0;
+
+    var pointer = { x:1e9, y:1e9, active:false };
+
+    function buildParticles(positions){
+      N = positions.length/3;
+      home = new Float32Array(positions);
+      cur  = new Float32Array(positions);
+      vel  = new Float32Array(N*3);
+      var geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(cur, 3));
+      var mat = new THREE.PointsMaterial({
+        size: _isMob ? 0.14 : 0.12, map: dotTexture(), color: 0xffd27a,
+        transparent:true, opacity:1.0, blending:THREE.AdditiveBlending,
+        depthWrite:false, sizeAttenuation:true
+      });
+      points = new THREE.Points(geo, mat);
+      scene.add(points);
+      animate();
+    }
+
+    // Échantillonne la silhouette de la couronne (SVG -> canvas -> pixels)
+    function sampleCrown(){
+      var W = _isMob ? 300 : 420, H = W;
+      var img = new Image();
+      img.onload = function(){
+        var c=document.createElement('canvas'); c.width=W; c.height=H;
+        var g=c.getContext('2d'); g.drawImage(img,0,0,W,H);
+        var data;
+        try { data = g.getImageData(0,0,W,H).data; }
+        catch(e){ console.error('sample fail', e); return; }
+        var step = _isMob ? 4 : 3, pos=[];
+        for (var y=0; y<H; y+=step){
+          for (var x=0; x<W; x+=step){
+            var a = data[(y*W+x)*4+3];
+            if (a > 130){
+              var jx=(Math.random()-0.5)*step, jy=(Math.random()-0.5)*step;
+              var wx = ((x+jx)/W - 0.5) * SPREAD;
+              var wy = -((y+jy)/H - 0.5) * SPREAD;
+              var wz = (Math.random()-0.5) * DEPTH;
+              pos.push(wx, wy, wz);
+            }
+          }
+        }
+        buildParticles(new Float32Array(pos));
+      };
+      img.onerror = function(){ console.error('svg load fail'); };
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(CROWN_SVG);
+    }
+
+    // Interaction souris / tactile
+    function onMove(e){
+      var r = renderer.domElement.getBoundingClientRect();
+      var px = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+      var py = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
+      var ndcX = px / r.width * 2 - 1, ndcY = -(py / r.height * 2 - 1);
+      pointer.x = ndcX * halfW(); pointer.y = ndcY * halfH(); pointer.active = true;
+    }
+    function onLeave(){ pointer.active=false; pointer.x=pointer.y=1e9; }
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('touchmove', onMove, {passive:true});
+    window.addEventListener('mouseout', onLeave);
+    window.addEventListener('touchend', onLeave);
+
+    var R = 1.25, R2 = R*R, FORCE = 0.045, SPRING = 0.022, DAMP = 0.88, t0 = 0;
+
+    function animate(ts){
+      requestAnimationFrame(animate);
+      var t = (ts||0) * 0.001;
+      for (var i=0;i<N;i++){
+        var ix=i*3, iy=ix+1, iz=ix+2;
+        var hx=home[ix], hy=home[iy], hz=home[iz];
+        var cx=cur[ix], cy=cur[iy], cz=cur[iz];
+        // répulsion souris
+        if (pointer.active){
+          var dx=cx-pointer.x, dy=cy-pointer.y, d2=dx*dx+dy*dy;
+          if (d2 < R2){
+            var d=Math.sqrt(d2)+0.0001, f=(1 - d/R)*FORCE;
+            vel[ix]+=dx/d*f; vel[iy]+=dy/d*f; vel[iz]+=(Math.random()-0.5)*f*0.6;
+          }
+        }
+        // léger scintillement (vie au repos, utile sur mobile)
+        var shimmer = Math.sin(t*1.6 + hx*1.8 + hy*0.6) * 0.012;
+        // rappel vers la position d'origine
+        vel[ix]+=(hx-cx)*SPRING; vel[iy]+=(hy-cy)*SPRING; vel[iz]+=(hz+shimmer-cz)*SPRING;
+        vel[ix]*=DAMP; vel[iy]*=DAMP; vel[iz]*=DAMP;
+        cur[ix]+=vel[ix]; cur[iy]+=vel[iy]; cur[iz]+=vel[iz];
+      }
+      points.geometry.attributes.position.needsUpdate = true;
+      // rotation très lente de l'ensemble (vie premium)
+      points.rotation.y = Math.sin(t*0.25)*0.12;
+      renderer.render(scene, camera);
+    }
+
+    function resize(){
+      camera.aspect = cw()/ch(); camera.updateProjectionMatrix();
+      renderer.setSize(cw(), ch());
+    }
+    window.addEventListener('resize', resize);
+
+    sampleCrown();
+  })();
+  </script>
+</body>
+</html>
