@@ -9,8 +9,8 @@
     font-family:'Helvetica Neue',Arial,sans-serif; }
   .stub { min-height:60vh; display:flex; align-items:center; justify-content:center;
           font-size:11px; letter-spacing:.28em; text-transform:uppercase; color:#3e454f; }
-  .stub.top    { background:linear-gradient(180deg,#05070b,#06080c); }
-  .stub.bottom { background:linear-gradient(180deg,#06080c,#05070b); }
+  .stub.top    { background:linear-gradient(180deg,#05070b,#0a0f18); }
+  .stub.bottom { background:linear-gradient(180deg,#0a0f18,#05070b); }
 
   /* Fond = le dégradé bleu de la photo d'origine, plein écran */
   #fx-section { position:relative; height:100vh; overflow:hidden;
@@ -25,8 +25,8 @@
   .flank b { font-weight:600; }
   .flank .sub { display:block; font-size:11px; letter-spacing:.4em; text-transform:uppercase;
     color:rgba(220,225,235,.6); margin-top:10px; font-weight:400; }
-  #txt-left  { right:71%; text-align:right; }
-  #txt-right { left:71%;  text-align:left; }
+  #txt-left  { right:73%; text-align:right; }
+  #txt-right { left:73%;  text-align:left; }
   .hint { position:absolute; left:50%; bottom:28px; transform:translateX(-50%); z-index:3;
     font-size:10px; letter-spacing:.36em; text-transform:uppercase; color:rgba(220,225,235,.45);
     pointer-events:none; animation:pulse 2.6s ease-in-out infinite; }
@@ -119,7 +119,7 @@
         var minx=W,maxx=0,miny=H,maxy=0;
         for (var yy=0;yy<H;yy++){ for (var xx=0;xx<W;xx++){ if(d[(yy*W+xx)*4+3]>60){ if(xx<minx)minx=xx; if(xx>maxx)maxx=xx; if(yy<miny)miny=yy; if(yy>maxy)maxy=yy; } } }
         var bh=(maxy-miny)||1, cxpx=(minx+maxx)/2, cypx=(miny+maxy)/2;
-        var targetH=_isMob?4.2:4.9, s=targetH/bh;
+        var targetH=_isMob?5.6:6.6, s=targetH/bh;   // grande -> remplit le cadre, ne flotte pas
         for (var y=0;y<H;y+=step){
           for (var x=0;x<W;x+=step){
             var k=(y*W+x)*4, alpha=d[k+3];
@@ -144,7 +144,7 @@
 
     function setupScroll(){
       gsap.registerPlugin(ScrollTrigger);
-      ScrollTrigger.create({ trigger:'#fx-section', start:'center center', end:'+=300%', pin:true, scrub:0.8,
+      ScrollTrigger.create({ trigger:'#fx-section', start:'top top', end:'+=300%', pin:true, scrub:0.8,
         onUpdate:function(self){
           var p=self.progress;
           formP = easeOut(p/0.62);                       // converge lentement vers la fin
