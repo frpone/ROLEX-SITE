@@ -73,7 +73,8 @@
     var pointer={x:1e9,y:1e9,active:false};
     var disp = 1;   // 0 = montre formée ; 1 = explosée
 
-    function build(positions, colors){
+    var photoMat = null;
+    function build(positions, colors, img, fr){
       N = positions.length/3; window.__N = N;
       home=new Float32Array(positions); scat=new Float32Array(N*3);
       cur=new Float32Array(N*3); vel=new Float32Array(N*3);
@@ -91,7 +92,19 @@
       var mat=new THREE.PointsMaterial({ size:_isMob?0.06:0.05, map:dotTexture(),
         vertexColors:true, transparent:true, opacity:1, depthWrite:false, depthTest:false,
         blending:THREE.NormalBlending, sizeAttenuation:true });
-      points=new THREE.Points(geo,mat); scene.add(points);
+      points=new THREE.Points(geo,mat); points.renderOrder=1; scene.add(points);
+
+      // Photo nette détourée, alignée pile sur les particules (même image, même bbox) —
+      // on fond vers elle à l'apogée du scroll : c'est elle qui donne le rendu net "pixels".
+      var tex=new THREE.Texture(img); tex.needsUpdate=true;
+      tex.minFilter=THREE.LinearFilter; tex.magFilter=THREE.LinearFilter; tex.generateMipmaps=false;
+      tex.wrapS=tex.wrapT=THREE.ClampToEdgeWrapping;
+      tex.repeat.set(fr.maxx-fr.minx, fr.maxy-fr.miny);
+      tex.offset.set(fr.minx, 1-fr.maxy);
+      photoMat=new THREE.MeshBasicMaterial({ map:tex, transparent:true, opacity:0, depthTest:false, depthWrite:false });
+      var plane=new THREE.Mesh(new THREE.PlaneGeometry(fr.wW, fr.hW), photoMat);
+      plane.renderOrder=2; scene.add(plane);
+
       setupScroll(); animate();
     }
 
@@ -121,7 +134,8 @@
           }
         }
         if (!pos.length){ console.error('alpha vide ?'); return; }
-        build(new Float32Array(pos), new Float32Array(col));
+        var fr={ minx:minx/W, maxx:maxx/W, miny:miny/H, maxy:maxy/H, wW:(maxx-minx)*s, hW:(maxy-miny)*s };
+        build(new Float32Array(pos), new Float32Array(col), img, fr);
       };
       img.onerror=function(){ console.error('png fail'); };
       img.src='./montre-detour.png';
@@ -162,6 +176,9 @@
       }
       points.geometry.attributes.position.needsUpdate=true;
       points.rotation.y = disp*0.55 + Math.sin(t*0.2)*0.06;   // pivote quand elle est éclatée (3D)
+      // FONDU CROISÉ : au centre (disp~0) on voit la PHOTO nette ; en s'éloignant, la poussière prend le relais
+      points.material.opacity = Math.min(1, disp*2.4);
+      if (photoMat) photoMat.opacity = Math.max(0, 1 - disp*2.6);
       renderer.render(scene,camera);
     }
 
