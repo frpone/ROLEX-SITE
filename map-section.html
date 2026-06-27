@@ -94,25 +94,25 @@
     var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
     renderer.setSize(cw(), ch());
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.toneMapping = THREE.NoToneMapping;   // ACES désaturait le bleu vers le blanc
-    renderer.toneMappingExposure = 1.0;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.15;
     renderer.outputEncoding = THREE.sRGBEncoding;
     container.appendChild(renderer.domElement);
 
     // Environnement procédural (reflets studio) — identique à l'expo
     function buildEnv() {
       var es = new THREE.Scene();
-      es.background = new THREE.Color(0x0a1a33);
+      es.background = new THREE.Color(0xdfe6ee);
       function p(w, h, x, y, z, rx, ry, c, i) {
         var m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(c).multiplyScalar(i) }));
         m.position.set(x, y, z); m.rotation.set(rx, ry, 0); es.add(m);
       }
-      p(20, 10, 0, 8, 0, -Math.PI/2, 0, 0x9ec8ff, 4.2);   // haut : bleu clair lumineux
-      p(8, 12, 8, 2, 2, 0, -Math.PI/2, 0x4f86d6, 3.0);    // droite : bleu
-      p(8, 12, -8, 2, 2, 0, Math.PI/2, 0x2a4f8c, 2.4);    // gauche : bleu sombre
-      p(14, 8, 0, 3, -6, 0, Math.PI, 0xcfe6ff, 2.4);      // arrière : highlight bleu-blanc
-      p(14, 8, 0, 0, 8, 0, 0, 0x16335f, 1.2);             // avant : bleu sombre
-      p(20, 20, 0, -6, 0, Math.PI/2, 0, 0x0e2347, 1.4);   // bas
+      p(20, 10, 0, 8, 0, -Math.PI/2, 0, 0xffffff, 4.5);
+      p(8, 12, 8, 2, 2, 0, -Math.PI/2, 0xfff3e0, 3.2);
+      p(8, 12, -8, 2, 2, 0, Math.PI/2, 0xdfeaf5, 3.0);
+      p(14, 8, 0, 3, -6, 0, Math.PI, 0xffffff, 2.5);
+      p(14, 8, 0, 0, 8, 0, 0, 0xeef2f6, 1.4);
+      p(20, 20, 0, -6, 0, Math.PI/2, 0, 0xf0f4f6, 1.8);
       return es;
     }
     var pmrem = new THREE.PMREMGenerator(renderer);
@@ -120,14 +120,17 @@
     scene.environment = pmrem.fromScene(buildEnv(), 0.02).texture;
 
     THREE.RectAreaLightUniformsLib.init();
-    // Lampes BLEUES et douces (les blanches lavaient la couronne en blanc)
-    var l1 = new THREE.RectAreaLight(0x7fa0e8, 2.4, 12, 6); l1.position.set(0, 7, 3); l1.lookAt(0,0,0); scene.add(l1);
-    var l2 = new THREE.RectAreaLight(0x9ab4f0, 1.8, 8, 10); l2.position.set(7, 1, 4); l2.lookAt(0,0,0); scene.add(l2);
-    var l3 = new THREE.RectAreaLight(0x6f90d8, 1.5, 8, 10); l3.position.set(-7, 1, 4); l3.lookAt(0,0,0); scene.add(l3);
-    scene.add(new THREE.HemisphereLight(0x88a8ff, 0x0e2044, 0.25));
+    var l1 = new THREE.RectAreaLight(0xffffff, 6, 12, 6); l1.position.set(0, 7, 3); l1.lookAt(0,0,0); scene.add(l1);
+    var l2 = new THREE.RectAreaLight(0xffffff, 4, 8, 10); l2.position.set(7, 1, 4); l2.lookAt(0,0,0); scene.add(l2);
+    var l3 = new THREE.RectAreaLight(0xfff2e0, 4, 8, 10); l3.position.set(-7, 1, 4); l3.lookAt(0,0,0); scene.add(l3);
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x9099a8, 0.3));
 
-    // Pas de HDR blanc ici : on garde l'environnement procédural BLEU ci-dessus
-    // (c'est lui qui colore le métal -> couronne réellement bleu métallisé).
+    // HDRI -> reflets riches sur le métal (or / chrome). Repli : env procédural ci-dessus.
+    new THREE.RGBELoader().load(
+      'https://threejs.org/examples/textures/equirectangular/venice_sunset_1k.hdr',
+      function(t){ t.mapping = THREE.EquirectangularReflectionMapping; scene.environment = pmrem.fromEquirectangular(t).texture; t.dispose(); },
+      undefined, function(){ console.warn('HDRI KO -> env procédural conservé'); }
+    );
 
     // Couronne (verre vert) — identique à l'expo
     var crownGroup = new THREE.Group();
@@ -142,11 +145,9 @@
       geom.center();
       var mat = WIRE
         ? new THREE.MeshBasicMaterial({ color: 0xd9c08a, wireframe: true, transparent: true, opacity: 0.9 })
-        : new THREE.MeshPhysicalMaterial({   // BLEU ULTRAMARINE auto-illuminé (pas de reflets blancs)
-            color: new THREE.Color(0x1722c4), metalness: 0.0, roughness: 0.5,
-            clearcoat: 0.0, envMapIntensity: 0.2,
-            emissive: new THREE.Color(0x2433e6), emissiveIntensity: 0.95,
-            side: THREE.DoubleSide
+        : new THREE.MeshStandardMaterial({   // OR profond — reflets HDRI (chrome = color 0xf5f7fa, roughness 0.06)
+            color: new THREE.Color(0xdf9e2a), metalness: 1.0, roughness: 0.3,
+            envMapIntensity: 1.25, side: THREE.DoubleSide
           });
       crownGroup.add(new THREE.Mesh(geom, mat));
     });
