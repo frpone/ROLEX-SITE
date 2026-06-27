@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Montre en particules — maquette</title>
+<style>
+  html, body { margin:0; padding:0; background:#05070a; overflow-x:hidden;
+    font-family:'Helvetica Neue',Arial,sans-serif; }
+  .stub { min-height:60vh; display:flex; align-items:center; justify-content:center;
+          font-size:11px; letter-spacing:.28em; text-transform:uppercase; color:#3e454f; }
+  .stub.top    { background:linear-gradient(180deg,#04050a,#05070a); }
+  .stub.bottom { background:linear-gradient(180deg,#05070a,#04050a); }
+
+  #fx-section { position:relative; height:100vh; overflow:hidden;
+    background:radial-gradient(75% 80% at 52% 40%, #0c121c 0%, #070a10 55%, #04060a 100%); }
+  #watch-photo { position:absolute; inset:0; width:100%; height:100%; object-fit:contain;
+    z-index:1; pointer-events:none; opacity:0; }
+  #fx-canvas { position:absolute; inset:0; z-index:2; }
+  #fx-canvas canvas { display:block; }
+
+  /* Punchline */
+  #punch { position:absolute; left:0; right:0; bottom:13%; text-align:center;
+    pointer-events:none; opacity:0; }
+  #punch .eyebrow { font-size:10px; letter-spacing:.42em; text-transform:uppercase;
+    color:rgba(220,225,235,.55); margin-bottom:14px; }
+  #punch .line { font-size:clamp(26px,4.4vw,54px); font-weight:200; letter-spacing:.04em;
+    color:#eef2f7; }
+  #punch .line b { font-weight:600; }
+  .hint { position:absolute; left:50%; bottom:30px; transform:translateX(-50%);
+    font-size:10px; letter-spacing:.36em; text-transform:uppercase; color:rgba(220,225,235,.4);
+    pointer-events:none; animation:pulse 2.6s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:.25} 50%{opacity:.7} }
+</style>
+</head>
+<body>
+  <div class="stub top">↑ hero / menu — la section est plus bas ↓</div>
+
+  <section id="fx-section">
+    <img id="watch-photo" src="./montre-particule.jpg" alt="" />
+    <div id="fx-canvas"></div>
+    <div id="punch">
+      <div class="eyebrow">François Peyranne × Rolex</div>
+      <div class="line">Ten years. <b>Every detail.</b></div>
+    </div>
+    <div class="hint">scroll</div>
+  </section>
+
+  <div class="stub bottom">↓ section « Works »</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+  <script>
+  (function(){
+    var _isMob = window.innerWidth <= 768;
+    var container = document.getElementById('fx-canvas');
+    var punch = document.getElementById('punch');
+    var photo = document.getElementById('watch-photo');
+    function cw(){ return container.clientWidth  || window.innerWidth; }
+    function ch(){ return container.clientHeight || window.innerHeight; }
+
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(35, cw()/ch(), 0.1, 100);
+    camera.position.set(0,0,12); camera.lookAt(0,0,0);
+    var renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true, powerPreference:'high-performance' });
+    renderer.setSize(cw(), ch()); renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+    container.appendChild(renderer.domElement);
+    var FOV_H = Math.tan((35*Math.PI/180)/2)*12;
+    function halfH(){ return FOV_H; } function halfW(){ return FOV_H*camera.aspect; }
+
+    function dotTexture(){
+      var s=64,c=document.createElement('canvas'); c.width=c.height=s;
+      var g=c.getContext('2d'),grd=g.createRadialGradient(s/2,s/2,0,s/2,s/2,s/2);
+      grd.addColorStop(0,'rgba(255,255,255,1)'); grd.addColorStop(0.4,'rgba(255,255,255,0.8)');
+      grd.addColorStop(1,'rgba(255,255,255,0)');
+      g.fillStyle=grd; g.beginPath(); g.arc(s/2,s/2,s/2,0,Math.PI*2); g.fill();
+      return new THREE.CanvasTexture(c);
+    }
+
+    var SPREADX = 14;           // largeur monde de la photo entière (la montre ~1/3 -> ~4.5u)
+    var SCATTER = 6.0;          // dispersion max au scroll
+    var TH = 92;                // on ne garde que les reflets brillants -> poussière d'étincelles (la photo porte la montre)
+    var WARM = [1.18, 1.12, 1.0];  // léger réchauffement (or) des particules
+
+    var points, home, scat, cur, vel, N=0;
+    var pointer={x:1e9,y:1e9,active:false};
+    var disp = 1;               // 0 = montre formée ; 1 = poussière
+
+    function build(positions, colors){
+      N = positions.length/3;
+      home = new Float32Array(positions);
+      scat = new Float32Array(N*3);
+      cur  = new Float32Array(N*3);
+      vel  = new Float32Array(N*3);
+      for (var i=0;i<N;i++){
+        var ix=i*3;
+        var dir = [(Math.random()-0.5), (Math.random()-0.5), (Math.random()-0.5)];
+        var L = Math.hypot(dir[0],dir[1],dir[2])||1;
+        var mag = (0.4 + Math.random()*0.6);
+        scat[ix]   = home[ix]   + dir[0]/L*SCATTER*mag;
+        scat[ix+1] = home[ix+1] + dir[1]/L*SCATTER*mag;
+        scat[ix+2] = home[ix+2] + dir[2]/L*SCATTER*mag;
+        // départ = dispersé
+        cur[ix]=scat[ix]; cur[ix+1]=scat[ix+1]; cur[ix+2]=scat[ix+2];
+      }
+      var geo=new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(cur,3));
+      geo.setAttribute('color', new THREE.BufferAttribute(colors,3));
+      var mat=new THREE.PointsMaterial({ size:_isMob?0.07:0.055, map:dotTexture(),
+        vertexColors:true, transparent:true, opacity:1, blending:THREE.AdditiveBlending,
+        depthWrite:false, sizeAttenuation:true });
+      points=new THREE.Points(geo,mat); scene.add(points);
+      setupScroll(); animate();
+    }
+
+    function sample(){
+      var img=new Image(); img.crossOrigin='anonymous';
+      img.onload=function(){
+        var W=_isMob?460:640, H=Math.round(W*img.height/img.width);
+        var c=document.createElement('canvas'); c.width=W; c.height=H;
+        var g=c.getContext('2d'); g.drawImage(img,0,0,W,H);
+        var d; try{ d=g.getImageData(0,0,W,H).data; }catch(e){ console.error(e); return; }
+        var step=_isMob?3:2, pos=[], col=[];
+        SPREADX = 2*halfW();                 // colle les particules à la photo affichée (contain)
+        var SPREADY = SPREADX*H/W;
+        for (var y=0;y<H;y+=step){
+          for (var x=0;x<W;x+=step){
+            var k=(y*W+x)*4, r=d[k],gg=d[k+1],b=d[k+2];
+            var lum=0.299*r+0.587*gg+0.114*b;
+            if (lum>TH){
+              if (Math.random() > 0.8) continue;   // garde l'essentiel des reflets
+              var jx=(Math.random()-0.5)*step, jy=(Math.random()-0.5)*step;
+              pos.push(((x+jx)/W-0.5)*SPREADX, -((y+jy)/H-0.5)*SPREADY, (Math.random()-0.5)*0.5);
+              var bo=2.6/255;
+              col.push(Math.min(1,r*bo*WARM[0]), Math.min(1,gg*bo*WARM[1]), Math.min(1,b*bo*WARM[2]));
+            }
+          }
+        }
+        build(new Float32Array(pos), new Float32Array(col));
+      };
+      img.onerror=function(){ console.error('img fail'); };
+      img.src='./montre-particule.jpg';
+    }
+
+    function setupScroll(){
+      gsap.registerPlugin(ScrollTrigger);
+      ScrollTrigger.create({
+        trigger:'#fx-section', start:'center center', end:'+=200%', pin:true, scrub:0.6,
+        onUpdate:function(self){
+          disp = Math.abs(self.progress - 0.5) * 2;       // 0 au centre (montre nette), 1 aux bords
+          if (punch) punch.style.opacity = Math.max(0, 1 - disp*1.7);
+          if (photo) photo.style.opacity = Math.max(0, 1 - disp*1.25);   // la photo nette au centre, fond en poussière
+        }
+      });
+    }
+
+    function onMove(e){
+      var r=renderer.domElement.getBoundingClientRect();
+      var px=(e.touches?e.touches[0].clientX:e.clientX)-r.left;
+      var py=(e.touches?e.touches[0].clientY:e.clientY)-r.top;
+      pointer.x=(px/r.width*2-1)*halfW(); pointer.y=-(py/r.height*2-1)*halfH(); pointer.active=true;
+    }
+    window.addEventListener('mousemove',onMove);
+    window.addEventListener('touchmove',onMove,{passive:true});
+    window.addEventListener('mouseout',function(){pointer.active=false;pointer.x=pointer.y=1e9;});
+
+    var R=1.1,R2=R*R,FORCE=0.04,SPRING=0.05,DAMP=0.82;
+    function animate(ts){
+      requestAnimationFrame(animate);
+      for (var i=0;i<N;i++){
+        var ix=i*3,iy=ix+1,iz=ix+2;
+        // cible = entre forme (home) et dispersion (scat) selon le scroll
+        var tx=home[ix]+(scat[ix]-home[ix])*disp;
+        var ty=home[iy]+(scat[iy]-home[iy])*disp;
+        var tz=home[iz]+(scat[iz]-home[iz])*disp;
+        var cx=cur[ix],cy=cur[iy],cz=cur[iz];
+        if (pointer.active){
+          var dx=cx-pointer.x,dy=cy-pointer.y,dd=dx*dx+dy*dy;
+          if (dd<R2){ var dl=Math.sqrt(dd)+0.0001,f=(1-dl/R)*FORCE; vel[ix]+=dx/dl*f; vel[iy]+=dy/dl*f; }
+        }
+        vel[ix]+=(tx-cx)*SPRING; vel[iy]+=(ty-cy)*SPRING; vel[iz]+=(tz-cz)*SPRING;
+        vel[ix]*=DAMP; vel[iy]*=DAMP; vel[iz]*=DAMP;
+        cur[ix]+=vel[ix]; cur[iy]+=vel[iy]; cur[iz]+=vel[iz];
+      }
+      points.geometry.attributes.position.needsUpdate=true;
+      points.material.opacity = 1 - disp*0.5;
+      renderer.render(scene,camera);
+    }
+
+    window.addEventListener('resize',function(){
+      camera.aspect=cw()/ch(); camera.updateProjectionMatrix(); renderer.setSize(cw(),ch());
+    });
+
+    sample();
+  })();
+  </script>
+</body>
+</html>
