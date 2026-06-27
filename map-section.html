@@ -102,17 +102,17 @@
     // Environnement procédural (reflets studio) — identique à l'expo
     function buildEnv() {
       var es = new THREE.Scene();
-      es.background = new THREE.Color(0xe8eef2);
+      es.background = new THREE.Color(0x0a1a33);
       function p(w, h, x, y, z, rx, ry, c, i) {
         var m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(c).multiplyScalar(i) }));
         m.position.set(x, y, z); m.rotation.set(rx, ry, 0); es.add(m);
       }
-      p(20, 10, 0, 8, 0, -Math.PI/2, 0, 0xffffff, 4.5);
-      p(8, 12, 8, 2, 2, 0, -Math.PI/2, 0xfff5e8, 3.2);
-      p(8, 12, -8, 2, 2, 0, Math.PI/2, 0xd6e8f0, 3.0);
-      p(14, 8, 0, 3, -6, 0, Math.PI, 0xffffff, 2.5);
-      p(14, 8, 0, 0, 8, 0, 0, 0xe8f0f5, 1.4);
-      p(20, 20, 0, -6, 0, Math.PI/2, 0, 0xf0f4f6, 1.8);
+      p(20, 10, 0, 8, 0, -Math.PI/2, 0, 0x9ec8ff, 4.2);   // haut : bleu clair lumineux
+      p(8, 12, 8, 2, 2, 0, -Math.PI/2, 0x4f86d6, 3.0);    // droite : bleu
+      p(8, 12, -8, 2, 2, 0, Math.PI/2, 0x2a4f8c, 2.4);    // gauche : bleu sombre
+      p(14, 8, 0, 3, -6, 0, Math.PI, 0xcfe6ff, 2.4);      // arrière : highlight bleu-blanc
+      p(14, 8, 0, 0, 8, 0, 0, 0x16335f, 1.2);             // avant : bleu sombre
+      p(20, 20, 0, -6, 0, Math.PI/2, 0, 0x0e2347, 1.4);   // bas
       return es;
     }
     var pmrem = new THREE.PMREMGenerator(renderer);
@@ -127,12 +127,8 @@
     var dl = new THREE.DirectionalLight(0xffffff, 0.6); dl.position.set(6, 10, 6); scene.add(dl);
     scene.add(new THREE.HemisphereLight(0xffffff, 0xd8d8d8, 0.2));
 
-    // HDR (reflets) — indispensable à la lisibilité du verre
-    new THREE.RGBELoader().load(
-      'https://threejs.org/examples/textures/equirectangular/spot1Lux.hdr',
-      function(t) { t.mapping = THREE.EquirectangularReflectionMapping; scene.environment = pmrem.fromEquirectangular(t).texture; t.dispose(); },
-      undefined, function() { console.warn('HDR failed'); }
-    );
+    // Pas de HDR blanc ici : on garde l'environnement procédural BLEU ci-dessus
+    // (c'est lui qui colore le métal -> couronne réellement bleu métallisé).
 
     // Couronne (verre vert) — identique à l'expo
     var crownGroup = new THREE.Group();
@@ -148,9 +144,9 @@
       var mat = WIRE
         ? new THREE.MeshBasicMaterial({ color: 0xd9c08a, wireframe: true, transparent: true, opacity: 0.9 })
         : new THREE.MeshPhysicalMaterial({   // bleu métallisé façon texture de la carte
-            color: new THREE.Color(0x2f4f9e), metalness: 0.5, roughness: 0.3,
-            clearcoat: 0.7, clearcoatRoughness: 0.25, envMapIntensity: 1.3,
-            emissive: new THREE.Color(0x0e1c3a), emissiveIntensity: 0.35,
+            color: new THREE.Color(0x3e63ad), metalness: 0.85, roughness: 0.28,
+            clearcoat: 0.7, clearcoatRoughness: 0.25, envMapIntensity: 1.7,
+            emissive: new THREE.Color(0x0c1a36), emissiveIntensity: 0.25,
             side: THREE.DoubleSide
           });
       crownGroup.add(new THREE.Mesh(geom, mat));
@@ -160,7 +156,7 @@
     var sz = bbox.getSize(new THREE.Vector3());
     crownGroup.scale.setScalar((_isMob ? 1.9 : 2.3) / Math.max(sz.x, sz.y));
     crownBaseScale = crownGroup.scale.x;
-    var BASE_RX = Math.PI + 0.18;          // inclinaison droite de la couronne
+    var BASE_RX = Math.PI;                  // couronne DROITE (face, sans inclinaison)
     crownGroup.rotation.x = BASE_RX;
     crownGroup.rotation.y = 0.42;
     scene.add(crownGroup);
@@ -189,21 +185,26 @@
     ScrollTrigger.create({
       trigger: '#map-section',
       start: 'center center',
-      end: '+=180%',          // longueur de scroll de la traversée
+      end: '+=280%',          // plus long -> arrivée plus lente + place pour le "repartir"
       pin: true,
       scrub: 1,
       onUpdate: function(self){
         var p = self.progress;
         var edge = visibleHalfWidth() + 2.5;
-        var ep = 1 - Math.pow(1 - Math.min(1, p/0.55), 3);   // entrée easeOut
-        crownGroup.position.x = lerp(-edge, 0, ep);          // arrive et S'ARRÊTE au centre
-        crownGroup.position.y = 0; crownGroup.position.z = 0; // aligné avec la typo
-        crownGroup.rotation.y = 0.42 + ep * Math.PI * 2;     // tourne en arrivant, ralentit
-        if (glow) glow.style.left = (50 + (crownGroup.position.x/edge)*50) + '%';  // halo derrière la couronne
-        var a = Math.max(0, Math.min(1, (p - 0.12) / 0.42));
-        var ea = 1 - Math.pow(1 - a, 3);                 // la typo arrive de G/D et se cale
-        var off = (1 - ea) * 42;                         // vw hors champ
-        punchL.style.opacity = ea; punchR.style.opacity = ea; punchS.style.opacity = ea;
+        var aIn  = Math.min(1, p / 0.50);
+        var eIn  = 1 - Math.pow(1 - aIn, 3);                  // arrivée easeOut
+        var aOut = Math.max(0, Math.min(1, (p - 0.68) / 0.32));
+        var eOut = aOut * aOut;                               // départ easeIn
+        var cx = lerp(-edge, 0, eIn);
+        if (aOut > 0) cx = lerp(0, edge, eOut);               // s'arrête au centre puis REPART à droite
+        crownGroup.position.x = cx;
+        crownGroup.position.y = 0; crownGroup.position.z = 0;
+        crownGroup.rotation.y = eIn * Math.PI * 6 + aOut * Math.PI * 3;  // ~3 tours, finit DROITE (6π), puis repart
+        if (glow) glow.style.left = (50 + (cx / edge) * 50) + '%';
+        var tin = 1 - Math.pow(1 - Math.max(0, Math.min(1, (p - 0.12) / 0.40)), 3);
+        var vis = tin * (1 - eOut);
+        var off = (1 - tin) * 42 + eOut * 42;                 // arrive de G/D, puis repart vers les côtés
+        punchL.style.opacity = vis; punchR.style.opacity = vis; punchS.style.opacity = vis;
         punchL.style.transform = 'translateY(-50%) translateX(-' + off + 'vw)';
         punchR.style.transform = 'translateY(-50%) translateX(' + off + 'vw)';
       }
