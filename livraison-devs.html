@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Section Couronne × Rolex — Livraison développeurs</title>
+<style>
+  :root{ --bg:#0b0f16; --card:#121925; --ink:#e8edf4; --mut:#8b97a8; --acc:#d9a441; --line:#222c3a; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--bg); color:var(--ink);
+        font-family:'Helvetica Neue',Arial,sans-serif; line-height:1.6; }
+  .wrap{ max-width:780px; margin:0 auto; padding:54px 22px 80px; }
+  .eyebrow{ font-size:11px; letter-spacing:.34em; text-transform:uppercase; color:var(--acc); }
+  h1{ font-size:30px; font-weight:300; margin:.3em 0 .1em; letter-spacing:.01em; }
+  h1 b{ font-weight:700; }
+  .lead{ color:var(--mut); margin:0 0 34px; }
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:14px;
+         padding:22px 24px; margin:16px 0; }
+  .card h2{ font-size:13px; letter-spacing:.16em; text-transform:uppercase; margin:0 0 10px; color:var(--ink); }
+  .card p{ margin:.3em 0; color:#c4cdda; font-size:15px; }
+  .btn{ display:inline-block; margin:10px 10px 4px 0; padding:11px 18px; border-radius:10px;
+        text-decoration:none; font-size:13px; letter-spacing:.04em; }
+  .btn.primary{ background:var(--acc); color:#1a1205; font-weight:700; }
+  .btn.ghost{ background:transparent; color:var(--ink); border:1px solid var(--line); }
+  ol{ margin:.4em 0 0; padding-left:20px; color:#c4cdda; font-size:15px; }
+  ol li{ margin:.35em 0; }
+  code{ background:#0a0e15; border:1px solid var(--line); border-radius:5px; padding:1px 6px;
+        font-size:13px; color:#e7c98a; }
+  .note{ font-size:13.5px; color:var(--mut); }
+  .note b{ color:#c4cdda; }
+  hr{ border:none; border-top:1px solid var(--line); margin:30px 0; }
+  a{ color:var(--acc); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">François Peyranne × Rolex</div>
+  <h1>Section <b>« Couronne / Carte »</b> — livraison</h1>
+  <p class="lead">Une section animée au scroll à intégrer sur la home, <b>entre le hero et « Works »</b>.
+     Bloc autonome (HTML/CSS/JS) — fonctionne avec Elementor, Gutenberg, ou tout autre système.</p>
+
+  <div class="card">
+    <h2>1 · Voir le rendu attendu</h2>
+    <p>La démo exacte (faux hero → la section → faux Works) :</p>
+    <a class="btn primary" href="./map-embed.html" target="_blank">▶ Ouvrir la démo</a>
+  </div>
+
+  <div class="card">
+    <h2>2 · Le code à intégrer</h2>
+    <p>Un seul bloc à coller dans la page d'accueil, entre le hero et « Works ».</p>
+    <a class="btn primary" href="./bloc-couronne.txt" download>⬇ Télécharger le code (.txt)</a>
+    <a class="btn ghost" href="./bloc-couronne.txt" target="_blank">Voir le code</a>
+    <ol>
+      <li><b>Elementor</b> → nouveau container pleine largeur (padding/gap 0) + widget <b>« HTML »</b> → coller le code.</li>
+      <li><b>Gutenberg</b> → bloc <b>« HTML personnalisé »</b>.</li>
+      <li><b>Divi / Bricks / WPBakery / Oxygen</b> → leur module <b>« Code / HTML »</b>.</li>
+      <li><b>Thème PHP</b> → dans le template de la home (ou via shortcode).</li>
+    </ol>
+    <p class="note" style="margin-top:12px;">⚠️ Si l'éditeur <b>filtre les <code>&lt;script&gt;</code></b> : injecter le bloc via <b>WPCode</b> / <b>Code Snippets</b>, ou l'enqueuer dans le thème.</p>
+  </div>
+
+  <div class="card">
+    <h2>3 · L'image de la carte</h2>
+    <p>Elle se charge déjà toute seule depuis une URL — <b>rien à faire pour que ça marche</b>.
+       Pour rendre le site 100 % autonome, l'héberger côté WordPress :</p>
+    <a class="btn primary" href="./world-map.jpg" download>⬇ Télécharger world-map.jpg</a>
+    <ol>
+      <li>Uploader l'image dans la <b>médiathèque WordPress</b>.</li>
+      <li>Dans le code, remplacer l'URL de <code>.fpr-bg { background: url(...) }</code> par celle de la médiathèque.</li>
+    </ol>
+  </div>
+
+  <hr />
+  <h2 style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--mut);">Notes techniques</h2>
+  <p class="note">• <b>CSS isolé</b> sous <code>#fpr-map</code> → n'impacte pas le reste du site.<br>
+     • <b>Three.js + GSAP/ScrollTrigger</b> chargés en CDN (jsdelivr) — standard.<br>
+     • <b>Police</b> Sweet Sans Pro via Adobe Fonts (déjà présente sur le site).<br>
+     • <b>Reflets (HDRI)</b> : fichier public three.js.<br>
+     • Animation pilotée par <b>ScrollTrigger (pin)</b>. Si un <b>smooth-scroll global</b> est actif (Lenis, etc.), prévoir <code>ScrollTrigger.refresh()</code> / vérifier la compat.<br>
+     • Hauteur de la section réglable : <code>#fpr-map { height: clamp(360px,54vh,600px) }</code>.</p>
+</div>
+</body>
+</html>
