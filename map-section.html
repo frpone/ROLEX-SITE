@@ -45,13 +45,14 @@
     text-shadow:0 2px 26px rgba(0,0,0,.6); }
   #punch-left  { right:55%; top:50%; text-align:right; font-weight:300; }   /* Light */
   #punch-right { left:55%;  top:50%; text-align:left;  font-weight:700; }   /* Bold */
-  .psub { position:absolute; left:50%; top:67%; transform:translateX(-50%); z-index:3; opacity:0;
+  .psub { position:absolute; left:50%; top:63%; transform:translateX(-50%); z-index:3; opacity:0;
     pointer-events:none; font-family:"sweet-sans-pro","Helvetica Neue",Arial,sans-serif;
-    font-size:10px; font-weight:400; letter-spacing:.42em; text-transform:uppercase;
-    color:rgba(220,225,235,.6); text-shadow:0 2px 18px rgba(0,0,0,.6); }
+    font-size:13px; font-weight:400; letter-spacing:.14em; line-height:1.9; text-transform:uppercase;
+    width:min(78%, 360px); text-align:center; color:rgba(244,248,253,.96);
+    text-shadow:0 2px 18px rgba(0,0,0,.7); }
 
   /* Point radar sur Paris (base de FP) */
-  .paris-dot { position:absolute; left:49%; top:36.5%; z-index:3; transform:translate(-50%,-50%);
+  .paris-dot { position:absolute; left:50.5%; top:37.5%; z-index:3; transform:translate(-50%,-50%);
     pointer-events:none; opacity:0; }
   .pd-core { position:absolute; left:0; top:0; width:7px; height:7px; margin:-3.5px; border-radius:50%;
     background:#dce8ff; box-shadow:0 0 10px 2px rgba(150,190,255,.9); animation:pdblink 1.9s ease-in-out infinite; }
@@ -78,12 +79,12 @@
     <div id="crown-canvas"></div>
     <span class="pword" id="punch-left">One crown.</span>
     <span class="pword" id="punch-right">Every horizon.</span>
-    <span class="psub" id="punch-sub">From Paris to the world — every Rolex project, conceived for a global stage</span>
+    <span class="psub" id="punch-sub">From Geneva to the world — every Rolex project, conceived for a global stage</span>
     <div class="paris-dot" id="paris-dot">
       <span class="pd-ring"></span>
       <span class="pd-ring r2"></span>
       <span class="pd-core"></span>
-      <span class="pd-label">PARIS</span>
+      <span class="pd-label">GENÈVE</span>
     </div>
     <div class="scroll-hint">scroll</div>
   </section>
