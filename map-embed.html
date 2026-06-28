@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bloc intégrable — test en contexte</title>
+<style>
+  html,body{margin:0;background:#000;color:#5b6678;font-family:'Helvetica Neue',Arial,sans-serif;}
+  .demo-stub{min-height:90vh;display:flex;align-items:center;justify-content:center;letter-spacing:.28em;
+    text-transform:uppercase;font-size:12px;}
+  .demo-stub.hero{background:linear-gradient(180deg,#000,#0d1420);}
+  .demo-stub.works{background:linear-gradient(180deg,#0d1420,#000);}
+</style>
+</head>
+<body>
+  <!-- ↓↓↓ Faux HERO/MENU de la home (NE PAS copier) ↓↓↓ -->
+  <div class="demo-stub hero">HERO / MENU (déjà sur ton site) — fais défiler</div>
+
+  <!-- ============================================================= -->
+  <!-- ====  COPIER À PARTIR D'ICI  (coller dans un widget HTML)  ==== -->
+  <!-- ====  Section « Couronne / Carte » — François Peyranne × Rolex ==== -->
+  <div id="fpr-map">
+    <div class="fpr-bg"></div>
+    <div class="fpr-glow"></div>
+    <div class="fpr-canvas"></div>
+    <span class="fpr-word" id="fpr-left">One crown.</span>
+    <span class="fpr-word" id="fpr-right">Every horizon.</span>
+    <span class="fpr-sub">Crafting Rolex's visual narrative — from Geneva to the world</span>
+    <div class="fpr-dot">
+      <span class="fpr-ring"></span><span class="fpr-ring r2"></span><span class="fpr-core"></span>
+      <span class="fpr-label">GENÈVE</span>
+    </div>
+  </div>
+
+  <link rel="stylesheet" href="https://use.typekit.net/fqu8chv.css">
+  <style>
+  #fpr-map{ position:relative; height:clamp(360px,54vh,600px); overflow:hidden; background:#0d1420;
+    font-family:"sweet-sans-pro","Helvetica Neue",Arial,sans-serif; }
+  #fpr-map .fpr-bg{ position:absolute; inset:0;
+    background:#0d1420 url('https://rolex-site.pages.dev/world-map.jpg') center/cover no-repeat; }
+  #fpr-map .fpr-bg::before{ content:''; position:absolute; inset:0;
+    background:radial-gradient(120% 80% at 50% -10%, rgba(120,150,190,.25), transparent 55%); }
+  #fpr-map .fpr-bg::after{ content:''; position:absolute; inset:0;
+    background:radial-gradient(120% 120% at 50% 50%, transparent 55%, rgba(0,0,0,.55)); }
+  #fpr-map .fpr-canvas{ position:absolute; inset:0; z-index:2; }
+  #fpr-map .fpr-canvas canvas{ display:block; }
+  #fpr-map .fpr-glow{ position:absolute; top:46%; left:-10%; width:48vh; height:48vh; transform:translate(-50%,-50%);
+    z-index:1; pointer-events:none; filter:blur(6px);
+    background:radial-gradient(circle, rgba(200,222,245,.22), rgba(160,195,230,.07) 42%, transparent 68%); }
+  #fpr-map .fpr-word{ position:absolute; top:50%; z-index:3; pointer-events:none; opacity:0; white-space:nowrap;
+    text-transform:uppercase; font-size:clamp(20px,3.1vw,42px); letter-spacing:.10em; color:#eef2f7;
+    text-shadow:0 2px 26px rgba(0,0,0,.6); }
+  #fpr-map #fpr-left{ right:55%; text-align:right; font-weight:300; }
+  #fpr-map #fpr-right{ left:55%; text-align:left; font-weight:700; }
+  #fpr-map .fpr-sub{ position:absolute; left:50%; top:63%; transform:translateX(-50%); z-index:3; opacity:0;
+    pointer-events:none; font-size:13px; font-weight:400; letter-spacing:.14em; line-height:1.9; text-transform:uppercase;
+    width:min(78%,360px); text-align:center; color:rgba(244,248,253,.96); text-shadow:0 2px 18px rgba(0,0,0,.7); }
+  #fpr-map .fpr-dot{ position:absolute; left:50.5%; top:37.5%; z-index:3; transform:translate(-50%,-50%);
+    pointer-events:none; opacity:0; }
+  #fpr-map .fpr-core{ position:absolute; left:0; top:0; width:7px; height:7px; margin:-3.5px; border-radius:50%;
+    background:#dce8ff; box-shadow:0 0 10px 2px rgba(150,190,255,.9); animation:fprBlink 1.9s ease-in-out infinite; }
+  #fpr-map .fpr-ring{ position:absolute; left:0; top:0; width:12px; height:12px; margin:-6px; border-radius:50%;
+    border:1px solid rgba(165,200,255,.75); animation:fprRadar 2.8s ease-out infinite; }
+  #fpr-map .fpr-ring.r2{ animation-delay:1.4s; }
+  #fpr-map .fpr-label{ position:absolute; left:11px; top:-6px; font-size:8px; font-weight:500; letter-spacing:.3em;
+    color:rgba(205,222,255,.8); white-space:nowrap; }
+  @keyframes fprBlink{0%,100%{opacity:.45}50%{opacity:1}}
+  @keyframes fprRadar{0%{transform:scale(.4);opacity:.85}100%{transform:scale(7);opacity:0}}
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/loaders/SVGLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/loaders/RGBELoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/lights/RectAreaLightUniformsLib.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+  <script>
+  (function(){
+    function start(){
+      if (!window.THREE || !window.gsap || !THREE.SVGLoader || !THREE.RGBELoader){ return setTimeout(start, 60); }
+      var root = document.getElementById('fpr-map'); if(!root) return;
+      var _isMob = window.innerWidth <= 768;
+      var container = root.querySelector('.fpr-canvas');
+      var glow = root.querySelector('.fpr-glow');
+      var punchL = root.querySelector('#fpr-left'), punchR = root.querySelector('#fpr-right'), punchS = root.querySelector('.fpr-sub');
+      var dot = root.querySelector('.fpr-dot');
+      function cw(){ return container.clientWidth  || window.innerWidth; }
+      function ch(){ return container.clientHeight || Math.round(window.innerHeight * 0.5); }
+
+      var CROWN_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1920"><g><path transform="matrix(1,0,0,-1,959.4926,1546.1266)" d="M0 0C176.025 0 318.742-44.445 318.742-99.201 318.742-154.031 176.025-198.293 0-198.293-176.061-198.293-318.78-154.031-318.78-99.201-318.78-44.445-176.061 0 0 0M-697.585 888.138C-688.878 888.138-680.393 889.501-672.318 891.562L-382.938-81.932H-382.864C-350.562-190.633-190.725-273.044 1.637-273.044 194.036-273.044 353.835-190.633 386.175-81.932H386.25L675.407 890.789C682.476 889.243 689.92 888.138 697.511 888.138 753.704 888.138 799.293 933.209 799.293 988.961 799.293 1044.417 753.704 1089.561 697.511 1089.561 641.392 1089.561 595.693 1044.417 595.693 988.961 595.693 948.86 619.398 914.429 653.523 898.265L318.296 187.172 372.218 1145.311H374.564C430.609 1145.311 476.197 1190.311 476.197 1245.876 476.197 1301.516 430.609 1346.551 374.564 1346.551 318.296 1346.551 272.744 1301.516 272.744 1245.876 272.744 1199.958 303.893 1161.44 346.17 1149.251L123.105 212.728 15.592 1244.844C64.865 1251.952 102.712 1293.746 102.712 1344.451 102.712 1399.906 57.161 1445.127 1.078 1445.127-55.189 1445.127-100.703 1399.906-100.703 1344.451-100.703 1293.635-62.447 1251.584-12.989 1244.808L-120.352 214.532-342.969 1149.068C-300.136 1161.035-268.615 1199.7-268.615 1245.876-268.615 1301.516-314.24 1346.551-370.433 1346.551-426.552 1346.551-472.14 1301.516-472.14 1245.876-472.14 1190.311-426.552 1145.311-370.433 1145.311H-368.981L-315.095 187.577-650.993 899.516C-618.281 916.234-595.842 949.929-595.842 988.961-595.842 1044.417-641.356 1089.561-697.585 1089.561-753.706 1089.561-799.257 1044.417-799.257 988.961-799.257 933.209-753.706 888.138-697.585 888.138" fill="#000"/></g></svg>';
+
+      var scene = new THREE.Scene();
+      var camera = new THREE.PerspectiveCamera(35, cw()/ch(), 0.1, 100);
+      camera.position.set(0,0,12); camera.lookAt(0,0,0);
+      var renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true, powerPreference:'high-performance' });
+      renderer.setSize(cw(), ch()); renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+      renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.15;
+      renderer.outputEncoding = THREE.sRGBEncoding;
+      container.appendChild(renderer.domElement);
+
+      function buildEnv(){
+        var es=new THREE.Scene(); es.background=new THREE.Color(0xdfe6ee);
+        function p(w,h,x,y,z,rx,ry,c,i){ var m=new THREE.Mesh(new THREE.PlaneGeometry(w,h), new THREE.MeshBasicMaterial({color:new THREE.Color(c).multiplyScalar(i)})); m.position.set(x,y,z); m.rotation.set(rx,ry,0); es.add(m); }
+        p(20,10,0,8,0,-Math.PI/2,0,0xffffff,4.5); p(8,12,8,2,2,0,-Math.PI/2,0xfff3e0,3.2); p(8,12,-8,2,2,0,Math.PI/2,0xdfeaf5,3.0);
+        p(14,8,0,3,-6,0,Math.PI,0xffffff,2.5); p(14,8,0,0,8,0,0,0xeef2f6,1.4); p(20,20,0,-6,0,Math.PI/2,0,0xf0f4f6,1.8);
+        return es;
+      }
+      var pmrem = new THREE.PMREMGenerator(renderer); pmrem.compileEquirectangularShader();
+      scene.environment = pmrem.fromScene(buildEnv(), 0.02).texture;
+
+      THREE.RectAreaLightUniformsLib.init();
+      var l1=new THREE.RectAreaLight(0xffffff,6,12,6); l1.position.set(0,7,3); l1.lookAt(0,0,0); scene.add(l1);
+      var l2=new THREE.RectAreaLight(0xffffff,4,8,10); l2.position.set(7,1,4); l2.lookAt(0,0,0); scene.add(l2);
+      var l3=new THREE.RectAreaLight(0xfff2e0,4,8,10); l3.position.set(-7,1,4); l3.lookAt(0,0,0); scene.add(l3);
+      scene.add(new THREE.HemisphereLight(0xffffff,0x9099a8,0.3));
+
+      new THREE.RGBELoader().load('https://threejs.org/examples/textures/equirectangular/venice_sunset_1k.hdr',
+        function(t){ t.mapping=THREE.EquirectangularReflectionMapping; scene.environment=pmrem.fromEquirectangular(t).texture; t.dispose(); },
+        undefined, function(){ console.warn('HDRI KO'); });
+
+      var crownGroup = new THREE.Group();
+      var sd = new THREE.SVGLoader().parse(CROWN_SVG);
+      THREE.SVGLoader.createShapes(sd.paths[0]).forEach(function(shape){
+        var geom = new THREE.ExtrudeGeometry(shape, { depth:30, bevelEnabled:true, bevelThickness:9, bevelSize:5,
+          bevelSegments:_isMob?6:20, curveSegments:_isMob?16:48, steps:1 });
+        geom.center();
+        var mat = new THREE.MeshStandardMaterial({ color:new THREE.Color(0xdf9e2a), metalness:1.0, roughness:0.3,
+          envMapIntensity:1.25, side:THREE.DoubleSide });
+        crownGroup.add(new THREE.Mesh(geom, mat));
+      });
+      var bbox=new THREE.Box3().setFromObject(crownGroup); crownGroup.position.sub(bbox.getCenter(new THREE.Vector3()));
+      var sz=bbox.getSize(new THREE.Vector3()); crownGroup.scale.setScalar((_isMob?1.35:1.6)/Math.max(sz.x,sz.y));
+      crownGroup.rotation.x = Math.PI; crownGroup.rotation.y = 0.42; scene.add(crownGroup);
+
+      function visibleHalfWidth(){ var h=2*Math.tan((35*Math.PI/180)/2)*12; return (h*camera.aspect)/2; }
+      function lerp(a,b,t){ return a+(b-a)*t; }
+      window.addEventListener('resize', function(){ camera.aspect=cw()/ch(); camera.updateProjectionMatrix(); renderer.setSize(cw(),ch()); ScrollTrigger.refresh(); });
+
+      gsap.ticker.add(function(){ renderer.render(scene,camera); });
+      gsap.ticker.lagSmoothing(0); gsap.registerPlugin(ScrollTrigger);
+
+      ScrollTrigger.create({
+        trigger:'#fpr-map', start:'center center', end:'+=200%', pin:true, scrub:1,
+        onUpdate:function(self){
+          var p=self.progress, edge=visibleHalfWidth()+2.5;
+          var eIn=1-Math.pow(1-Math.min(1,p/0.6),3);
+          crownGroup.position.x=lerp(-edge,0,eIn); crownGroup.position.y=0; crownGroup.position.z=0;
+          crownGroup.rotation.y=eIn*Math.PI*6;
+          if(glow) glow.style.left=(50+(crownGroup.position.x/edge)*50)+'%';
+          var tin=1-Math.pow(1-Math.max(0,Math.min(1,(p-0.12)/0.5)),3);
+          var off=(1-tin)*42;
+          punchL.style.opacity=tin; punchR.style.opacity=tin; punchS.style.opacity=tin; if(dot) dot.style.opacity=tin;
+          punchL.style.transform='translateY(-50%) translateX(-'+off+'vw)';
+          punchR.style.transform='translateY(-50%) translateX('+off+'vw)';
+        }
+      });
+      crownGroup.position.x = -(visibleHalfWidth()+2.5);
+    }
+    start();
+  })();
+  </script>
+  <!-- ====  JUSQU'ICI  (fin du bloc à copier)  ==== -->
+  <!-- ============================================================= -->
+
+  <!-- ↓↓↓ Faux section WORKS (NE PAS copier) ↓↓↓ -->
+  <div class="demo-stub works">WORKS (déjà sur ton site)</div>
+</body>
+</html>
