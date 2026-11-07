@@ -285,6 +285,7 @@
       .chapter-title .italic { font-weight: 400 !important; }
       .chapter-text { font-size: 15px !important; line-height: 1.4 !important; font-weight: 600 !important; }
       .chapter-text strong { font-weight: 700 !important; }
+      .chapter-disclaimer { font-size: 11px !important; margin-top: 1rem !important; }
       .chapter-eyebrow { font-size: 10px !important; font-weight: 600 !important; margin-bottom: 14px !important; }
       .seq-freeze-mark { font-size: 8px; bottom: 20px; font-weight: 600; }
 
@@ -347,6 +348,14 @@
       color: var(--ink-soft);
     }
     .chapter-text strong { color: var(--ink); font-weight: 500; }
+    .chapter-disclaimer {
+      margin-top: 1.4rem;
+      font-size: clamp(11px, 0.9vw, 13px);
+      line-height: 1.6;
+      color: var(--ink-soft);
+      opacity: 0.6;
+      letter-spacing: 0.02em;
+    }
 
     /* Indicateur de freeze — un cercle qui pulse pendant le pin */
     .chapter-freeze-mark {
@@ -1064,6 +1073,7 @@
           <div class="chapter-eyebrow">Chapter I</div>
           <h2 class="chapter-title">The<br/><span class="italic">Laboratory</span></h2>
           <p class="chapter-text"><strong>Twenty-four posters</strong>, one subject: the Rolex crown. An exploratory project, created outside any brand guideline. A free creative laboratory where <strong>François Peyranne</strong> plays freely with an icon, celebrating the art, culture and design that radiate around the Rolex universe.</p>
+          <p class="chapter-disclaimer">An independent work — not commissioned, not affiliated with Rolex SA. A personal act of creative freedom.</p>
         </div>
         <div class="seq-freeze-mark">
           <span class="dot"></span>
