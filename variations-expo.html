@@ -1751,8 +1751,9 @@
 
           if (progress >= 0.985) showPosterArrows();
           else                   hidePosterArrows();
-          // Chemin de fer : uniquement à la toute dernière frame
-          if (progress >= 0.999) {
+          // iOS Safari : la barre d'URL disparaît pendant le scroll auto → resize → Lenis annule l'animation
+          // à ~0.985. On aligne le seuil _atEnd sur showPosterArrows pour éviter le blocage mobile.
+          if (progress >= 0.985) {
             if (overlay) overlay.classList.add('at-end');
             if (!_atEnd) { _atEnd = true; _curPoster = MSTART; _browseFx = MPOSTERS[MSTART].fx; }
             if (_isMobile()) _locked = true;   // une fois le mur atteint sur mobile, on le verrouille
